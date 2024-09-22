@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up Page</title>
+    <link rel="stylesheet" href="css/signUp.css">
+</head>
+<body>
+    <div class="container">
+        <div class="image-section">
+            <img src="images/pexels-olly-901236.jpg" alt="Custom Image">
+        </div>
+        <div class="form-section">
+            <h2>Create Your Account</h2>
+            <form action="/signup" method="POST" id="signup">
+                <input type="text" name="name" id="name" placeholder="Full Name" >
+                <small id="nameError"></small>
+
+                <input type="email" name="email" id="email" placeholder="Email" >
+                <small id="emailError"></small>
+
+                <input type="tel" name="phonenumber" id="phonenumber" placeholder="Phone Number" >
+                <small id="phonenumberError"></small>
+
+                <input type="password" name="password" id="password" placeholder="Password" >
+                <small id="passwordError"></small>
+
+                <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password" >
+                <small id="confirmPasswordError"></small>
+
+                <button type="submit" id="registerBtn">Sign Up</button>
+            </form>
+
+            <!-- Google Sign-Up Button -->
+            <a href="/auth/google" class="google-btn" id="registerBtn"  style="text-decoration: none;">
+                <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google Logo">
+                Continue with Google
+            </a>            
+
+            <p class="login-redirect">
+                Already have an account? <a href="/login">Login here</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("signup").addEventListener("submit", (event) => {
+            const name = document.getElementById("name").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const phonenumber = document.getElementById("phonenumber").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+            const nameError = document.getElementById("nameError");
+            const emailError = document.getElementById("emailError");
+            const phonenumberError = document.getElementById("phonenumberError");
+            const passwordError = document.getElementById("passwordError");
+            const confirmPasswordError = document.getElementById("confirmPasswordError");
+
+            const nameRegex = /^[A-Za-z\s]+$/;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const phonenumberRegex = /^\d{10}$/;
+            const passwordRegex = /^[^\W_][\w\W]{5,}$/;
+
+            nameError.innerHTML = "";
+            emailError.innerHTML = "";
+            phonenumberError.innerHTML = "";
+            passwordError.innerHTML = "";
+            confirmPasswordError.innerHTML = "";
+
+            let isValid = true;
+
+            if (!nameRegex.test(name)) {
+                nameError.innerHTML = "Enter a valid name";
+                isValid = false;
+            }
+
+            if (!emailRegex.test(email)) {
+                emailError.innerHTML = "Enter a valid email";
+                isValid = false;
+            }
+
+            if (!phonenumberRegex.test(phonenumber)) {
+                phonenumberError.innerHTML = "Enter a valid phone number";
+                isValid = false;
+            }
+
+            if (!passwordRegex.test(password)) {
+                passwordError.innerHTML = "Enter a valid password";
+                isValid = false;
+            }
+
+            if (password !== confirmPassword) {
+                confirmPasswordError.innerHTML = "Passwords do not match";
+                isValid = false;
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

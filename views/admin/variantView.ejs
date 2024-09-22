@@ -1,0 +1,90 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<%- include('../layout/admin/adminHeader') -%>
+<%- include('../layout/admin/adminNavbar') -%>
+
+<!-- Main Content -->
+<div class="main-panel">
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h3 class="page-title">Product Details</h3>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Product Information -->
+                        <h4 class="card-title"><%= product.productName %></h4>
+                        <p><strong>Brand:</strong> <%= product.productBrand.brandName %></p>
+                        <p><strong>Category:</strong> <%= product.category.categoryName %></p>
+                        <p><strong>Description:</strong> <%= product.description %></p>
+
+                        <!-- Variants -->
+                        <h4 class="card-title">Variants</h4>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Variant Name</th>
+                                        <th>Price</th>
+                                        <th>Stock</th>
+                                        <th>Images</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% product.variants.forEach((variant,index) => { %>
+                                        <tr>
+                                            <td><%= index+1 %></td>
+                                            <td><%= variant.color %></td>
+                                            <td><%= variant.price %></td>
+                                            <td><%= variant.stock %></td>
+                                            <td>
+                                                <% variant.images.forEach(image => { %>
+                                                <img src="<%= image %>" alt="Variant Image" style="width: 50px; height: auto; cursor: pointer;" class="variant-image" data-bs-toggle="modal" data-bs-target="#imageModal" data-src="<%= image %>"/>
+                                                <% }) %>
+                                                <a href="/admin/editVariant?variantId=<%= variant.id %>&productId=<%= product.id %>" class="btn btn-warning btn-sm">Edit</a>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Back Button -->
+                        <a href="/admin/product" class="btn btn-primary">Back to Products List</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../layout/admin/adminFooter') -%>
+</div>
+
+<!-- Modal for Enlarged Image -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">Variant Image</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="modalImage" src="" alt="Enlarged Variant Image" style="width: 100%; height: auto;"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.querySelectorAll('.variant-image').forEach(img => {
+        img.addEventListener('click', function() {
+            const imgSrc = this.getAttribute('data-src');
+
+            document.getElementById('modalImage').src = imgSrc;
+        });
+    });
+</script>

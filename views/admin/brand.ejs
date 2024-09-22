@@ -1,0 +1,239 @@
+<%- include('../layout/admin/adminHeader') -%>
+<%- include('../layout/admin/adminNavbar') -%>
+
+<!-- Main Content -->
+<div class="main-panel">
+  <div class="content-wrapper">
+    <div class="page-header">
+      <h3 class="page-title">Brand List</h3>
+      <!-- Add Brand Button -->
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addBrandModal">Add Brand</button>
+    </div>
+
+    <div class="row">
+      <div class="col-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title">Brands</h4>
+            <p class="card-description">List of all brands</p>
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Name</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% brands.forEach((brand, index) => { %>
+                  <tr>
+                    <td><%= index + 1 %></td>
+                    <td><%= brand.brandName %></td>
+                    <td>
+                      <% if (!brand.isDeleted) { %>
+                        <a href="/admin/editBrand/<%= brand._id %>" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="/admin/deleteBrand/<%= brand._id %>" class="btn btn-danger btn-sm">Delete</a>
+                      <% } else { %>
+                        <a href="/admin/restoreBrand/<%= brand._id %>" class="btn btn-success btn-sm">Restore</a>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Brand Modal -->
+  <div class="modal fade" id="addBrandModal" tabindex="-1" role="dialog" aria-labelledby="addBrandModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addBrandModalLabel">Add Brand</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Form for adding brand -->
+          <form id="addBrandForm" action="/admin/addbrand" method="POST">
+            <div class="form-group">
+              <label for="brandName">Brand Name</label>
+              <input type="text" class="form-control" id="brandName" name="brandName" placeholder="Enter brand name" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Brand</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Brand Modal -->
+  <div class="modal fade" id="editBrandModal" tabindex="-1" role="dialog" aria-labelledby="editBrandModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editBrandModalLabel">Edit Brand</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="editBrandForm">
+            <input type="hidden" id="editBrandId">
+            <div class="form-group">
+              <label for="editBrandName">Brand Name</label>
+              <input type="text" class="form-control" id="editBrandName" placeholder="Enter brand name">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="saveBrandChanges">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../layout/admin/adminFooter') -%>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Handle Delete and Restore Buttons
+  document.querySelectorAll('.btn-danger').forEach(button => {
+    button.addEventListener('click', function(event) {
+      event.preventDefault();
+      const brandId = this.getAttribute('href').split('/').pop();
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/deleteBrand/${brandId}`, {
+            method: 'DELETE' // Generally DELETE method is used for delete operations
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('Deleted!', data.message, 'success')
+                .then(() => location.reload());
+            } else {
+              Swal.fire('Error!', data.message, 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            Swal.fire('Error!', 'Something went wrong!', 'error');
+          });
+        }
+      });
+    });
+  });
+
+  document.querySelectorAll('.btn-success').forEach(button => {
+    button.addEventListener('click', function(event) {
+      event.preventDefault();
+      const brandId = this.getAttribute('href').split('/').pop();
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You want to restore this brand!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, restore it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/restoreBrand/${brandId}`, {
+            method: 'PUT' // Use PUT for restoration if that's how it's handled
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('Restored!', data.message, 'success')
+                .then(() => location.reload());
+            } else {
+              Swal.fire('Error!', data.message, 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            Swal.fire('Error!', 'Something went wrong!', 'error');
+          });
+        }
+      });
+    });
+  });
+
+  
+
+  // Handle Edit Button
+  document.querySelectorAll('.btn-warning').forEach(button => {
+    button.addEventListener('click', function(event) {
+      event.preventDefault();
+      const brandId = this.getAttribute('href').split('/').pop();
+
+      fetch(`/admin/getBrand/${brandId}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById('editBrandId').value = data.brand._id;
+            document.getElementById('editBrandName').value = data.brand.brandName;
+            $('#editBrandModal').modal('show');
+          } else {
+            Swal.fire('Error!', data.message, 'error');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire('Error!', 'Something went wrong!', 'error');
+        });
+    });
+  });
+
+  document.getElementById('saveBrandChanges').addEventListener('click', function(event) {
+    event.preventDefault();
+
+    const brandId = document.getElementById('editBrandId').value;
+    const brandName = document.getElementById('editBrandName').value.trim();
+
+    if (!brandName) {
+      Swal.fire('Error!', 'Brand name is required!', 'error');
+      return;
+    }
+
+    fetch(`/admin/updateBrand/${brandId}`, {
+      method: 'PUT', // Ensure this matches the server's expected method
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ brandName })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        Swal.fire('Updated!', data.message, 'success')
+          .then(() => location.reload());
+      } else {
+        Swal.fire('Error!', data.message, 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      Swal.fire('Error!', 'Something went wrong!', 'error');
+    });
+  });
+});
+
+</script>

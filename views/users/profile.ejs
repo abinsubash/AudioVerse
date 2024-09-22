@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
+  <link rel="stylesheet" href="css/profile.css">
+</head>
+<body>
+  <section style="background-color: #ffffff; height: 100vh;">
+    <div class="container py-3">
+      <!-- Breadcrumb Navigation with Logout Button -->
+      <nav aria-label="breadcrumb" class="bg-body-tertiary rounded-3 p-2 mb-3 d-flex justify-content-between align-items-center">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item"><a href="#">User</a></li>
+          <li class="breadcrumb-item active" aria-current="page">User Profile</li>
+        </ol>
+        <button type="button" class="btn btn-danger btn-sm">Logout</button>
+      </nav>
+
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="card mb-4">
+            <div class="card-body text-center p-2">
+              <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp" alt="avatar"
+                class="rounded-circle img-fluid" style="width: 120px;">
+              <h5 class="my-2"><%= user.name %></h5>
+            </div>
+          </div>
+          <div class="card mb-4 mb-lg-0">
+            <div class="card-body p-0">
+              <ul class="list-group list-group-flush rounded-3">
+                <li class="list-group-item d-flex justify-content-between align-items-center p-2">
+                  <i class="fas fa-wallet fa-lg black-icon"></i>
+                  <span class="ms-2">Wallet</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center p-2">
+                  <i class="fas fa-shopping-bag fa-lg black-icon"></i>
+                  <span class="ms-2">Orders</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center p-2">
+                  <i class="fas fa-heart fa-lg black-icon"></i>
+                  <span class="ms-2">Wishlist</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center p-2">
+                  <i class="fas fa-map-marker-alt fa-lg black-icon"></i>
+                  <span class="ms-2">Address</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-8">
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-sm-3">
+                  <p class="mb-0">Full Name</p>
+                </div>
+                <div class="col-sm-9">
+                  <p class="text-muted mb-0"><%= user.name %></p>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-3">
+                  <p class="mb-0">Email</p>
+                </div>
+                <div class="col-sm-9">
+                  <p class="text-muted mb-0"><%= user.email%></</p>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-3">
+                  <p class="mb-0">Mobile</p>
+                </div>
+                <div class="col-sm-9">
+                  <p class="text-muted mb-0"><%= user.phone%></p>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-3">
+                  <p class="mb-0">Address</p>
+                </div>
+                <div class="col-sm-9">
+       
+                  <p class="text-muted mb-0"><%= user.address ? user.address : "add address" %></p>
+               
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Profile action buttons -->
+          <div class="d-flex justify-content-end mt-4">
+            <a href="#" class="btn btn-success btn-sm me-2" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</a>
+            <button type="button" class="btn btn-warning-custom btn-sm" data-toggle="modal" data-target="#changePasswordModal">Change Password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- change Password -->
+  <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Form for changing password -->
+          <form id="changePassword" method="post">
+            <div class="form-group">
+              <label for="currentPassword">Current Password</label>
+              <input type="password" class="form-control" id="currentPassword" placeholder="Enter current password">
+              <small id="currentPasswordError" style="color: red;"></small>
+            </div>
+            <div class="form-group">
+              <label for="newPassword">New Password</label>
+              <input type="password" class="form-control" id="newPassword" placeholder="Enter new password">
+              <small id="newPasswordError" style="color: red;"></small>
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm New Password</label>
+              <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password">
+              <small id="confirmPasswordError" style="color: red;"></small>
+            </div>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </form>
+        </div>
+        <div class="modal-footer"></div>
+      </div>
+    </div>
+  </div>
+  
+
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editProfileForm" action="" method="POST">
+          <div class="mb-3">
+            <label for="fullName" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="fullName" name="name" value="<%= user.name %>">
+            <small id="nameError" style="color: red;"></small>
+          </div>
+          <div class="mb-3">
+            <label for="phone" class="form-label">Mobile</label>
+            <input type="text" class="form-control" id="phone" name="phone" value="<%= user.phone %>">
+            <small id="phoneError" style="color: red;"></small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <a href="/profile" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
+        <button type="submit" class="btn btn-primary" form="editProfileForm">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+  <!-- Bootstrap and jQuery scripts -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // edit Profile
+  document.getElementById("editProfileForm").addEventListener("submit", async (event) => {
+    event.preventDefault(); 
+    const name = document.getElementById('fullName').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const nameError = document.getElementById('nameError');
+    const phoneError = document.getElementById('phoneError');
+    const nameRegex = /^[A-Za-z\s]+$/;
+    const phonenumberRegex = /^\d{10}$/;
+
+    nameError.innerHTML = '';
+    phoneError.innerHTML = '';
+
+    if (!nameRegex.test(name)) {
+      nameError.innerHTML = "Enter a valid name";
+      return;
+    }
+    if (!phonenumberRegex.test(phone)) {
+      phoneError.innerHTML = "Enter a valid Phone Number";
+      return;
+    }
+
+    const response = await fetch('/updateprofile', {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name,
+        phone
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      Toastify({
+        text: data.message || "Error updating profile",
+        backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+        duration: 3000
+      }).showToast();
+    } else {
+      Toastify({
+        text: "Profile updated successfully!",
+        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+        duration: 3000
+      }).showToast();
+
+      const modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+      modal.hide();
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500); 
+    }
+  });
+
+
+  document.getElementById('changePassword').addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const currentPassword = document.getElementById('currentPassword').value.trim();
+  const newPassword = document.getElementById('newPassword').value.trim();
+  const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+  const currentPasswordError = document.getElementById("currentPasswordError");
+  const newPasswordError = document.getElementById("newPasswordError");
+  const confirmPasswordError = document.getElementById('confirmPasswordError'); 
+
+  currentPasswordError.innerHTML = "";
+  newPasswordError.innerHTML = "";
+  confirmPasswordError.innerHTML = "";
+
+  const passwordRegex = /^[^\W_][\w\W]{5,}$/;
+
+  if (!passwordRegex.test(currentPassword)) {
+    return currentPasswordError.innerHTML = "Enter a valid current password.";
+  }
+  if (!passwordRegex.test(newPassword)) {
+    return newPasswordError.innerHTML = "Password must be at least 6 characters long.";
+  }
+
+    if (newPassword !== confirmPassword) {
+    return confirmPasswordError.innerHTML = "Passwords do not match.";
+  }
+  const response = await fetch('/changepassword', {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      currentPassword,
+      newPassword,
+      confirmPassword
+    })
+  });
+
+  const data = await response.json();
+
+  if (!data.success) {
+    Toastify({
+      text: data.message || "Error changing password",
+      backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+      duration: 3000
+    }).showToast();
+  } else {
+    Toastify({
+      text: "Password changed successfully!",
+      backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+      duration: 3000
+    }).showToast();
+
+    const modalElement = document.getElementById('changePasswordModal');
+  const modal = bootstrap.Modal.getOrCreateInstance(modalElement);  
+  modal.hide();
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+  }
+});
+
+
+
+</script>
+
+</body>
+</html>

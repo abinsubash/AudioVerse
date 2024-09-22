@@ -1,0 +1,438 @@
+const User = require("../../model/userModel");
+const bcrypt = require("bcrypt");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+const OTP = require("../../model/otp");
+const Product = require("../../model/productModel");
+const Varinat = require("../../model/variantModel");
+const Category = require("../../model/categoryModel");
+const Brand = require("../../model/brandModel");
+const { isDeleted } = require("../admin/productController");
+const generateRefferalID = () => {
+  return crypto.randomBytes(6).toString("hex");
+};
+
+const generateOTP = () => {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+};
+
+const googleauth =   async (req, res) => {
+  const user = await User.findOne({ _id: req.user._id });
+  console.log(user);
+  if (user.isBlocked) {
+    return res.redirect("/login");
+  }
+  req.session.userExist = req.user;
+
+  res.redirect("/");
+}
+
+
+const sendOtp = (email, otp) => {
+
+  const transfort = nodemailer.createTransport({
+    service: "Gmail",
+    auth: {
+      user: process.env.EMAIL,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+  });
+
+  const mailOption = {
+    from: process.env.EMAIL,
+    to: email,
+    subject: "AUDIOVERSE OTP",
+    text: `Your SignUp OTP ${otp},it will expire after 30 seconds`,
+  };
+  return transfort.sendMail(mailOption);
+};
+
+// -------------- Controller ------------------------
+
+const signup = (req, res) => {
+  res.render("users/signUp");
+};
+
+const signupValidation = async (req, res) => {
+  try {
+    const { name, email, phonenumber, password } = req.body;
+    const otp = generateOTP();
+
+    const existUser = await User.findOne({ email: email, phone: phonenumber });
+
+    if (existUser) {
+      //-------------Pass error Message------------
+      return console.log("User Already exist");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const tempUser = new User({
+      name,
+      email,
+      phone: phonenumber,
+      password: hashedPassword,
+      referalID: generateRefferalID(),
+      isValid: false,
+    });
+
+    const otpModel = new OTP({
+      email,
+      otp,
+    });
+
+    req.session.email = email;
+    req.session.tempUser = tempUser;
+    await sendOtp(email, otp);
+    await otpModel.save();
+    res.redirect("/otp");
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const otpVerification = async (req, res) => {
+  const { otp } = req.body;
+  const tempUser = req.session.tempUser;
+  const email = req.session.email;
+  try {
+    const otpUse = await OTP.findOne({ email: email });
+    if (!otpUse) {
+      return res.json({ success: false, message: "OTP not found" });
+    }
+
+    if (otpUse.otp != otp) {
+      return res.json({ success: false, message: "OTP is Invalid" });
+    }
+    res.json({ success: true });
+    const newuser = new User(tempUser);
+    await newuser.save();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const resendOTP = async (req, res) => {
+  const email = req.session.email;
+  if (!email) {
+    return res.json({ message: "Email not found" });
+  }
+
+  const newOtp = generateOTP();
+
+  try {
+    await OTP.findOneAndDelete({ email });
+
+    const otpModel = new OTP({
+      email,
+      otp: newOtp,
+    });
+    await otpModel.save();
+
+    await sendOtp(email, newOtp);
+
+    res.json({ success: true, message: "OTP resent successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to resend OTP" });
+  }
+};
+
+const loginValidation = async (req, res) => {
+  const { email, password } = req.body;
+  const userExist = await User.findOne({ email: email });
+  if (!userExist) {
+    return res.json({ success: false, message: "Enter valid email" });
+  }
+  if (userExist.isBlocked) {
+    return res.json({ success: false, message: "User is blocked" });
+  }
+  const userPass = await bcrypt.compare(password, userExist.password);
+  if (userPass) {
+    req.session.userExist = userExist;
+    return res.json({ success: true });
+  } else {
+    res.json({ success: false, message: "Incorrect password" });
+  }
+};
+
+const logout = (req, res) => {
+  req.session.destroy();
+  res.redirect("/");
+};
+
+const getOtp = (req, res) => {
+  res.render("users/otp");
+};
+
+const login = (req, res) => {
+  const blockedMessage = req.session.blockedMessage;
+  req.session.blockedMessage = null;
+  res.render("users/login", { blockedMessage });
+};
+
+
+//Todo : Home page 
+
+const homePage = async (req, res) => {
+  try {
+    const products = await Product.find({});
+
+    const boatProducts = await Promise.all(
+      products.map(async (product) => {
+        const brand = await Brand.findOne({ _id: product.productBrand });
+        if (brand && brand.brandName === "Boat") {
+          return product;
+        }
+      })
+    );
+
+    const filteredBoatProducts = boatProducts.filter((product) => product);
+
+    const populatedBoatProducts = await Promise.all(
+      filteredBoatProducts.map((product) =>
+        Product.findById(product._id)
+          .populate("productBrand")
+          .populate("variants")
+          .populate("category")
+      )
+    );
+
+    if (req.session.userExist) {
+      const user = await User.findOne({ _id: req.session.userExist._id });
+      if (user.isBlocked) {
+        return res.redirect("/login");
+      }
+    }
+
+    res.render("users/home", {
+      user: req.session.userExist,
+      products: populatedBoatProducts,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
+};
+
+
+
+//Todo : Shop Page
+const shop = async (req, res) => {
+  const product = await Product.find({ isDeleted: false })
+    .populate("productBrand")
+    .populate("variants")
+    .populate("category")
+    .exec();
+  res.render("users/shop", { user: req.session.userExist, products: product });
+};
+
+const singleProduct = async (req, res) => {
+  const { variantColor, id } = req.query;
+
+  const product = await Product.find({ _id: id })
+    .populate("productBrand")
+    .populate("variants")
+    .populate("category")
+    .exec();
+  const categoryId = product[0].category._id.toString();
+  const relatedProduct = await Product.find()
+    .populate("productBrand")
+    .populate("variants")
+    .populate("category")
+    .exec();
+
+  const filteredProducts = relatedProduct.filter(
+    (product) => product.category._id.toString() === categoryId
+  );
+
+  const productss = await Product.find({ _id: id });
+
+  if (productss && productss.length > 0) {
+    const newproduct = productss[0];
+    if (newproduct.variants) {
+      newproduct.variants.forEach(async (variant) => {
+        const { _id } = variant;
+        const showVariant = await Varinat.find({ _id });
+        showVariant.forEach(async (newvariant) => {
+          if (newvariant.color == variantColor) {
+            const newVarint = await Varinat.find({ _id: newvariant.id });
+
+            res.render("users/singleProduct", {
+              user: req.session.userExist,
+              products: product,
+              relatedProducts: filteredProducts,
+              newvarinats: newVarint,
+            });
+          }
+        });
+      });
+    } else {
+      console.log("No variants found");
+    }
+  } else {
+    console.log("Product not found");
+  }
+};
+
+
+
+//Todo : userprofile
+const profile = (req, res) => {
+  res.render("users/profile",{user:req.session.userExist});
+}
+
+//Todo :UpdateProfile
+const updateProfile = async (req, res) => {
+  try {
+    const { name, phone } = req.body;
+    if (!req.session.userExist) {
+      return res.json({ success: false, message: "Session expired. Please log in again." });
+    }
+
+    const user = await User.findOne({ email: req.session.userExist.email });
+
+    if (!user) {
+      return res.json({ success: false, message: "User not found" });
+    }
+
+     await User.updateOne({ email: req.session.userExist.email }, {
+      name: name,
+      phone: phone
+    });
+    req.session.userExist = await User.findOne({email:req.session.userExist.email})
+    res.json({ success: true, message: "Profile Updated" });
+
+  } catch (error) {
+    console.log("Server error:", error);
+    res.json({ success: false, message: "Error updating profile" });
+  }
+};
+
+
+// Todo: Change Password 
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findOne({ _id: req.session.userExist._id });
+
+    if (!user) {
+      return res.json({ success: false, message: "User not found" });
+    }
+    const isPasswordMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordMatch) {
+      return res.json({ success: false, message: "Current password is incorrect" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await User.updateOne({ _id: req.session.userExist._id }, { password: hashedPassword });
+    req.session.userExist = await User.findOne({ _id: req.session.userExist._id });
+
+    return res.json({ success: true, message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Error changing password:", error);
+  }
+};
+
+
+
+//Todo :ForgetPassowrd
+const forgetPassowrd = (req,res)=>{
+  res.render('users/forgetEmail')
+}
+
+const confirmEmail = async (req, res) => {
+  const { email } = req.body;  
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.json({ success: false, message: "Email Not found" });
+  }
+
+  const token = crypto.randomBytes(20).toString('hex');
+  req.session.token = token;
+  req.session.email = email;
+  const mailOptions = {
+    from: process.env.EMAIL,
+    to: email,
+    subject: 'Your Password Reset Link',
+    html: `
+      <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+              <h3>Reset Your Password</h3>
+              <p>Click the link below to reset your password:</p>
+              <a href="http://localhost:3000/reset-password?token=${token}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
+              <p>Thanks for using our service!</p>
+          </div>
+      </div>`,
+  };
+
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    await transporter.sendMail(mailOptions);
+    return res.status(200).json({ success: true, message: 'Password reset link has been sent to your email' });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return res.status(500).json({ success: false, message: 'Error sending email' });
+  }
+};
+
+const resetPassword = (req,res)=>{
+  if(req.session.token==req.query.token){
+    return res.render('users/forgetPassword')
+  }else{
+    res.status(400)
+  }
+}
+
+
+const confirmPassword = async (req,res)=>{
+  const {newpassword} = req.body
+const user = await User.findOne( {email:req.session.email});
+if(!user){
+return res.json({success:false,message:"user doesnot find"})
+}
+const hashedPassword = await bcrypt.hash(newpassword,10)
+await User.updateOne({email:req.session.email},{
+  password:hashedPassword
+});
+res.json({success:true,message:"password updated"})
+}
+
+const error404 = (req,res)=>{
+  res.render('users/404');
+}
+
+
+const findVarint = async (req, res) => {};
+
+
+
+module.exports = {
+  login,
+  signup,
+  homePage,
+  signupValidation,
+  otpVerification,
+  resendOTP,
+  getOtp,
+  loginValidation,
+  logout,
+  shop,
+  singleProduct,
+  findVarint,
+  googleauth,
+  profile,
+  updateProfile,
+  changePassword,
+  forgetPassowrd,
+  confirmPassword,
+  confirmEmail,
+  resetPassword,
+  error404
+};

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="/css/admin/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="image-container">
+            <img src="/images/login.jpg" alt="Headphones">
+        </div>
+        <div class="login-box">
+            <h2>Admin Login</h2>
+            <form action="/admin/" method="POST" id="loginForm">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" >
+                    <small style="color: red;" id="nameError"></small>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" value="abin@2006">
+                    <small id="passwordError" style="color: red;" ></small>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+    <script>
+       document.getElementById('loginForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const passwordregex = /^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[a-z\d@$!%*?&]{8,}$/;
+    const usernameregex = /^[a-zA-Z0-9_]{4,15}$/;
+    const passwordError = document.getElementById('passwordError');
+    const nameError = document.getElementById("nameError");
+    nameError.innerHTML = '';
+    passwordError.innerHTML = '';
+    let valid = true;
+
+    if (!usernameregex.test(username)) {
+        nameError.innerHTML = "Enter valid username";
+        valid = false;
+    }
+    if (!passwordregex.test(password)) {
+        passwordError.innerHTML = "Enter valid password";
+        valid = false;
+    }
+    if (!valid) {
+        return;
+    }
+
+    const response = await fetch("/admin/", {
+        method: "POST",
+        headers: {
+            "content-type": "application/json"
+        },
+        body: JSON.stringify({
+            username: username,
+            password: password
+        })
+    });
+
+    const data = await response.json();
+    if (!data.success) {
+        nameError.innerHTML = data.message;
+        return;
+    }
+
+    if (data.success) {
+        window.location.href = '/admin/home';
+    }
+});
+    </script>
+</body>
+</html>

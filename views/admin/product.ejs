@@ -1,0 +1,104 @@
+<%- include('../layout/admin/adminHeader') -%>
+<%- include('../layout/admin/adminNavbar') -%>
+
+<!-- Main Content -->
+<div class="main-panel">
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h3 class="page-title">Product List</h3>
+            <a href="/admin/addProduct" class="btn btn-primary btn-icon-text">
+                Add Product
+                <i class="mdi mdi-plus-circle"></i>
+            </a>
+        </div>
+
+        <div class="row">
+            <div class="col-12 grid-margin">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Products</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Brand</th>
+                                        <th>Category</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% products.forEach((product, index) => { %>
+                                        <tr>
+                                            <td><%= index + 1 %></td>
+                                            <td><%= product.productName %></td>
+                                            <td><%= product.productBrand.brandName %></td>
+                                            <td><%= product.category.categoryName %></td>
+                                            <td>
+                                                <a href="/admin/viewProduct/<%= product._id %>" class="btn btn-info btn-sm">View</a>
+                                                <a href="/admin/editProduct/<%= product._id %>" class="btn btn-warning btn-sm">Edit</a>
+                                                <button class="btn <%= product.isDeleted ? 'btn-warning' : 'btn-danger' %> btn-sm" onclick="toggleProduct('<%= product._id %>')">
+                                                    <%= product.isDeleted ? 'Restore' : 'Delete' %>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../layout/admin/adminFooter') -%>
+</div>
+<script>
+    function toggleProduct(productId) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, do it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/deleteProduct/${productId}`, {
+            method: 'POST',
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Failed to toggle product status.');
+            }
+            return response.json();
+          })
+          .then(result => {
+            if (result.success) {
+              Swal.fire(
+                'Done!',
+                result.message,
+                'success'
+              ).then(() => {
+                location.reload(); 
+              });
+            } else {
+              Swal.fire(
+                'Error!',
+                result.message,
+                'error'
+              );
+            }
+          })
+          .catch(error => {
+            console.error('Error toggling product:', error);
+            Swal.fire('Error!', 'Something went wrong. Please try again.', 'error');
+          });
+        }
+      });
+    }
+  </script>
+  

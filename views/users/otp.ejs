@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>OTP Input Form</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/otp.css" />
+  </head>
+  <body>
+    <div class="container">
+      <main>
+        <div class="content">
+          <h1>Enter Your OTP</h1>
+          <p>OTP expires in: <span id="timer">00:30</span></p>
+              <p id="otpExprError" style="color: red;"></p>
+
+          <form action="/otp" method="POST" id="otpform">
+            <input
+              type="text"
+              name="otp"
+              class="otp-input"
+              maxlength="4"
+              placeholder="- - - -"
+              required
+            />
+            <button type="submit" class="submit-btn">Submit</button>
+          </form>
+          <small id="otpError" style="color: red;"></small>
+          <p>Please enter the OTP sent to your email</p> 
+         
+          <a href="#" id="resend">resentOTP?</a>
+          <p id="otpDisplay" class="otp-display"></p>
+          <small id="otpSuccess" style="color: rgb(0, 168, 25);"></small>
+        </div>
+      </main>
+    </div>
+    <script>
+
+      // -----------------otp validation with fetch---------------
+      function clearMessageAfterTimeout(elementId, timeout = 3000) {
+  setTimeout(() => {
+    document.getElementById(elementId).textContent = '';
+  }, timeout);
+}
+
+      document.getElementById('otpform').addEventListener('submit',async function(event){
+        event.preventDefault();
+        const otp = document.querySelector('input[name="otp"]').value
+        try{
+          const responce = await fetch('/otp',{
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json'
+            },
+            body:JSON.stringify({otp})
+          });
+          const result = await responce.json();
+          
+          if(result.success){
+            window.location.href='/login'
+          }else{
+
+            document.getElementById("otpError").textContent = result.message;
+            clearMessageAfterTimeout("otpError",3000)
+          }
+        }catch(error){
+          console.log(error);
+          
+        }
+      });
+
+      // ---------------resent otp with feach-----------
+      document.getElementById('resend').addEventListener('click',async function (event){
+        event.preventDefault();
+        try {
+          const responce = await fetch('resendOtp',{
+            mothode:"POST",
+            headers:{
+              'Content-Type':'application/json',
+            }
+          })
+
+          const result = await responce.json()
+          if(result.success){
+            document.getElementById('otpSuccess').textContent='OTP resent successful'
+            clearMessageAfterTimeout('otpSuccess', 3000);
+            resetTimer()
+          }else{
+            document.getElementById('otpSuccess').textContent=result.message
+          }
+        }catch(error){
+          console.log(error)
+        }
+      });
+      
+      // -------------------OTP timer ------------------
+     
+let timerDuration = 30; 
+let countdown;
+const timerElement = document.getElementById('timer');
+
+function setTimer() {
+  countdown = setInterval(() => {
+    let minutes = Math.floor(timerDuration / 60);
+    let seconds = timerDuration % 60;
+
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+
+    timerElement.textContent = `${minutes}:${seconds}`;
+
+    if (timerDuration <= 0) {
+      clearInterval(countdown);
+      document.getElementById('otpExprError').textContent = "OTP expired";
+      clearMessageAfterTimeout('otpExprError', 3000);
+    }
+
+    timerDuration--;
+  }, 1000);
+}
+
+function resetTimer() {
+  clearInterval(countdown); 
+  timerDuration = 30;  
+  document.getElementById('otpExprError').textContent = ''; 
+  setTimer();
+}
+
+setTimer();  
+
+    </script>
+  </body>
+</html>

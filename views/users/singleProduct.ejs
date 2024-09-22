@@ -1,0 +1,220 @@
+<%- include('../layout/header') -%>
+<style>
+    .color-circle {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 1px solid #ccc;
+        display: inline-block;
+    }
+
+    .zoom-container {
+        position: relative;
+        overflow: hidden;
+        width: 100%; 
+        height: 500px; 
+    }
+
+    .zoom-image {
+        display: none;
+    }
+
+    .zoom-background {
+        width: 100%;
+        height: 100%;
+        background-repeat: no-repeat;
+        background-size: 100%;
+        transition: background-size 0.3s ease, background-position 0.3s ease; 
+    }
+</style>
+<%- include('../layout/navbar') -%>
+
+<div class="hero-wrap hero-bread" style="background-image: url('/winkel/images/bg_6.jpg');">
+    <div class="container">
+        <div class="row no-gutters slider-text align-items-center justify-content-center">
+            <div class="col-md-9 ftco-animate text-center">
+                <p class="breadcrumbs"><span class="mr-2"><a href="index.html">Home</a></span>
+                    <span class="mr-2"><a href="index.html">Product</a></span> 
+                    <span>Product Single</span></p>
+                <h1 class="mb-0 bread">Product Single</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Products Loop Start -->
+<section class="ftco-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-5 mb-4 ftco-animate">
+                <!-- Image Zoom Container -->
+                <div class="zoom-container">
+                    <!-- Set the image as a background to enable zooming -->
+                    <div id="zoom-background" class="zoom-background" style="background-image: url('<%= newvarinats[0].images[0] %>');">
+                    </div>
+                </div>
+                
+                <!-- Thumbnails -->
+                <div id="thumbnails-container" class="row">
+                    <% if (newvarinats && newvarinats.length > 0) { %>
+                        <% newvarinats[0].images.forEach(function(image, index) { %>
+                            <div class="col-lg-2 mb-4 mt-2">
+                                <a href="#" class="thumbnail-image" onclick="changeMainImage('<%= image %>', event)">
+                                    <div class="thumb">
+                                        <img src="<%= image %>" alt="Thumbnail <%= index + 1 %>" class="img-fluid">
+                                    </div>
+                                </a>
+                            </div>
+                        <% }); %>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="col-lg-6 product-details pl-md-5 ftco-animate">
+                <% products.forEach(function(product) { %>
+                <h2><%= product.productName %></h2>
+
+                <p class="price"><span><%= newvarinats[0].price %></span></p>
+
+                <p><%= product.description %></p>
+
+                <!-- Rating Section -->
+                <div class="rating d-flex">
+                    <p class="text-right">
+                        <% for (let i = 0; i < 5; i++) { %>
+                            <a href="#"><span class="ion-ios-star-outline"></span></a>
+                        <% } %>
+                    </p>
+                    <p class="text-left mr-4">
+                        <a href="#" class="mr-2" style="color: #000;">100 <span style="color: #bbb;">Rating</span></a>
+                    </p>
+                </div>
+
+                <!-- Variants Section -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="form-group d-flex">
+                            <% if (products[0].variants && products[0].variants.length > 0) { %>
+                                <% products[0].variants.forEach(variant => { %>
+                                    <a href="/singleProduct/?variantColor=<%= variant.color %>&id=<%= products[0]._id %>" class="mr-2">
+                                        <div class="color-circle" style="background-color: <%= variant.color %>"></div>
+                                    </a>
+                                <% }); %>
+                            <% } else { %>
+                                <p>No color variants available</p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="newdiv"><span><%= newvarinats[0].stock %> stock is available</span></p>
+
+                <!-- Add to Cart Button -->
+                <p><a href="cart.html" class="btn btn-black py-3 px-5">Add to Cart</a></p>
+            </div>
+        </div>
+    </div>
+    <% }); %>
+</section>
+
+<section class="ftco-section bg-light">
+    <div class="container">
+        <div class="row justify-content-center mb-3 pb-3">
+            <div class="col-md-12 heading-section text-center ftco-animate">
+                <h2 class="mb-4">Related Products</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="col-md-8 col-lg-10 order-md-last">
+            <div class="row">
+                <% relatedProducts.forEach((product) => { %> 
+                    <div class="col-sm-6 col-md-6 col-lg-4 ftco-animate">
+                        <div class="product">
+                            <a href="/singleProduct/?variantColor=<%= product.variants[0].color %>&id=<%= product._id %>" class="img-prod">
+                                <% if (product.variants.length > 0 && Array.isArray(product.variants[0].images) && product.variants[0].images.length > 0) { %>
+                                    <img class="img-fluid" src="<%= product.variants[0].images[0] %>" alt="<%= product.productName %>">
+                                <% } else { %>
+                                    <img class="img-fluid" src="path/to/default-image.jpg" alt="No Image Available">
+                                <% } %>
+                                <span class="status"></span>
+                                <div class="overlay"></div>
+                            </a>
+                            
+    
+                            <div class="text py-3 px-3">
+                                <h3><a href="/product/<%= product._id %>"><%= product.productName %></a></h3>
+                                <div class="d-flex">
+                                    <div class="pricing">
+                                        <p class="price">
+                                            <% if (product.price) { %>
+                                                <span class="price-sale"><%= product.price %></span>
+                                            <% } else { %>
+                                                <span class="price-sale">Price Not Available</span>
+                                            <% } %>
+                                        </p>
+                                    </div>
+    
+                                    <div class="rating">
+                                        <p class="text-right">
+                                            <% for (let i = 0; i < product.rating; i++) { %>
+                                                <a href="#"><span class="ion-ios-star"></span></a>
+                                            <% } %>
+                                            <% for (let i = product.rating; i < 5; i++) { %>
+                                                <a href="#"><span class="ion-ios-star-outline"></span></a>
+                                            <% } %>
+                                        </p>
+                                    </div>
+                                </div>
+                                <p class="bottom-area d-flex px-3">
+                                    <a href="/cart/add/<%= product._id %>" class="add-to-cart text-center py-2 mr-1">
+                                        <span>Add to cart<i class="ion-ios-add ml-1"></i></span>
+                                    </a>
+                                    <a href="/checkout/<%= product._id %>" class="buy-now text-center py-2">
+                                        Buy now<span><i class="ion-ios-cart ml-1"></i></span>
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    </div>
+    
+</section>
+
+<%- include('../layout/footer') -%>
+
+<script>
+    function changeMainImage(newSrc, event) {
+        event.preventDefault(); 
+        const zoomBackground = document.getElementById('zoom-background');
+        zoomBackground.style.backgroundImage = 'url(' + newSrc + ')';
+    }
+
+    const zoomContainer = document.querySelector('.zoom-container');
+    const zoomBackground = document.getElementById('zoom-background');
+    
+    zoomContainer.addEventListener('mousemove', function(e) {
+        const rect = this.getBoundingClientRect();
+        const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
+        const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
+
+        const zoomThreshold = 20;
+        if (xPercent > zoomThreshold && xPercent < (100 - zoomThreshold) && 
+            yPercent > zoomThreshold && yPercent < (100 - zoomThreshold)) {
+            zoomBackground.style.backgroundSize = '100%'; 
+            zoomBackground.style.backgroundPosition = 'center'; 
+        } else {
+            zoomBackground.style.backgroundSize = '200%'; 
+            zoomBackground.style.backgroundPosition = `${xPercent}% ${yPercent}%`;
+        }
+    });
+
+    zoomContainer.addEventListener('mouseleave', function() {
+        zoomBackground.style.backgroundSize = '100%';
+        zoomBackground.style.backgroundPosition = 'center';
+    });
+</script>

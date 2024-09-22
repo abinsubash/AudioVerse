@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product</title>
+    <link rel="stylesheet" href="/css/style.css">
+    
+    <!-- Include Cropper.js CSS and JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .form-group label {
+            font-weight: bold;
+        }
+
+        .variant-form {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+
+        .variant-form h5 {
+            margin-top: 0;
+        }
+
+        .btn {
+            margin-right: 10px;
+        }
+
+        .image-preview {
+            display: inline-block;
+            margin-right: 10px;
+            position: relative;
+        }
+
+        .image-preview img {
+            max-width: 100px;
+            max-height: 100px;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            padding: 2px 5px;
+        }
+
+        .image-field {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h3 class="page-title">Edit Product</h3>
+        <form id="editProductForm" action="/admin/updateProduct/<%= product._id %>" method="POST" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="productName">Product Name</label>
+                        <input type="text" class="form-control" id="productName" name="productName" value="<%= product.productName %>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="brandName">Brand Name</label>
+                        <select class="form-control" id="brandName" name="brandName" required>
+                            <% brands.forEach((brand) => { %>
+                                <option value="<%= brand._id %>" <%= brand._id.equals(product.productBrand) ? 'selected' : '' %>>
+                                    <%= brand.brandName %>
+                                </option>
+                            <% }) %>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="categoryName">Category Name</label>
+                        <select class="form-control" id="categoryName" name="categoryName" required>
+                            <% categories.forEach((category) => { %>
+                                <option value="<%= category._id %>" <%= category._id.equals(product.category) ? 'selected' : '' %>>
+                                    <%= category.categoryName %>
+                                </option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required><%= product.description %></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success">Update Product</button>
+                <a href="/admin/product" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
