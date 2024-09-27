@@ -6,7 +6,8 @@ const categoryController = require('../controller/admin/categoryController')
 const upload = require('../config/multer');
 const brandController = require('../controller/admin/brandController');
 const productController = require('../controller/admin/productController')
-const adminAuth = require('../middleware/adminAuth')
+const adminAuth = require('../middleware/adminAuth');
+const  orderController = require('../controller/admin/orderController');
 
 
 adminRoutes.get('/',adminController.login);
@@ -44,5 +45,14 @@ adminRoutes.post('/updateProduct/:id', adminAuth.isLogged,upload.any(), productC
 adminRoutes.get('/editVariant',adminAuth.isLogged, productController.editVariant);
 adminRoutes.post('/updateVariant',adminAuth.isLogged,upload.any(), productController.updateVariant);
 adminRoutes.post('/deleteProduct/:id',adminAuth.isLogged,productController.isDeleted)
-adminRoutes.post('/addVariant/:id')
+// adminRoutes.post('/addVariant/:id')
+adminRoutes.get('/orders',adminAuth.isLogged,orderController.orderDetails);
+adminRoutes.patch("/orderApproval",adminAuth.isLogged,orderController.orderApproval);
+adminRoutes.patch("/orderStatusEdit",adminAuth.isLogged,orderController.orderStatusEdit);
+
+
+// -------------- search----------------
+
+
+
 module.exports = adminRoutes;

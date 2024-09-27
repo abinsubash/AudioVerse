@@ -1,108 +1,247 @@
 <%- include('../layout/header') -%>
+	<%- include('../layout/navbar') -%>
 
-  <body class="goto-here">
-    <%- include('../layout/navbar) -%>
-
-    <div class="hero-wrap hero-bread" style="background-image: url('images/bg_6.jpg');">
-      <div class="container">
-        <div class="row no-gutters slider-text align-items-center justify-content-center">
-          <div class="col-md-9 ftco-animate text-center">
-          	<p class="breadcrumbs"><span class="mr-2"><a href="index.html">Home</a></span> <span>Cart</span></p>
-            <h1 class="mb-0 bread">My Cart</h1>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <section class="ftco-section ftco-cart">
+		<!-- END nav -->
+		<div class="hero-wrap hero-bread" style="background-image: url('images/bg_6.jpg');">
+			<div class="container">
+				<div class="row no-gutters slider-text align-items-center justify-content-center">
+					<div class="col-md-9 ftco-animate text-center">
+						<p class="breadcrumbs"><span class="mr-2"><a href="index.html">Home</a></span> <span>Cart</span>
+						</p>
+						<h1 class="mb-0 bread">My Cart</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<section class="ftco-section ftco-cart">
 			<div class="container">
 				<div class="row">
-    			<div class="col-md-12 ftco-animate">
-    				<div class="cart-list">
-	    				<table class="table">
-						    <thead class="thead-primary">
-						      <tr class="text-center">
-						        <th>&nbsp;</th>
-						        <th>&nbsp;</th>
-						        <th>Product</th>
-						        <th>Price</th>
-						        <th>Quantity</th>
-						        <th>Total</th>
-						      </tr>
-						    </thead>
-						    <tbody>
-						      <tr class="text-center">
-						        <td class="product-remove"><a href="#"><span class="ion-ios-close"></span></a></td>
-						        
-						        <td class="image-prod"><div class="img" style="background-image:url(images/product-3.jpg);"></div></td>
-						        
-						        <td class="product-name">
-						        	<h3>Young Woman Wearing Dress</h3>
-						        	<p>Far far away, behind the word mountains, far from the countries</p>
-						        </td>
-						        
-						        <td class="price">$4.90</td>
-						        
-						        <td class="quantity">
-						        	<div class="input-group mb-3">
-					             	<input type="text" name="quantity" class="quantity form-control input-number" value="1" min="1" max="100">
-					          	</div>
-					          </td>
-						        
-						        <td class="total">$4.90</td>
-						      </tr><!-- END TR-->
-
-						      <tr class="text-center">
-						        <td class="product-remove"><a href="#"><span class="ion-ios-close"></span></a></td>
-						        
-						        <td class="image-prod"><div class="img" style="background-image:url(images/product-4.jpg);"></div></td>
-						        
-						        <td class="product-name">
-						        	<h3>Young Woman Wearing Dress</h3>
-						        	<p>Far far away, behind the word mountains, far from the countries</p>
-						        </td>
-						        
-						        <td class="price">$15.70</td>
-						        
-						        <td class="quantity">
-						        	<div class="input-group mb-3">
-					             	<input type="text" name="quantity" class="quantity form-control input-number" value="1" min="1" max="100">
-					          	</div>
-					          </td>
-						        
-						        <td class="total">$15.70</td>
-						      </tr><!-- END TR-->
-						    </tbody>
-						  </table>
-					  </div>
-    			</div>
-    		</div>
-    		<div class="row justify-content-center">
-    			<div class="col col-lg-5 col-md-6 mt-5 cart-wrap ftco-animate">
-    				<div class="cart-total mb-3">
-    					<h3>Cart Totals</h3>
-    					<p class="d-flex">
-    						<span>Subtotal</span>
-    						<span>$20.60</span>
-    					</p>
-    					<p class="d-flex">
-    						<span>Delivery</span>
-    						<span>$0.00</span>
-    					</p>
-    					<p class="d-flex">
-    						<span>Discount</span>
-    						<span>$3.00</span>
-    					</p>
-    					<hr>
-    					<p class="d-flex total-price">
-    						<span>Total</span>
-    						<span>$17.60</span>
-    					</p>
-    				</div>
-    				<p class="text-center"><a href="checkout.html" class="btn btn-primary py-3 px-4">Proceed to Checkout</a></p>
-    			</div>
-    		</div>
+					<div class="col-md-12 ftco-animate">
+						<div class="cart-list">
+							<table class="table">
+								<thead class="thead-primary">
+									<tr class="text-center">
+										<th>&nbsp;</th>
+										<th>Product</th>
+										<th>Color</th>
+										<th>Price</th>
+										<th>Quantity</th>
+										<th>Total</th>
+										<th>Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									<% if (cartProducts && cartProducts.items.length > 0) { %>
+										<% cartProducts.items.forEach(item => { %>
+											<tr class="text-center">
+												<td class="image-prod">
+													<div class="img" style="background-image:url(<%= item.variantId ? item.variantId.images[0] : '/images/default.jpg' %>);"></div>
+												</td>
+												<td class="product-name">
+													<h3><%= item.ProductId ? item.ProductId.productName : 'Product not available' %></h3>
+												</td>
+												<td class="color">
+													<%= item.variantId ? item.variantId.color : 'Color not available' %>
+												</td>
+												<td class="price">
+													$<%= item.variantId ? item.variantId.price.toFixed(2) : '0.00' %>
+												</td>
+												<td class="quantity">
+													<div class="input-group mb-3 quantity-wrapper">
+														<button class="btn btn-outline-secondary btn-quantity" type="button" onclick="updateQuantity('<%= item._id %>', -1)">-</button>
+														<input type="text" name="quantity" class="form-control input-number" value="<%= item.quantity %>" min="1" max="5" readonly data-id="<%= item._id %>">
+														<button class="btn btn-outline-secondary btn-quantity" type="button" onclick="updateQuantity('<%= item._id %>', 1)">+</button>
+													</div>
+												</td>
+												<td class="total">
+													$<%= item.ProductId && item.variantId ? (item.variantId.price * item.quantity).toFixed(2) : '0.00' %>
+												</td>
+												<td>
+													<button class="delete-btn" onclick="deleteItem('<%= item._id %>')" title="Delete">
+														<span class="delete-icon">&#10006;</span>
+													</button>
+												</td>
+											</tr>
+										<% }) %>
+									<% } else { %>
+										<tr>
+											<td colspan="7" class="text-center">
+												<p>Your cart is empty.</p>
+											</td>
+										</tr>
+									<% } %>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+		
+				<div class="row justify-content-center">
+					<div class="col col-lg-5 col-md-6 mt-5 cart-wrap ftco-animate">
+						<div class="cart-total mb-3">
+							<h3>Cart Totals</h3>
+							<p class="d-flex">
+								<span>Subtotal</span>
+								<span>
+									<%= cartProducts ? cartProducts.totalPrice.toFixed(2) : '0.00' %>
+								</span>
+							</p>
+							<p class="d-flex">
+								<span>Delivery Charge</span>
+								<span>$0.00</span>
+							</p>
+							<p class="d-flex">
+								<span>Discount</span>
+								<span>$3.00</span>
+							</p>
+							<hr>
+							<p class="d-flex total-price">
+								<span>Total</span>
+								<span>
+									<%= cartProducts ? cartProducts.totalPrice.toFixed(2) : '0.00' %>
+								</span>
+							</p>
+						</div>
+						<p class="text-center">
+							<button id="toCheckout" type="button" class="btn btn-primary py-3 px-4">
+								Proceed to Checkout
+							</button>
+						</p>
+					</div>
+				</div>
 			</div>
 		</section>
+		<%- include('../layout/footer') -%>
+			<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+			<script>
 
-        <%- include('../layout/footer') -%>
+				let debounceTimeout;
+
+				function updateQuantity(itemId, change) {
+					const inputField = document.querySelector(`input[name="quantity"][data-id="${itemId}"]`);
+					let currentQuantity = parseInt(inputField.value);
+
+					if (change === 1 && currentQuantity < 8) {
+						currentQuantity++;
+					} else if (change === -1 && currentQuantity > 1) {
+						currentQuantity--;
+					} else if (change === 1 && currentQuantity >= 8) {
+						Toastify({
+							text: "Maximum quantity of 8 reached",
+							backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+							duration: 5000
+						}).showToast();
+						return;
+					}
+
+					inputField.value = currentQuantity;
+
+					clearTimeout(debounceTimeout);
+
+					debounceTimeout = setTimeout(() => {
+						fetch(`/updateCart/${itemId}`, {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify({ quantity: currentQuantity })
+						})
+							.then(response => response.json())
+							.then(data => {
+								if (!data.success) {
+									Toastify({
+										text: data.message,
+										backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+										duration: 5000
+									}).showToast();
+
+								} else {
+									window.location.reload()
+								}
+
+							})
+							.catch(error => console.error('Error', error));
+					}, 300);
+				}
+
+
+
+				function deleteItem(itemId) {
+					console.log(itemId)
+					fetch(`/cartDelete/${itemId}`, {
+						method: "delete",
+						headers: {
+							'content-type': 'application/json'
+						},
+						body: JSON.stringify({
+							itemId
+						})
+					})
+						.then(response => response.json())
+						.then(data => {
+							if (data.success);
+							Toastify({
+								text: data.message,
+								backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+								duration: 5000
+							}).showToast();
+							window.location.reload()
+						})
+				}
+			// async function toCheckout(){
+			// 		console.log("hi");
+			// 		const response = await fetch('/checkout', {
+			// 				method: "GET",
+			// 				headers: {
+			// 					"Content-Type": "application/json"
+			// 				},
+			// 			});
+			// 			const data =JSON.parse( response)
+			// 		console.log("hi",data)
+			// 	}
+				 // Function to handle the checkout process
+    async function proceedToCheckout() {
+        try {
+            const response = await fetch('/toCheckout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                // If you need to send any data in the body, add it here
+                // Example: body: JSON.stringify({ additionalData: value })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Redirect to the checkout page if stock is available
+                window.location.href = '/checkout';  // Adjust this based on your routing
+            } else {
+                // Show the error message using Toastify (when stock is not available)
+                Toastify({
+                    text: result.message,
+                    duration: 3000, // Duration in milliseconds
+                    gravity: "top", // `top` or `bottom`
+                    position: 'right', // `left`, `center`, `right`
+                    backgroundColor: "red",
+                    stopOnFocus: true,
+                }).showToast();
+            }
+        } catch (error) {
+            console.error("Error during checkout fetch:", error);
+            Toastify({
+                text: 'An error occurred during checkout. Please try again.',
+                duration: 3000,
+                gravity: "top",
+                position: 'right',
+                backgroundColor: "red",
+                stopOnFocus: true,
+            }).showToast();
+        }
+    }
+
+    // Attach the event listener to the button
+    document.getElementById('toCheckout').addEventListener('click', proceedToCheckout);
+
+			</script>

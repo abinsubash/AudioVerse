@@ -3,6 +3,8 @@ const passport = require("passport");
 const userController = require("../controller/user/userController");
 const userAuth = require("../middleware/userAuth");
 const User = require("../model/userModel");
+const cartController = require('../controller/user/cartController');
+const checkoutController = require("../controller/user/checkoutController");
 const userRoutes = express.Router();
 
 userRoutes.get("/auth/google",passport.authenticate("google", { scope: ["profile", "email"] }));
@@ -13,11 +15,15 @@ userRoutes.get("/login", userAuth.isLogout, userController.login);
 userRoutes.post("/login", userController.loginValidation);
 userRoutes.post("/otp", userController.otpVerification);
 userRoutes.get("/otp", userAuth.isLogout, userController.getOtp);
+userRoutes.get("/resendOtp", userController.resendOTP);
 userRoutes.get("/signup", userAuth.isLogout, userController.signup);
 userRoutes.post("/signup", userController.signupValidation);
+
+//home
 userRoutes.get("/", userAuth.isBlocked, userController.homePage);
 userRoutes.get("/logout", userController.logout);
-userRoutes.get("/resendOtp", userController.resendOTP);
+
+//Forget Password
 userRoutes.get('/forgetPassword',userController.forgetPassowrd);
 userRoutes.post('/confirmEmail',userController.confirmEmail);
 userRoutes.get('/reset-password',userController.resetPassword);
@@ -26,7 +32,6 @@ userRoutes.post('/confirmPassword',userController.confirmPassword)
 // Todo :product page 
 userRoutes.get("/shop", userAuth.isBlocked, userController.shop);
 userRoutes.get("/singleProduct", userController.singleProduct);
-userRoutes.get("/variants", userController.findVarint);
 
 // Todo :Profile
 userRoutes.get("/profile", userAuth.isLogin,userController.profile);
@@ -37,29 +42,33 @@ userRoutes.post("/changePassword",userAuth.isLogin,userController.changePassword
 //Todo :404 
 userRoutes.get('/404',userController.error404)
 
+//Tod : cart 
+userRoutes.get("/cart",userAuth.isLogin,cartController.cart);
+userRoutes.post("/updateCart/:Id",userAuth.isLogin,cartController.updateCart);
+userRoutes.post("/addtoCart",userAuth.isLogin,cartController.addToCart);
+userRoutes.delete('/cartDelete/:Id',userAuth.isLogin,cartController.cartDelete);
 
 
+//Todo: Address
+userRoutes.get('/address',userAuth.isLogin,userController.address)
+userRoutes.post('/addAddress',userAuth.isLogin,userController.addAddress)
+userRoutes.put("/editAddress",userAuth.isLogin,userController.editAddress)
+userRoutes.delete('/deleteAddress',userAuth.isLogin,userController.deleteAddress)
 
-userRoutes.get("/cart", userAuth.isBlocked, (req, res) => {
-  res.render("users/cart", { user: req.session.userExist });
-});
-userRoutes.get("/product", userAuth.isBlocked, (req, res) => {
-  res.render("users/product", { user: req.session.userExist });
-});
+userRoutes.post('/toCheckout',checkoutController.toCheckout)
+userRoutes.get("/checkout",userAuth.isLogin,checkoutController.checkoutPge);
+userRoutes.post("/order",userAuth.isLogin,checkoutController.orderTest)
 
-userRoutes.get("/cart", userAuth.isBlocked, (req, res) => {
-  res.render("users/cart", { user: req.session.userExist });
-});
+//Todo: Orders
+userRoutes.get("/orderDetails",userAuth.isLogin,checkoutController.orderDetails)
+userRoutes.post("/orderCancellation", userAuth.isLogin, checkoutController.orderCancellation);
 
 userRoutes.get("/contact", userAuth.isBlocked, (req, res) => {
   res.render("users/contact", { user: req.session.userExist });
 });
-userRoutes.get("/checkout", userAuth.isBlocked, (req, res) => {
-  res.render("users/checkout", { user: req.session.userExist });
-});
 
-userRoutes.get("/profile", userAuth.isBlocked, (req, res) => {
-  res.render("users/profile", { user: req.session.userExist });
-});
+// userRoutes.get("/profile", userAuth.isBlocked, (req, res) => {
+//   res.render("users/profile", { user: req.session.userExist });
+// });
 
 module.exports = userRoutes;

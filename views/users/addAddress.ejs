@@ -1,0 +1,393 @@
+<%- include('../layout/profileHeader') -%>
+    <!-- Centered Add Address Section -->
+    <div class="col-lg-8">
+        <div class="add-address-section">
+            <h1 class="address-header">Addresses</h1>
+            <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#addAddressModal">Add
+                Address</button>
+
+            <!-- Current Addresses Display -->
+            <div id="currentAddresses">
+                <h5>Your Addresses:</h5>
+                <div id="addressList">
+                    <% if (address && address.addresses.length> 0) { %>
+                        <% address.addresses.forEach(function(addr) { %>
+                            <div class="address-item">
+                                <p><strong>Name:</strong>
+                                    <%= addr.name %>
+                                </p>
+                                <p><strong>Street Address:</strong>
+                                    <%= addr.streetAddress %>
+                                </p>
+                                <p><strong>City:</strong>
+                                    <%= addr.city %>
+                                </p>
+                                <p><strong>District:</strong>
+                                    <%= addr.district %>
+                                </p>
+                                <p><strong>Pincode:</strong>
+                                    <%= addr.pincode %>
+                                </p>
+                                <p><strong>Phone Number:</strong>
+                                    <%= addr.phoneNo %>
+                                </p>
+
+                                <!-- Edit and Delete Buttons -->
+                                <button class="btn btn-primary btn-sm"
+                                    onclick="showEditModal('<%= addr._id %>', '<%= addr.name %>', '<%= addr.streetAddress %>', '<%= addr.city %>', '<%= addr.district %>', '<%= addr.pincode %>', '<%= addr.phoneNo %>')">
+                                    Edit
+                                </button>
+
+
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="deleteAddress('<%= addr._id %>')">Delete</button>
+                            </div>
+                            <hr> <!-- Separator between addresses -->
+                            <% }) %>
+                                <% } else { %>
+                                    <p class="text-muted">No addresses available.</p>
+                                    <% } %>
+                </div>
+            </div>
+            <!-- Add Address Modal -->
+            <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addAddressModalLabel">Add New Address</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addAddressForm">
+                                <div class="form-group">
+                                    <label for="name">Name</label>
+                                    <input type="text" class="form-control" id="name">
+                                    <small id="nameError" class="error" style="color: red;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="streetAddress">Street Address</label>
+                                    <input type="text" class="form-control" id="streetAddress">
+                                    <small id="streetError" class="error" style="color: red;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="city">City</label>
+                                    <input type="text" class="form-control" id="city">
+                                    <small id="cityError" class="error" style="color: red;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="district">District</label>
+                                    <input type="text" class="form-control" id="district">
+                                    <small id="districtError" class="error" style="color: red;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pincode">Pincode</label>
+                                    <input type="number" class="form-control" id="pincode">
+                                    <small id="pincodeError" class="error" style="color: red;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phoneNo">Phone Number</label>
+                                    <input type="text" class="form-control" id="phoneNo">
+                                    <small id="phoneError" class="error" style="color: red;"></small>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Address</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Edit Address Modal -->
+            <div class="modal fade" id="editAddressModal" tabindex="-1" aria-labelledby="editAddressModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editAddressModalLabel">Edit Address</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editAddressForm">
+                                <input type="hidden" id="editAddressId"> <!-- Hidden field for address ID -->
+                                <div class="form-group">
+                                    <label for="editName">Name</label>
+                                    <input type="text" class="form-control" id="editName">
+                                    <small id="editNameError" class="error" style="color: red;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editStreetAddress">Street Address</label>
+                                    <input type="text" class="form-control" id="editStreetAddress">
+                                    <small id="editStreetError" class="error" style="color: red;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editCity">City</label>
+                                    <input type="text" class="form-control" id="editCity">
+                                    <small id="editCityError" class="error" style="color: red;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editDistrict">District</label>
+                                    <input type="text" class="form-control" id="editDistrict">
+                                    <small id="editDistrictError" class="error" style="color: red;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editPincode">Pincode</label>
+                                    <input type="number" class="form-control" id="editPincode">
+                                    <small id="editPincodeError" class="error" style="color: red;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editPhoneNo">Phone Number</label>
+                                    <input type="text" class="form-control" id="editPhoneNo">
+                                    <small id="editPhoneError" class="error" style="color: red;"></small>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    </div>
+    </div>
+    </section>
+
+    <!-- Bootstrap and jQuery scripts -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <script>
+        document.getElementById('addAddressForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            // Clear previous error messages
+            document.querySelectorAll('.error').forEach(e => e.textContent = '');
+
+            // Get input values
+            const name = document.getElementById('name').value.trim();
+            const streetAddress = document.getElementById('streetAddress').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const district = document.getElementById('district').value.trim();
+            const pincode = document.getElementById('pincode').value.trim();
+            const phoneNo = document.getElementById('phoneNo').value.trim();
+
+            // Validate fields with regex and basic checks
+            let isValid = true;
+
+            if (name === "") {
+                document.getElementById('nameError').textContent = "Name is required.";
+                isValid = false;
+            }
+
+            if (streetAddress === "") {
+                document.getElementById('streetError').textContent = "Street Address is required.";
+                isValid = false;
+            }
+
+            if (city === "") {
+                document.getElementById('cityError').textContent = "City is required.";
+                isValid = false;
+            }
+
+            if (district === "") {
+                document.getElementById('districtError').textContent = "District is required.";
+                isValid = false;
+            }
+
+            const pincodePattern = /^[1-9][0-9]{5}$/;
+            if (!pincodePattern.test(pincode)) {
+                document.getElementById('pincodeError').textContent = "Please enter a valid 6-digit pincode.";
+                isValid = false;
+            }
+
+            const phonePattern = /^[0-9]{10}$/;
+            if (!phonePattern.test(phoneNo)) {
+                document.getElementById('phoneError').textContent = "Please enter a valid 10-digit phone number.";
+                isValid = false;
+            }
+
+            if (isValid) {
+                fetch("/addAddress", {
+                    method: "post",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        name,
+                        streetAddress,
+                        city,
+                        district,
+                        pincode,
+                        phoneNo
+                    })
+                })
+                    .then(responce => responce.json())
+                    .then(data => {
+                        if (data.success) {
+                            Toastify({
+                                text: data.message,
+                                backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                                duration: 5000
+                            }).showToast();
+                        }
+                    })
+                $('#addAddressModal').modal('hide');
+                setTimeout(() => {  
+                    window.location.reload()
+                }, 2000);
+            }
+
+        });
+        function showEditModal(addressId, name, streetAddress, city, district, pincode, phoneNo) {
+            // Set the address ID in the hidden input
+            document.getElementById('editAddressId').value = addressId;
+
+            // Populate the modal fields with existing address data
+            document.getElementById('editName').value = name;
+            document.getElementById('editStreetAddress').value = streetAddress;
+            document.getElementById('editCity').value = city;
+            document.getElementById('editDistrict').value = district;
+            document.getElementById('editPincode').value = pincode;
+            document.getElementById('editPhoneNo').value = phoneNo;
+
+            document.getElementById('editAddressForm').addEventListener('submit', function (event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                const addressId = document.getElementById('editAddressId').value.trim();
+                const name = document.getElementById('editName').value.trim();
+                const streetAddress = document.getElementById('editStreetAddress').value.trim();
+                const city = document.getElementById('editCity').value.trim();
+                const district = document.getElementById('editDistrict').value.trim();
+                const pincode = document.getElementById('editPincode').value.trim();
+                const phoneNo = document.getElementById('editPhoneNo').value.trim();
+
+                // Regex patterns
+                const pincodePattern = /^[1-9][0-9]{5}$/;
+                const phonePattern = /^[0-9]{10}$/;
+
+                // Validation flags
+                let isValid = true;
+
+                // Clear previous error messages
+                document.getElementById('editNameError').textContent = "";
+                document.getElementById('editStreetError').textContent = "";
+                document.getElementById('editCityError').textContent = "";
+                document.getElementById('editDistrictError').textContent = "";
+                document.getElementById('editPincodeError').textContent = "";
+                document.getElementById('editPhoneError').textContent = "";
+
+                // Validate fields
+                if (name === "") {
+                    document.getElementById('editNameError').textContent = "Name is required.";
+                    isValid = false;
+                }
+
+                if (streetAddress === "") {
+                    document.getElementById('editStreetError').textContent = "Street Address is required.";
+                    isValid = false;
+                }
+
+                if (city === "") {
+                    document.getElementById('editCityError').textContent = "City is required.";
+                    isValid = false;
+                }
+
+                if (district === "") {
+                    document.getElementById('editDistrictError').textContent = "District is required.";
+                    isValid = false;
+                }
+
+                // Validate Pincode
+                if (!pincodePattern.test(pincode)) {
+                    document.getElementById('editPincodeError').textContent = "Please enter a valid 6-digit pincode.";
+                    isValid = false;
+                }
+
+                // Validate Phone Number
+                if (!phonePattern.test(phoneNo)) {
+                    document.getElementById('editPhoneError').textContent = "Please enter a valid 10-digit phone number.";
+                    isValid = false;
+                }
+
+                // If validation passes, send the data to the server
+                if (isValid) {
+                    const data = {
+                        addressId,
+                        name,
+                        streetAddress,
+                        city,
+                        district,
+                        pincode,
+                        phoneNo
+                    };
+
+                    fetch('/editAddress', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+
+                                $('#editAddressModal').modal('hide');
+                                Toastify({
+                                    text: data.message,
+                                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                                    duration: 5000
+                                }).showToast();
+                                setTimeout(() => {
+                                    window.location.reload()
+                                }, 2000);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                }
+            });
+
+            // Show the modal
+            $('#editAddressModal').modal('show');
+        }
+        function deleteAddress(addressId) {
+            fetch('/deleteAddress', {
+                method: "DELETE",
+                headers: {
+                    "content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    addressId
+                })
+            })
+                .then(responce => responce.json())
+                .then(data => {
+                    if (data.success) {
+                        Toastify({
+                            text: data.message,
+                            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                            duration: 5000
+                        }).showToast();
+                        setTimeout(() => {
+                            window.location.reload()
+                        }, 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+    </body>
+
+    </html>

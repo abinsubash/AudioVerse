@@ -1,156 +1,333 @@
 <%- include('../layout/header') -%>
-
-<body class="goto-here">
-    <%- include('../layout/userNavbar') -%>
-
-<section class="ftco-section">
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-xl-8 ftco-animate">
-                      <form action="#" class="billing-form">
-                          <h3 class="mb-4 billing-heading">Billing Details</h3>
-                <div class="row align-items-end">
-                    <div class="col-md-6">
-                  <div class="form-group">
-                      <label for="firstname">Firt Name</label>
-                    <input type="text" class="form-control" placeholder="">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                      <label for="lastname">Last Name</label>
-                    <input type="text" class="form-control" placeholder="">
-                  </div>
-              </div>
-              <div class="w-100"></div>
-                  <div class="col-md-12">
-                      <div class="form-group">
-                          <label for="country">State / Country</label>
-                          <div class="select-wrap">
-                        <div class="icon"><span class="ion-ios-arrow-down"></span></div>
-                        <select name="" id="" class="form-control">
-                            <option value="">France</option>
-                          <option value="">Italy</option>
-                          <option value="">Philippines</option>
-                          <option value="">South Korea</option>
-                          <option value="">Hongkong</option>
-                          <option value="">Japan</option>
-                        </select>
-                      </div>
-                      </div>
-                  </div>
-                  <div class="w-100"></div>
-                  <div class="col-md-6">
-                      <div class="form-group">
-                      <label for="streetaddress">Street Address</label>
-                    <input type="text" class="form-control" placeholder="House number and street name">
-                  </div>
-                  </div>
-                  <div class="col-md-6">
-                      <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Appartment, suite, unit etc: (optional)">
-                  </div>
-                  </div>
-                  <div class="w-100"></div>
-                  <div class="col-md-6">
-                      <div class="form-group">
-                      <label for="towncity">Town / City</label>
-                    <input type="text" class="form-control" placeholder="">
-                  </div>
-                  </div>
-                  <div class="col-md-6">
-                      <div class="form-group">
-                          <label for="postcodezip">Postcode / ZIP *</label>
-                    <input type="text" class="form-control" placeholder="">
-                  </div>
-                  </div>
-                  <div class="w-100"></div>
-                  <div class="col-md-6">
-                  <div class="form-group">
-                      <label for="phone">Phone</label>
-                    <input type="text" class="form-control" placeholder="">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-group">
-                      <label for="emailaddress">Email Address</label>
-                    <input type="text" class="form-control" placeholder="">
-                  </div>
-              </div>
-              <div class="w-100"></div>
-              <div class="col-md-12">
-                  <div class="form-group mt-4">
-                                      <div class="radio">
-                                        <label class="mr-3"><input type="radio" name="optradio"> Create an Account? </label>
-                                        <label><input type="radio" name="optradio"> Ship to different address</label>
-                                      </div>
-                                  </div>
-              </div>
-              </div>
-            </form><!-- END -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
 
-
-            <div class="row mt-5 pt-3 d-flex">
-                <div class="col-md-6 d-flex">
-                    <div class="cart-detail cart-total bg-light p-3 p-md-4">
-                        <h3 class="billing-heading mb-4">Cart Total</h3>
-                        <p class="d-flex">
-                                  <span>Subtotal</span>
-                                  <span>$20.60</span>
-                              </p>
-                              <p class="d-flex">
-                                  <span>Delivery</span>
-                                  <span>$0.00</span>
-                              </p>
-                              <p class="d-flex">
-                                  <span>Discount</span>
-                                  <span>$3.00</span>
-                              </p>
-                              <hr>
-                              <p class="d-flex total-price">
-                                  <span>Total</span>
-                                  <span>$17.60</span>
-                              </p>
-                              </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="cart-detail bg-light p-3 p-md-4">
-                        <h3 class="billing-heading mb-4">Payment Method</h3>
-                                  <div class="form-group">
-                                      <div class="col-md-12">
-                                          <div class="radio">
-                                             <label><input type="radio" name="optradio" class="mr-2"> Direct Bank Tranfer</label>
-                                          </div>
-                                      </div>
-                                  </div>
-                                  <div class="form-group">
-                                      <div class="col-md-12">
-                                          <div class="radio">
-                                             <label><input type="radio" name="optradio" class="mr-2"> Check Payment</label>
-                                          </div>
-                                      </div>
-                                  </div>
-                                  <div class="form-group">
-                                      <div class="col-md-12">
-                                          <div class="radio">
-                                             <label><input type="radio" name="optradio" class="mr-2"> Paypal</label>
-                                          </div>
-                                      </div>
-                                  </div>
-                                  <div class="form-group">
-                                      <div class="col-md-12">
-                                          <div class="checkbox">
-                                             <label><input type="checkbox" value="" class="mr-2"> I have read and accept the terms and conditions</label>
-                                          </div>
-                                      </div>
-                                  </div>
-                                  <p><a href="#"class="btn btn-primary py-3 px-4">Place an order</a></p>
-                              </div>
-                </div>
-            </div>
-        </div> <!-- .col-md-8 -->
+  <body class="goto-here">
+    <%- include('../layout/navbar') -%>
+      <div class="address-buttons">
+        <button id="addAddressBtn" onclick="showForm(false)">Add New Address</button>
+        <button id="selectAddressBtn" onclick="showForm(true)">Select Address</button>
       </div>
-    </div>
-  </section> <!-- .section -->
-  <%- include('../layout/footer') -%>
+      <section class="ftco-section">
+        <div class="container">
+          <div class="row justify-content-center">
+            <div class="col-xl-8 ftco-animate">
+              <div id="addressFormContainer" class="form-container">
+                <form id="addressForm">
+                  <div class="form-groupone">
+                    <label for="storedAddresses">Select Stored Address</label>
+                    <select id="storedAddresses" onchange="populateAddress(this)">
+                      <option value="">-- Select an Address --</option>
+                      <% address.addresses.forEach(details=> { %>
+                        <option value="1" data-name="<%= details.name %>" data-street="<%=details.streetAddress %>"
+                          data-city="<%=details.city %>" data-district="<%=details.district %>"
+                          data-pincode="<%=details.pincode %>" data-phone="<%=details.phoneNo %>">
+                          <%=details.name%>,<%=details.streetAddress %>
+                        </option>
+                        <% })%>
+                          <!-- More dynamically generated options can go here -->
+                    </select>
+                  </div>
+
+                  <!-- Address Form Fields -->
+                  <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" class="form-control" id="name">
+                    <small id="nameError" class="error"></small>
+                  </div>
+                  <div class="form-group">
+                    <label for="streetAddress">Street Address</label>
+                    <input type="text" class="form-control" id="streetAddress">
+                    <small id="streetError" class="error"></small>
+                  </div>
+                  <div class="form-group">
+                    <label for="city">City</label>
+                    <input type="text" class="form-control" id="city">
+                    <small id="cityError" class="error"></small>
+                  </div>
+                  <div class="form-group">
+                    <label for="district">District</label>
+                    <input type="text" class="form-control" id="district">
+                    <small id="districtError" class="error"></small>
+                  </div>
+                  <div class="form-group">
+                    <label for="pincode">Pincode</label>
+                    <input type="number" class="form-control" id="pincode">
+                    <small id="pincodeError" class="error"></small>
+                  </div>
+                  <div class="form-group">
+                    <label for="phoneNo">Phone Number</label>
+                    <input type="text" class="form-control" id="phoneNo">
+                    <small id="phoneError" class="error"></small>
+                  </div>
+                  <button id="addressSubmit" type="submit" class="btn btn-primary">Save Address</button>
+                </form>
+              </div>
+              <!-- Additional layout for cart total and payment method -->
+              <div class="row mt-5 pt-3 d-flex">
+                <div class="col-md-6 d-flex">
+                  <div class="cart-detail cart-total bg-light p-3 p-md-4">
+                    <h3 class="billing-heading mb-4">Cart Total</h3>
+                    <p class="d-flex">
+                      <span>Subtotal</span>
+                      <span>
+                        <%= cart.totalPrice%>
+                      </span>
+                    </p>
+                    <p class="d-flex">
+                      <span>Delivery</span>
+                      <span>$0.00</span>
+                    </p>
+                    <p class="d-flex">
+                      <span>Discount</span>
+                      <span>$0.00</span>
+                    </p>
+                    <hr>
+                    <p class="d-flex total-price">
+                      <span>Total</span>
+                      <span> <%= cart.totalPrice%></span>
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="cart-detail bg-light p-3 p-md-4">
+                    <h3 class="billing-heading mb-4">Payment Method</h3>
+                    <div class="form-group">
+                      <div class="col-md-12">
+                        <div class="radio">
+                          <label><input type="radio" value="Direct Bank Transfer" name="optradio" class="mr-2"> Direct
+                            Bank Transfer</label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="col-md-12">
+                        <div class="radio">
+                          <label><input type="radio" value="Cash On Delivery" name="optradio" class="mr-2"> Cash On
+                            Delivery</label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="col-md-12">
+                        <div class="radio">
+                          <label><input type="radio" value="RazerPay" name="optradio" class="mr-2"> RazerPay</label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="col-md-12">
+                        <div class="checkbox">
+                          <label><input type="checkbox" value="" class="mr-2"> I have read and accept the terms and
+                            conditions</label>
+                        </div>
+                      </div>
+                    </div>
+                    <p><a href="" class="btn btn-primary py-3 px-4" onclick="orderConfirm(event)">Place an order</a></p>
+                  </div>
+                </div>
+              </div>
+            </div> <!-- .col-md-8 -->
+          </div>
+        </div>
+      </section>
+
+      <%- include('../layout/footer') -%>
+        <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+        <script>
+          var addressData
+          const formInputs = document.querySelectorAll('.form-control');
+
+          function showForm(isSelectAddress) {
+            formInputs.forEach(input => {
+              input.removeAttribute('readonly');
+            });
+            clearForm();
+            const formContainer = document.getElementById('addressFormContainer');
+            const storedAddresses = document.getElementById('storedAddresses');
+            const submitButton = document.getElementById('addressSubmit');
+            formContainer.classList.add('active');
+
+            if (!isSelectAddress) {
+
+              storedAddresses.parentElement.style.display = 'none';
+              document.getElementById('addressForm').addEventListener('submit', (event) => {
+                event.preventDefault();
+                const name = document.getElementById('name').value.trim()
+                const streetAddress = document.getElementById('streetAddress').value.trim();
+                const city = document.getElementById('city').value.trim();
+                const district = document.getElementById('district').value.trim();
+                const pincode = document.getElementById('pincode').value.trim();
+                const phoneNo = document.getElementById('phoneNo').value.trim();
+                let isValid = true;
+
+                if (name === "") {
+                  document.getElementById('nameError').textContent = "Name is required.";
+                  isValid = false;
+                }
+
+                if (streetAddress === "") {
+                  document.getElementById('streetError').textContent = "Street Address is required.";
+                  isValid = false;
+                }
+
+                if (city === "") {
+                  document.getElementById('cityError').textContent = "City is required.";
+                  isValid = false;
+                }
+
+                if (district === "") {
+                  document.getElementById('districtError').textContent = "District is required.";
+                  isValid = false;
+                }
+
+                const pincodePattern = /^[1-9][0-9]{5}$/;
+                if (!pincodePattern.test(pincode)) {
+                  document.getElementById('pincodeError').textContent = "Please enter a valid 6-digit pincode.";
+                  isValid = false;
+                }
+
+                const phonePattern = /^[0-9]{10}$/;
+                if (!phonePattern.test(phoneNo)) {
+                  document.getElementById('phoneError').textContent = "Please enter a valid 10-digit phone number.";
+                  isValid = false;
+                }
+                console.log(isValid);
+                if (isValid) {
+                  fetch("/addAddress", {
+                    method: "post",
+                    headers: {
+                      "content-type": "application/json"
+                    },
+                    body: JSON.stringify({
+                      name,
+                      streetAddress,
+                      city,
+                      district,
+                      pincode,
+                      phoneNo
+                    })
+                  })
+                    .then(responce => responce.json())
+                    .then(data => {
+                      if (data.success) {
+                        Toastify({
+                          text: data.message,
+                          backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                          duration: 5000
+                        }).showToast();
+                      }
+                    })
+                  setTimeout(() => {
+                    window.location.reload()
+                  }, 2000);
+                }
+              })
+            } else {
+
+              storedAddresses.parentElement.style.display = 'block';
+              addressSubmit.style.display = 'none';
+
+              formInputs.forEach(input => {
+                input.setAttribute('readonly', 'true');
+
+              })
+            }
+          }
+
+          function populateAddress(select) {
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (selectedOption.value) {
+              document.getElementById('name').value = selectedOption.getAttribute('data-name');
+              document.getElementById('streetAddress').value = selectedOption.getAttribute('data-street');
+              document.getElementById('city').value = selectedOption.getAttribute('data-city');
+              document.getElementById('district').value = selectedOption.getAttribute('data-district');
+              document.getElementById('pincode').value = selectedOption.getAttribute('data-pincode');
+              document.getElementById('phoneNo').value = selectedOption.getAttribute('data-phone');
+
+              addressData = {
+                name: selectedOption.getAttribute('data-name'),
+                streetAddress: selectedOption.getAttribute('data-street'),
+                city: selectedOption.getAttribute('data-city'),
+                district: selectedOption.getAttribute('data-district'),
+                pincode: selectedOption.getAttribute('data-pincode'),
+                phoneNo: selectedOption.getAttribute('data-phone')
+              };
+            } else {
+              clearForm();
+            }
+          }
+
+         async function orderConfirm(event) {
+            event.preventDefault();
+            if(!addressData){
+            Toastify({
+                text: "please select address",
+                background: "linear-gradient(to right, #00b09b, #96c93d)",
+                duration: 5000
+              }).showToast();
+              return
+          }
+            const paymentMethodInput = document.querySelector('input[name="optradio"]:checked').value;
+            const termsAccepted = document.querySelector('input[type="checkbox"]').checked;
+
+            if (!termsAccepted) {
+              Toastify({
+                text: "Please accept the terms and conditions",
+                background: "linear-gradient(to right, #00b09b, #96c93d)",
+                duration: 5000
+              }).showToast();
+              return;
+            }
+            console.log(paymentMethodInput)
+            if (!paymentMethodInput) {
+              Toastify({
+                text: "Please select a payment method",
+                background: "linear-gradient(to right, #00b09b, #96c93d)",
+                duration: 5000
+              }).showToast();
+              return;
+            }
+            const responce = await fetch('/order', {
+              method: "POST",
+              headers: {
+                "content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                addressData,
+                paymentMethodInput
+              })
+            })
+            const data = await responce.json();
+            console.log(data);
+            if(data.success){
+              Swal.fire({
+                title: 'Updated!',
+                text: `Order status has been updated to ${status}.`,
+                icon: 'success',
+                confirmButtonText: 'View Orders',
+                showCancelButton: true,
+                cancelButtonText: 'Continue Shopping'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/orderDetails';
+                } else {
+                    window.location.href = '/shop'; 
+                }
+            });
+            }
+          }
+          // Function to clear the form
+          function clearForm() {
+            document.getElementById('name').value = '';
+            document.getElementById('streetAddress').value = '';
+            document.getElementById('city').value = '';
+            document.getElementById('district').value = '';
+            document.getElementById('pincode').value = '';
+            document.getElementById('phoneNo').value = '';
+          }
+        </script>

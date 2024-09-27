@@ -1,156 +1,212 @@
 <%- include('../layout/header') -%>
-<style>
-.color-circle {
-    width: 20px;        
-    height: 20px;     
-    border-radius: 50%; 
-    border: 1px solid #ccc; 
-    display: inline-block; 
-}
-</style>
-<body class="goto-here">
-      <%- include('../layout/navbar') -%>
+	<style>
+		.color-circle {
+			width: 20px;
+			height: 20px;
+			border-radius: 50%;
+			border: 1px solid #ccc;
+			display: inline-block;
+		}
+	</style>
 
-    <div class="hero-wrap hero-bread" style="background-image: url('/winkel/images/bg_6.jpg');">
-      <div class="container">
-        <div class="row no-gutters slider-text align-items-center justify-content-center">
-          <div class="col-md-9 ftco-animate text-center">
-          	<p class="breadcrumbs"><span class="mr-2"><a href="index.html">Home</a></span> <span>Products</span></p>
-            <h1 class="mb-0 bread">Collection Products</h1>
-          </div>
-        </div>
-      </div>
-    </div>
+	<body class="goto-here">
+		<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+			<div class="container">
+				<a class="navbar-brand" href="/">AudiVerse</a>
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav"
+					aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="oi oi-menu"></span> Menu
+				</button>
 
-    <section class="ftco-section bg-light">
-    	<div class="container">
-    		<div class="row">
-    			<div class="col-md-8 col-lg-10 order-md-last">
-    				<div class="row">
-						<% products.forEach(product => { %>
-							<div class="col-sm-6 col-md-6 col-lg-4 ftco-animate">
-							  <div class="product">
-								<!-- Product Image -->
-								<!-- Dynamically display the first variant image if available -->
-								<a href="/singleProduct/?variantColor=<%= product.variants[0].color %>&id=<%= product._id %>" class="img-prod">								<% if (product.variants.length > 0 && Array.isArray(product.variants[0].images)) { %>
-								<img class="img-fluid" src="<%= product.variants[0].images[0] %>" alt="Product Image">
-								  <% } else { %>
-									<img class="img-fluid" src="path/to/default-image.jpg" alt="No Image Available">
-								  <% } %>
-								  <!-- Discount percentage if available -->
-								  <span class="status"></span>
-								  <div class="overlay"></div>
-								</a>
-								
-								<div class="text py-3 px-3">
-								  <!-- Product Name -->
-								  <h3><a href="#"><%= product.productName %></a></h3>
-								  
-								  <div class="d-flex">
-									<div class="pricing">
-									  <!-- Product Pricing -->
-									  <p class="price">
-										<% if (product.variants.length > 0) { %>
-										  <span class="price-sale">$<%= product.variants[0].price %></span>
-										<% } else { %>
-										  <span class="price-sale">Price Not Available</span>
-										<% } %>
-										<% product.variants.forEach(variant => { %>
-											<a href="#">
-												<div class="color-circle" style="background-color:<%= variant.color %>"></div>
-											</a>
-										<% }); %>
-																				
-									</p>
-								</div>
-									
-									<div class="rating">
-									  <p class="text-right">
-										  <% for (let i = 0; i < 5; i++) { %>
-										  <% if (i < product.rating) { %>
-											<a href="#"><span class="ion-ios-star"></span></a>
-											<% } else { %>
-											<a href="#"><span class="ion-ios-star-outline"></span></a>
-											<% } %>
-											<% } %>
-									  </p>
-									  <p class="bottom-area d-flex px-3">
-										<a href="#" class="add-to-cart text-center py-2 mr-1"><span>Add to cart <i class="ion-ios-add ml-1"></i></span></a>
-										<a href="#" class="buy-now text-center py-2">Buy now<span><i class="ion-ios-cart ml-1"></i></span></a>
-									</p>
+				<div class="search-box-container">
+					<div class="search-box">
+						<input type="text" class="input-search" id="searchInput" placeholder="Type to Search...">
+						<button class="btn-search" id="searchButton"><i class="fas fa-search"></i></button>
+					</div>
+					<div id="searchResults"></div> <!-- This will hold the dynamic search results -->
+				</div>
+
+
+			</div>
+			<div class="collapse navbar-collapse" id="ftco-nav">
+				<ul class="navbar-nav ml-auto">
+					<li class="nav-item"><a href="/" class="nav-link">Home</a></li>
+					<li class="nav-item dropdown active">
+						<% if (user) { %>
+							<a class="nav-link dropdown-toggle" href="#" id="dropdown04" data-toggle="dropdown"
+								aria-haspopup="true" aria-expanded="false">
+								<%= user.name%>
+							</a>
+							<div class="dropdown-menu" aria-labelledby="dropdown04">
+								<a class="dropdown-item" href="/profile">Profile</a>
+								<a class="dropdown-item" href="/logout">Logout</a>
+							</div>
+							<% } else { %>
+								<a class="nav-link" href="/login">Login</a>
+								<% } %>
+
+					</li>
+					<li class="nav-item"><a href="/shop" class="nav-link">shop</a></li>
+					<li class="nav-item"><a href="/wishlist" class="nav-link">Wishlist</a></li>
+					<li class="nav-item"><a href="/contact" class="nav-link">Contact</a></li>
+					<li class="nav-item cta cta-colored"><a href="/cart" class="nav-link"><span
+								class="icon-shopping_cart"></span></a></li>
+				</ul>
+			</div>
+			</div>
+		</nav>
+
+		<div class="hero-wrap hero-bread" style="background-image: url('/winkel/images/bg_6.jpg');">
+			<div class="container">
+				<div class="row no-gutters slider-text align-items-center justify-content-center">
+					<div class="col-md-9 ftco-animate text-center">
+						<p class="breadcrumbs"><span class="mr-2"><a href="index.html">Home</a></span>
+							<span>Products</span></p>
+						<h1 class="mb-0 bread">Collection Products</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<section class="ftco-section bg-light">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-5 col-lg-9 order-md-last">
+						<div class="row" id="productList">
+							<% products.forEach(product=> { %>
+								<div class="col-sm-6 col-md-6 col-lg-4 ftco-animate product-card"
+									data-name="<%= product.productName.toLowerCase() %>">
+									<div class="product">
+										<a href="/singleProduct/?variantColor=<%= product.variants[0].color %>&id=<%= product._id %>"
+											class="img-prod">
+											<% if (product.variants.length> 0 &&
+												Array.isArray(product.variants[0].images)) { %>
+												<img class="img-fluid" src="<%= product.variants[0].images[0] %>"
+													alt="Product Image">
+												<% } else { %>
+													<img class="img-fluid" src="path/to/default-image.jpg"
+														alt="No Image Available">
+													<% } %>
+														<span class="status"></span>
+														<div class="overlay"></div>
+										</a>
+										<div class="text py-3 px-3">
+											<h3><a href="#">
+													<%= product.productName %>
+												</a></h3>
+											<div class="d-flex">
+												<div class="pricing">
+													<p class="price">
+														<% if (product.variants.length> 0) { %>
+															<span class="price-sale">$<%= product.variants[0].price %>
+																	</span>
+															<% } else { %>
+																<span class="price-sale">Price Not Available</span>
+																<% } %>
+													</p>
+												</div>
+												<div class="rating">
+													<p class="text-right">
+														<% for (let i=0; i < 5; i++) { %>
+															<% if (i < product.rating) { %>
+																<a href="#"><span class="ion-ios-star"></span></a>
+																<% } else { %>
+																	<a href="#"><span
+																			class="ion-ios-star-outline"></span></a>
+																	<% } %>
+																		<% } %>
+													</p>
+													<p class="bottom-area d-flex px-3">
+														<a href="#" class="add-to-cart text-center py-2 mr-1"><span>Add
+																to cart <i class="ion-ios-add ml-1"></i></span></a>
+													</p>
+												</div>
+											</div>
+										</div>
 									</div>
-								  </div>
+								</div>
+								<% }); %>
+						</div>
+						<div class="row mt-5">
+							<div class="col text-center">
+								<div class="block-27">
+									<ul>
+										<li><a href="#">&lt;</a></li>
+										<li class="active"><span>1</span></li>
+										<li><a href="#">2</a></li>
+										<li><a href="#">3</a></li>
+										<li><a href="#">4</a></li>
+										<li><a href="#">5</a></li>
+										<li><a href="#">&gt;</a></li>
+									</ul>
 								</div>
 							</div>
 						</div>
-						<% }); %>													
-						
-					  </div>					  
-		    		<div class="row mt-5">
-		          <div class="col text-center">
-		            <div class="block-27">
-		              <ul>
-		                <li><a href="#">&lt;</a></li>
-		                <li class="active"><span>1</span></li>
-		                <li><a href="#">2</a></li>
-		                <li><a href="#">3</a></li>
-		                <li><a href="#">4</a></li>
-		                <li><a href="#">5</a></li>
-		                <li><a href="#">&gt;</a></li>
-		              </ul>
-		            </div>
-		          </div>
-		        </div>
-		    	</div>
+					</div>
 
-		    	<div class="col-md-4 col-lg-2 sidebar">
-		    		<div class="sidebar-box-2">
-		    			<h2 class="heading mb-4"><a href="#">Categorys</a></h2>
-		    			<ul>
-		    				<li><a href="#">Shirts &amp; Tops</a></li>
-								<li><a href="#">Dresses</a></li>
-								<li><a href="#">Shorts &amp; Skirts</a></li>
-								<li><a href="#">Jackets</a></li>
-								<li><a href="#">Coats</a></li>
-								<li><a href="#">Sleeveless</a></li>
-								<li><a href="#">Trousers</a></li>
-								<li><a href="#">Winter Coats</a></li>
-								<li><a href="#">Jumpsuits</a></li>
-		    			</ul>
-		    		</div>
-		    		<div class="sidebar-box-2">
-		    			<h2 class="heading mb-4"><a href="#">Brands</a></h2>
-		    			<ul>
-		    				<li><a href="#">Shirts &amp; Tops</a></li>
-								<li><a href="#">Dresses</a></li>
-								<li><a href="#">Shorts &amp; Skirts</a></li>
-								<li><a href="#">Jackets</a></li>
-								<li><a href="#">Coats</a></li>
-								<li><a href="#">Jeans</a></li>
-								<li><a href="#">Sleeveless</a></li>
-								<li><a href="#">Trousers</a></li>
-								<li><a href="#">Winter Coats</a></li>
-								<li><a href="#">Jumpsuits</a></li>
-		    			</ul>
-		    		</div>
-		    		<div class="sidebar-box-2">
-		    			<h2 class="heading mb-2"><a href="#">Bags</a></h2>
-		    			<h2 class="heading mb-2"><a href="#">Accessories</a></h2>
-		    		</div>
-						<div class="sidebar-box-2">
-		    			<h2 class="heading mb-4"><a href="#">Shoes</a></h2>
-		    			<ul>
-		    				<li><a href="#">Nike</a></li>
-								<li><a href="#">Addidas</a></li>
-								<li><a href="#">Skechers</a></li>
-								<li><a href="#">Jackets</a></li>
-								<li><a href="#">Coats</a></li>
-								<li><a href="#">Jeans</a></li>
-		    			</ul>
-		    		</div>
-    			</div>
-    		</div>
-    	</div>
-    </section>
+					<div class="sort-container">
+						<label for="sortOptions">Sort By:</label>
+						<div class="dropdown">
+							<button class="dropbtn">Select Sort Option</button>
+							<div class="dropdown-content" id="sortOptions">
+								<a href="#" data-value="popularity">Popularity</a>
+								<a href="#" data-value="price-low-high">Price: Low to High</a>
+								<a href="#" data-value="price-high-low">Price: High to Low</a>
+								<a href="#" data-value="average-ratings">Average Ratings</a>
+								<a href="#" data-value="featured">Featured</a>
+								<a href="#" data-value="new-arrivals">New Arrivals</a>
+								<a href="#" data-value="alphabetical-az">Alphabetical (A-Z)</a>
+								<a href="#" data-value="alphabetical-za">Alphabetical (Z-A)</a>
+							</div>
+						</div>
+						<button id="sortButton">Sort</button>
+					</div>
 
-    <%- include('../layout/footer') -%>
+				</div>
+			</div>
+		</section>
+
+		<%- include('../layout/footer') -%>
+			<script>
+				document.getElementById('searchButton').addEventListener('click', function () {
+					const query = document.getElementById('searchInput').value.toLowerCase();
+					filterProducts(query);
+				});
+
+				document.getElementById('searchInput').addEventListener('keyup', function (event) {
+					if (event.key === 'Enter') {
+						const query = document.getElementById('searchInput').value.toLowerCase();
+						filterProducts(query);
+					}
+				});
+
+				function filterProducts(query) {
+					const productCards = document.querySelectorAll('.product-card');
+
+					productCards.forEach(card => {
+						const productName = card.getAttribute('data-name');
+						if (productName.includes(query)) {
+							card.style.display = '';
+						} else {
+							card.style.display = 'none';
+						}
+					});
+				}
+
+
+				 document.querySelectorAll('.dropdown-content a').forEach(option => {
+        option.addEventListener('click', function() {
+            const selectedOption = this.getAttribute('data-value');
+            document.querySelector('.dropbtn').textContent = this.textContent; // Change button text
+            document.querySelector('.dropbtn').setAttribute('data-selected', selectedOption); // Store selected option
+        });
+    });
+
+    document.getElementById('sortButton').addEventListener('click', function() {
+        const selectedSort = document.querySelector('.dropbtn').getAttribute('data-selected');
+        console.log(`Sorting by: ${selectedSort}`);
+        // Implement sorting logic based on the selected option here
+    });
+
+
+			</script>

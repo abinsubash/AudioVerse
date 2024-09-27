@@ -1,0 +1,220 @@
+
+.quantity-wrapper {
+    display: flex;
+    align-items: center; /* Center items vertically */
+  }
+  
+  .btn-quantity {
+    width: 40px; /* Set width */
+    height: 40px; /* Set height to the same as width */
+    font-size: 1.5rem; /* Increase font size */
+    padding: 0; /* Remove padding */
+    display: flex; /* Center content */
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
+    border-radius: 0; /* Remove border radius for sharp corners */
+  }
+  
+  .input-number {
+    width: 50px; /* Set a fixed width for the input */
+    text-align: center; /* Center text in the input */
+  }
+  
+.quantity-wrapper {
+    display: flex;
+    align-items: center; /* Center items vertically */
+  }
+  
+  .delete-btn {
+    background-color: #ffffff; /* Red color for the button */
+    color: white;               /* White text/icon color */
+    border: none;               /* No border */
+    border-radius: 50%;         /* Circular button */
+    width: 40px;                /* Fixed width */
+    height: 40px;               /* Fixed height */
+    display: flex;              /* Flexbox for centering */
+    align-items: center;        /* Center vertically */
+    justify-content: center;    /* Center horizontally */
+    cursor: pointer;            /* Pointer cursor on hover */
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
+}
+
+.delete-btn:hover {
+    background-color: #ff0000; /* Darker red on hover */
+    transform: scale(1.1);      /* Slightly enlarge on hover */
+}
+
+.delete-icon {
+    font-size: 20px;            /* Adjust icon size */
+}
+
+
+
+
+
+.address-buttons {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.address-buttons button {
+  padding: 10px 20px;
+  margin: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #000;
+  color: #fff;
+  border: none;
+}
+.address-buttons :hover {
+  background-color:#ffa45c;
+}
+.form-container {
+  display: none;
+  margin: 20px auto;
+  max-width: 600px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.form-groupone input,
+.form-groupone select {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.form-group small {
+  color: red;
+}
+
+.form-container.active {
+  display: block;
+}
+
+
+
+/* Scoped search-box styles */
+.search-box {
+  width: fit-content;
+  height: fit-content;
+  position: relative;
+}
+
+.search-box .input-search {
+  height: 50px; /* Make it larger for better input visibility */
+  width: 300px; /* Static width */
+  border-style: none;
+  padding: 0px 15px; /* Adjust padding for better readability */
+  font-size: 18px;
+  letter-spacing: 2px;
+  outline: none;
+  border-radius: 25px; /* Rounded corners */
+  background-color: #ffffff; /* Background color for input */
+  color: #000000; /* Text color */
+}
+
+.search-box .input-search::placeholder {
+  color: rgba(0, 0, 0, 0.5); /* Placeholder text color */
+  font-size: 18px;
+  letter-spacing: 2px;
+  font-weight: 100;
+}
+
+.search-box .btn-search {
+  width: 50px;
+  height: 50px;
+  border-style: none;
+  font-size: 20px;
+  font-weight: bold;
+  outline: none;
+  cursor: pointer;
+  border-radius: 50%;
+  position: absolute;
+  right: 0px;
+  top: 0px; /* Align the button with the top of the input */
+  color: #000000;
+  background-color: transparent;
+}
+
+@keyframes youtubeAnim {
+  0%, 100% {
+    color: #c9110f;
+  }
+  50% {
+    color: #ff0000;
+  }
+}
+
+
+
+
+/* sort */
+
+.sort-container {
+  margin: 10px 0; /* Reduced margin */
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropbtn {
+  background-color: #000000; /* Adjusted color */
+  color: white;
+  padding: 5px 8px; /* Reduced padding for smaller size */
+  font-size: 14px; /* Smaller font size */
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 8px 12px; /* Reduced padding */
+  text-decoration: none;
+  display: block;
+  font-size: 14px; /* Smaller font size */
+}
+
+.dropdown-content a:hover {
+  background-color: #e1e1e1; /* Adjusted hover color */
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown:hover .dropbtn {
+  background-color: #ffa45c; /* Darker shade on hover */
+}
+
+#sortButton {
+  background-color: #000000; /* Adjusted color */
+  color: white;
+  padding: 5px 8px; /* Reduced padding for smaller size */
+  font-size: 14px; /* Smaller font size */
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-left: 5px; /* Reduced margin */
+}

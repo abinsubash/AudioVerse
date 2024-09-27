@@ -1,0 +1,164 @@
+<%- include('../layout/profileHeader') -%>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Toastify-js/1.11.2/Toastify.min.css">
+
+    <div class="col-lg-8">
+        <h1 class="mt-4" style="font-size: 1.5rem;">Order Details</h1>
+        <div id="orderList">
+            <div id="orderList">
+                <% orderdItem.forEach(order=> { %>
+                    <div class="order-item">
+                        <div class="order-summary" onclick="toggleOrderDetails('<%= order._id %>')">
+                            <h5 style="font-size: 1rem;">OrderID: <%= order.orderId %>
+                            </h5>
+                            <p style="font-size: 0.9rem;">Total Price: $<%= order.totalAmount %>
+                            </p>
+                            <p style="font-size: 0.9rem;">Order Date: <%= new Date(order.orderDate).toLocaleDateString()
+                                    %>
+                            </p>
+                            <button class="btn btn-info btn-sm">View</button>
+                        </div>
+
+                        <div class="order-details" id="details-<%= order._id %>">
+                            <h6 style="font-size: 1rem;">Order Details:</h6>
+
+                            <% order.orderItem.forEach(product=> { %>
+                                <div class="product-details">
+                                    <p style="font-size: 0.9rem;"><strong>Product Name:</strong>
+                                        <%= product.productName %>
+                                    </p>
+                                    <p style="font-size: 0.9rem;"><strong>Product Color:</strong>
+                                        <%= product.color %>
+                                    </p>
+                                    <p style="font-size: 0.9rem;"><strong>Quantity:</strong>
+                                        <%= product.quantity %>
+                                    </p>
+                                    <p style="font-size: 0.9rem;"><strong>Real Price:</strong> $<%= product.price %>
+                                    </p>
+                                    <p style="font-size: 0.9rem;"><strong>Total Price:</strong> $<%= product.totalPrice
+                                            %>
+                                    </p>
+                                    <p style="font-size: 0.9rem;"><strong>Description:</strong>
+                                        <%= product.description %>
+                                    </p>
+                                    <img src="<%= product.image || 'https://via.placeholder.com/60' %>"
+                                        alt="Product Image" class="order-image">
+                                    <p style="font-size: 0.9rem;"><strong>Status:</strong>
+                                        <%= product.orderStatus %>
+                                    </p>
+                                    <p style="font-size: 0.9rem;"><strong>Payment Method:</strong>
+                                        <%= order.paymentMethod %>
+                                    </p>
+                                    <% if (product.isDelivered) { %>
+                                        <span style="color: green; font-weight: bold;">Order Delivered</span>
+
+                                        <% } else if (!product.isCancelled) { %>
+                                            <button class="btn btn-danger btn-sm"
+                                                onclick="openCancelModal('<%= product._id %>', '<%= order._id %>')">
+                                                Cancel Order
+                                            </button>
+                                            <% } else { %>
+                                                <span style="color: red; font-weight: bold;">Order Cancelled</span>
+                                                <% } %>
+                                </div>
+                                <hr>
+                                <% }) %>
+                        </div>
+                        <hr>
+                    </div>
+                    <% }) %>
+            </div>
+        </div>
+
+    </div>
+    <!-- Bootstrap Cancel Modal -->
+    <div class="modal fade" id="cancelOrderModal" tabindex="-1" role="dialog" aria-labelledby="cancelOrderModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelOrderModalLabel">Cancel Order</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="cancelForm">
+                        <input type="hidden" id="productId" name="productId">
+                        <input type="hidden" id="orderId" name="orderId">
+                        <div class="form-group">
+                            <label for="cancellationReason">Reason for Cancellation:</label>
+                            <textarea class="form-control" id="cancellationReason" rows="3"></textarea>
+                        </div>
+                        <small style="color: red;" id="resonError"> </small>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" onclick="submitCancellation()">Submit
+                        Cancellation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Toastify-js/1.11.2/Toastify.min.js"></script>
+
+
+    <script>
+        function toggleOrderDetails(orderId) {
+            const detailsDiv = document.getElementById(`details-${orderId}`);
+            if (detailsDiv.style.display === "none" || detailsDiv.style.display === "") {
+                detailsDiv.style.display = "block";
+            } else {
+                detailsDiv.style.display = "none";
+            }
+        }
+
+
+        function openCancelModal(productId, orderId) {
+            document.getElementById('productId').value = orderId;
+            document.getElementById('orderId').value = productId;
+            $('#cancelOrderModal').modal('show');
+        }
+
+        async function submitCancellation() {
+            const orderId = document.getElementById('productId').value;
+            const variantId = document.getElementById('orderId').value;
+            const reason = document.getElementById('cancellationReason').value.trim();
+            const reasonRegex = /^.{10,}$/;
+            const resonError = document.getElementById('resonError');
+            resonError.innerHTML = ''
+            if (!reasonRegex.test(reason)) {
+                resonError.innerHTML = 'The reason must be at least 10 characters long.'
+                return
+            }
+            const response = await fetch('/orderCancellation', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ reason, variantId, orderId }),
+            });
+
+            $('#cancelOrderModal').modal('hide');
+            const result = await response.json(); 
+            console.log(result.success)
+            if (result.success) {
+                Toastify({
+                    text: result.message,
+                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    duration: 5000,
+                }).showToast();
+            }
+            window.location.reload()
+            document.getElementById('cancelForm').reset();
+
+        }
+
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    </section>
+    </body>
+
+    </html>

@@ -39,7 +39,15 @@ const userSchema = mongoose.Schema({
     isGoogleAuth:{
         type:Boolean,
         default:false
+    },
+    cartId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Cart"
+    },
+    addressId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Address"
     }
-})
+});
 const User = mongoose.model("User",userSchema);
 module.exports = User;

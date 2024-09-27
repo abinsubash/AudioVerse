@@ -8,6 +8,10 @@ const Varinat = require("../../model/variantModel");
 const Category = require("../../model/categoryModel");
 const Brand = require("../../model/brandModel");
 const { isDeleted } = require("../admin/productController");
+const Variant = require("../../model/variantModel");
+const Cart = require("../../model/cartModel");
+const Address = require("../../model/addressModel");
+
 const generateRefferalID = () => {
   return crypto.randomBytes(6).toString("hex");
 };
@@ -16,20 +20,17 @@ const generateOTP = () => {
   return Math.floor(1000 + Math.random() * 9000).toString();
 };
 
-const googleauth =   async (req, res) => {
+const googleauth = async (req, res) => {
   const user = await User.findOne({ _id: req.user._id });
-  console.log(user);
   if (user.isBlocked) {
     return res.redirect("/login");
   }
   req.session.userExist = req.user;
 
   res.redirect("/");
-}
-
+};
 
 const sendOtp = (email, otp) => {
-
   const transfort = nodemailer.createTransport({
     service: "Gmail",
     auth: {
@@ -170,8 +171,7 @@ const login = (req, res) => {
   res.render("users/login", { blockedMessage });
 };
 
-
-//Todo : Home page 
+//Todo : Home page
 
 const homePage = async (req, res) => {
   try {
@@ -214,8 +214,6 @@ const homePage = async (req, res) => {
   }
 };
 
-
-
 //Todo : Shop Page
 const shop = async (req, res) => {
   const product = await Product.find({ isDeleted: false })
@@ -256,13 +254,21 @@ const singleProduct = async (req, res) => {
         showVariant.forEach(async (newvariant) => {
           if (newvariant.color == variantColor) {
             const newVarint = await Varinat.find({ _id: newvariant.id });
+            let itemExist = false; 
 
+            if (req.session.userExist) {
+                const cart = await Cart.findOne({ userId: req.session.userExist._id });
+                
+                itemExist = cart && cart.items.some(item => item.variantId.toString() === newVarint[0].id);
+            }
             res.render("users/singleProduct", {
-              user: req.session.userExist,
-              products: product,
-              relatedProducts: filteredProducts,
-              newvarinats: newVarint,
+                user: req.session.userExist,
+                products: product,
+                relatedProducts: filteredProducts,
+                newvarinats: newVarint,
+                itemExists: itemExist, 
             });
+            
           }
         });
       });
@@ -274,19 +280,20 @@ const singleProduct = async (req, res) => {
   }
 };
 
-
-
 //Todo : userprofile
 const profile = (req, res) => {
-  res.render("users/profile",{user:req.session.userExist});
-}
+  res.render("users/profile", { user: req.session.userExist });
+};
 
 //Todo :UpdateProfile
 const updateProfile = async (req, res) => {
   try {
     const { name, phone } = req.body;
     if (!req.session.userExist) {
-      return res.json({ success: false, message: "Session expired. Please log in again." });
+      return res.json({
+        success: false,
+        message: "Session expired. Please log in again.",
+      });
     }
 
     const user = await User.findOne({ email: req.session.userExist.email });
@@ -295,21 +302,24 @@ const updateProfile = async (req, res) => {
       return res.json({ success: false, message: "User not found" });
     }
 
-     await User.updateOne({ email: req.session.userExist.email }, {
-      name: name,
-      phone: phone
+    await User.updateOne(
+      { email: req.session.userExist.email },
+      {
+        name: name,
+        phone: phone,
+      }
+    );
+    req.session.userExist = await User.findOne({
+      email: req.session.userExist.email,
     });
-    req.session.userExist = await User.findOne({email:req.session.userExist.email})
     res.json({ success: true, message: "Profile Updated" });
-
   } catch (error) {
     console.log("Server error:", error);
     res.json({ success: false, message: "Error updating profile" });
   }
 };
 
-
-// Todo: Change Password 
+// Todo: Change Password
 const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -318,42 +328,54 @@ const changePassword = async (req, res) => {
     if (!user) {
       return res.json({ success: false, message: "User not found" });
     }
-    const isPasswordMatch = await bcrypt.compare(currentPassword, user.password);
+    const isPasswordMatch = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
     if (!isPasswordMatch) {
-      return res.json({ success: false, message: "Current password is incorrect" });
+      return res.json({
+        success: false,
+        message: "Current password is incorrect",
+      });
     }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await User.updateOne({ _id: req.session.userExist._id }, { password: hashedPassword });
-    req.session.userExist = await User.findOne({ _id: req.session.userExist._id });
+    await User.updateOne(
+      { _id: req.session.userExist._id },
+      { password: hashedPassword }
+    );
+    req.session.userExist = await User.findOne({
+      _id: req.session.userExist._id,
+    });
 
-    return res.json({ success: true, message: "Password updated successfully" });
+    return res.json({
+      success: true,
+      message: "Password updated successfully",
+    });
   } catch (error) {
     console.error("Error changing password:", error);
   }
 };
 
-
-
 //Todo :ForgetPassowrd
-const forgetPassowrd = (req,res)=>{
-  res.render('users/forgetEmail')
-}
+const forgetPassowrd = (req, res) => {
+  res.render("users/forgetEmail");
+};
 
 const confirmEmail = async (req, res) => {
-  const { email } = req.body;  
+  const { email } = req.body;
   const user = await User.findOne({ email });
 
   if (!user) {
     return res.json({ success: false, message: "Email Not found" });
   }
 
-  const token = crypto.randomBytes(20).toString('hex');
+  const token = crypto.randomBytes(20).toString("hex");
   req.session.token = token;
   req.session.email = email;
   const mailOptions = {
     from: process.env.EMAIL,
     to: email,
-    subject: 'Your Password Reset Link',
+    subject: "Your Password Reset Link",
     html: `
       <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f9f9f9;">
           <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
@@ -375,42 +397,144 @@ const confirmEmail = async (req, res) => {
     });
 
     await transporter.sendMail(mailOptions);
-    return res.status(200).json({ success: true, message: 'Password reset link has been sent to your email' });
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "Password reset link has been sent to your email",
+      });
   } catch (error) {
-    console.error('Error sending email:', error);
-    return res.status(500).json({ success: false, message: 'Error sending email' });
+    console.error("Error sending email:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error sending email" });
   }
 };
 
-const resetPassword = (req,res)=>{
-  if(req.session.token==req.query.token){
-    return res.render('users/forgetPassword')
-  }else{
-    res.status(400)
+const resetPassword = (req, res) => {
+  if (req.session.token == req.query.token) {
+    return res.render("users/forgetPassword");
+  } else {
+    res.status(400);
   }
-}
+};
+
+const confirmPassword = async (req, res) => {
+  const { newpassword } = req.body;
+  const user = await User.findOne({ email: req.session.email });
+  if (!user) {
+    return res.json({ success: false, message: "user doesnot find" });
+  }
+  const hashedPassword = await bcrypt.hash(newpassword, 10);
+  await User.updateOne(
+    { email: req.session.email },
+    {
+      password: hashedPassword,
+    }
+  );
+  res.json({ success: true, message: "password updated" });
+};
+
+const error404 = (req, res) => {
+  res.render("users/404");
+};
 
 
-const confirmPassword = async (req,res)=>{
-  const {newpassword} = req.body
-const user = await User.findOne( {email:req.session.email});
-if(!user){
-return res.json({success:false,message:"user doesnot find"})
-}
-const hashedPassword = await bcrypt.hash(newpassword,10)
-await User.updateOne({email:req.session.email},{
-  password:hashedPassword
-});
-res.json({success:true,message:"password updated"})
-}
+// address
 
-const error404 = (req,res)=>{
-  res.render('users/404');
-}
+const address = async(req,res)=>{
+  const user = await User.findOne({_id:req.session.userExist._id});
+  const address = await Address.findOne({_id:user.addressId});
+  res.render('users/addAddress',{ user: user ,address:address})
+};
+
+const addAddress = async (req, res) => {
+  try {
+    const { name, streetAddress, city, district, pincode, phoneNo } = req.body;
+
+    const user = await User.findOne({ _id: req.session.userExist._id });
+
+    let address = await Address.findOne({ userId: user._id });
+
+    if (!address) {
+      address = new Address({
+        userId: user._id,
+        addresses: []
+      });
+      await address.save();
+    }
+
+    address.addresses.push({
+      name,
+      streetAddress,
+      city,
+      district,
+      pincode,
+      phoneNo
+    });
+
+    await address.save();
+    console.log("saved");
+    if (!user.addressId) {
+      await User.updateOne({ _id: user._id }, { addressId: address._id });
+    }
+
+    res.json({ success: true, message: "Address added" });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const editAddress = async (req, res) => {
+  const { addressId, name, streetAddress, city, district, pincode, phoneNo } = req.body;
+
+  // Find the address document for the user
+  const addressDoc = await Address.findOne({ userId: req.session.userExist._id });
+  
+  if (!addressDoc) {
+      return res.json({ success: false, message: 'Address document not found' });
+  }
+
+  // Find the index of the address with the given addressId
+  const addressIndex = addressDoc.addresses.findIndex(address => address._id.toString() === addressId);
+
+  if (addressIndex === -1) {
+      return res.json({ success: false, message: 'Address not found' });
+  }
+
+  addressDoc.addresses[addressIndex] = {
+      ...addressDoc.addresses[addressIndex],
+      name,
+      streetAddress,
+      city,
+      district,
+      pincode,
+      phoneNo
+  };
+
+  await addressDoc.save();
+
+  return res.json({ success: true, message: 'Address updated successfully' });
+};
 
 
-const findVarint = async (req, res) => {};
+const deleteAddress = async (req, res) => {
+  try {
+      const { addressId } = req.body; 
 
+      const result = await Address.updateOne(
+          { userId: req.session.userExist._id }, 
+          { $pull: { addresses: { _id: addressId } } } 
+      );
+
+      if (result.modifiedCount === 0) {
+          return res.json({ success: false, message: 'Address not found or already deleted' });
+      }
+      return res.json({ success: true, message: 'Address deleted successfully' });
+  } catch (error) {
+      console.error( error);
+  }
+};
 
 
 module.exports = {
@@ -425,7 +549,6 @@ module.exports = {
   logout,
   shop,
   singleProduct,
-  findVarint,
   googleauth,
   profile,
   updateProfile,
@@ -434,5 +557,9 @@ module.exports = {
   confirmPassword,
   confirmEmail,
   resetPassword,
-  error404
+  address,
+  addAddress,
+  error404,
+  editAddress,
+  deleteAddress
 };

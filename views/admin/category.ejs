@@ -164,7 +164,7 @@ document.getElementById("addCategory").addEventListener("submit", async (e) => {
   const categoryName = document.getElementById("categoryName").value.trim();
   const existError = document.getElementById("existError");
   existError.innerHTML = "";
-  const categoryRegex = /^[A-Za-z]+$/;
+  const categoryRegex = /^[A-Za-z ]+$/;
   if(!categoryRegex.test(categoryName)){
     return existError.innerHTML = "Enter valid category name"
   }
