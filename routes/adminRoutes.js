@@ -25,12 +25,10 @@ adminRoutes.put('/updateBrand/:id',adminAuth.isLogged, brandController.updateBra
 
 adminRoutes.post('/block/:id',adminAuth.isLogged, adminController.block);
 adminRoutes.get('/userlist',adminAuth.isLogged, adminController.usersList);
-adminRoutes.get('/api/users',adminAuth.isLogged, adminController.userlisting);
 
 
 adminRoutes.get('/category',adminAuth.isLogged,categoryController.categoryPg)
 adminRoutes.post('/addCategory',adminAuth.isLogged,categoryController.addCategory)
-adminRoutes.get('/api/category',adminAuth.isLogged,categoryController.categoryListing)
 adminRoutes.post('/category/:id',adminAuth.isLogged, categoryController.categoryDelete);
 adminRoutes.post('/editCategory/:categoryId',adminAuth.isLogged, categoryController.editCategory) 
 
@@ -46,6 +44,7 @@ adminRoutes.get('/editVariant',adminAuth.isLogged, productController.editVariant
 adminRoutes.post('/updateVariant',adminAuth.isLogged,upload.any(), productController.updateVariant);
 adminRoutes.post('/deleteProduct/:id',adminAuth.isLogged,productController.isDeleted)
 // adminRoutes.post('/addVariant/:id')
+
 adminRoutes.get('/orders',adminAuth.isLogged,orderController.orderDetails);
 adminRoutes.patch("/orderApproval",adminAuth.isLogged,orderController.orderApproval);
 adminRoutes.patch("/orderStatusEdit",adminAuth.isLogged,orderController.orderStatusEdit);

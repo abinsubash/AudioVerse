@@ -24,43 +24,44 @@ userRoutes.get("/", userAuth.isBlocked, userController.homePage);
 userRoutes.get("/logout", userController.logout);
 
 //Forget Password
-userRoutes.get('/forgetPassword',userController.forgetPassowrd);
+userRoutes.get('/forgetPassword',userAuth.isBlocked,userController.forgetPassowrd);
 userRoutes.post('/confirmEmail',userController.confirmEmail);
-userRoutes.get('/reset-password',userController.resetPassword);
+userRoutes.get('/reset-password',userAuth.isBlocked,userController.resetPassword);
 userRoutes.post('/confirmPassword',userController.confirmPassword)
 
 // Todo :product page 
-userRoutes.get("/shop", userAuth.isBlocked, userController.shop);
+userRoutes.get("/shop",userAuth.isBlocked, userAuth.isBlocked, userController.shop);
+userRoutes.get("/search", userAuth.isBlocked, userController.searchAndsort);
 userRoutes.get("/singleProduct", userController.singleProduct);
 
 // Todo :Profile
-userRoutes.get("/profile", userAuth.isLogin,userController.profile);
-userRoutes.post("/updateprofile",userAuth.isLogin,userController.updateProfile);
-userRoutes.post("/changePassword",userAuth.isLogin,userController.changePassword);
+userRoutes.get("/profile",userAuth.isBlocked, userAuth.isLogin,userController.profile);
+userRoutes.post("/updateprofile",userAuth.isBlocked,userAuth.isLogin,userController.updateProfile);
+userRoutes.post("/changePassword",userAuth.isBlocked,userAuth.isLogin,userController.changePassword);
 
 
 //Todo :404 
 userRoutes.get('/404',userController.error404)
 
 //Tod : cart 
-userRoutes.get("/cart",userAuth.isLogin,cartController.cart);
-userRoutes.post("/updateCart/:Id",userAuth.isLogin,cartController.updateCart);
+userRoutes.get("/cart",userAuth.isBlocked,userAuth.isBlocked,userAuth.isLogin,cartController.cart);
+userRoutes.post("/updateCart/:Id",userAuth.isBlocked,userAuth.isLogin,cartController.updateCart);
 userRoutes.post("/addtoCart",userAuth.isLogin,cartController.addToCart);
 userRoutes.delete('/cartDelete/:Id',userAuth.isLogin,cartController.cartDelete);
 
 
 //Todo: Address
-userRoutes.get('/address',userAuth.isLogin,userController.address)
+userRoutes.get('/address',userAuth.isBlocked,userAuth.isLogin,userController.address)
 userRoutes.post('/addAddress',userAuth.isLogin,userController.addAddress)
 userRoutes.put("/editAddress",userAuth.isLogin,userController.editAddress)
 userRoutes.delete('/deleteAddress',userAuth.isLogin,userController.deleteAddress)
 
 userRoutes.post('/toCheckout',checkoutController.toCheckout)
-userRoutes.get("/checkout",userAuth.isLogin,checkoutController.checkoutPge);
-userRoutes.post("/order",userAuth.isLogin,checkoutController.orderTest)
+userRoutes.get("/checkout",userAuth.isBlocked,userAuth.isLogin,checkoutController.checkoutPge);
+userRoutes.post("/order",userAuth.isBlocked,userAuth.isLogin,checkoutController.orderTest)
 
 //Todo: Orders
-userRoutes.get("/orderDetails",userAuth.isLogin,checkoutController.orderDetails)
+userRoutes.get("/orderDetails",userAuth.isBlocked, userAuth.isLogin, checkoutController.orderDetails);
 userRoutes.post("/orderCancellation", userAuth.isLogin, checkoutController.orderCancellation);
 
 userRoutes.get("/contact", userAuth.isBlocked, (req, res) => {

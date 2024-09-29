@@ -61,7 +61,8 @@
 				<div class="row no-gutters slider-text align-items-center justify-content-center">
 					<div class="col-md-9 ftco-animate text-center">
 						<p class="breadcrumbs"><span class="mr-2"><a href="index.html">Home</a></span>
-							<span>Products</span></p>
+							<span>Products</span>
+						</p>
 						<h1 class="mb-0 bread">Collection Products</h1>
 					</div>
 				</div>
@@ -99,7 +100,7 @@
 													<p class="price">
 														<% if (product.variants.length> 0) { %>
 															<span class="price-sale">$<%= product.variants[0].price %>
-																	</span>
+															</span>
 															<% } else { %>
 																<span class="price-sale">Price Not Available</span>
 																<% } %>
@@ -131,13 +132,32 @@
 							<div class="col text-center">
 								<div class="block-27">
 									<ul>
-										<li><a href="#">&lt;</a></li>
-										<li class="active"><span>1</span></li>
-										<li><a href="#">2</a></li>
-										<li><a href="#">3</a></li>
-										<li><a href="#">4</a></li>
-										<li><a href="#">5</a></li>
-										<li><a href="#">&gt;</a></li>
+										<% if (currentPage> 1) { %>
+											<li><a href="/shop?page=<%= currentPage - 1 %>">&lt;</a></li>
+											<% } else { %>
+												<li class="disabled"><span>&lt;</span></li>
+												<% } %>
+
+													<% for (let i=1; i <=totalPages; i++) { %>
+														<% if (i===currentPage) { %>
+															<li class="active"><span>
+																	<%= i %>
+																</span></li>
+															<% } else { %>
+																<li><a href="/shop?page=<%= i %>">
+																		<%= i %>
+																	</a></li>
+																<% } %>
+																	<% } %>
+
+																		<% if (currentPage < totalPages) { %>
+																			<li><a
+																					href="/shop?page=<%= currentPage + 1 %>">&gt;</a>
+																			</li>
+																			<% } else { %>
+																				<li class="disabled"><span>&gt;</span>
+																				</li>
+																				<% } %>
 									</ul>
 								</div>
 							</div>
@@ -149,18 +169,15 @@
 						<div class="dropdown">
 							<button class="dropbtn">Select Sort Option</button>
 							<div class="dropdown-content" id="sortOptions">
-								<a href="#" data-value="popularity">Popularity</a>
-								<a href="#" data-value="price-low-high">Price: Low to High</a>
-								<a href="#" data-value="price-high-low">Price: High to Low</a>
-								<a href="#" data-value="average-ratings">Average Ratings</a>
-								<a href="#" data-value="featured">Featured</a>
-								<a href="#" data-value="new-arrivals">New Arrivals</a>
 								<a href="#" data-value="alphabetical-az">Alphabetical (A-Z)</a>
 								<a href="#" data-value="alphabetical-za">Alphabetical (Z-A)</a>
+								<a href="#" data-value="price-low-high">Price: Low to High</a>
+								<a href="#" data-value="price-high-low">Price: High to Low</a>
 							</div>
 						</div>
 						<button id="sortButton">Sort</button>
 					</div>
+
 
 				</div>
 			</div>
@@ -168,45 +185,5 @@
 
 		<%- include('../layout/footer') -%>
 			<script>
-				document.getElementById('searchButton').addEventListener('click', function () {
-					const query = document.getElementById('searchInput').value.toLowerCase();
-					filterProducts(query);
-				});
-
-				document.getElementById('searchInput').addEventListener('keyup', function (event) {
-					if (event.key === 'Enter') {
-						const query = document.getElementById('searchInput').value.toLowerCase();
-						filterProducts(query);
-					}
-				});
-
-				function filterProducts(query) {
-					const productCards = document.querySelectorAll('.product-card');
-
-					productCards.forEach(card => {
-						const productName = card.getAttribute('data-name');
-						if (productName.includes(query)) {
-							card.style.display = '';
-						} else {
-							card.style.display = 'none';
-						}
-					});
-				}
-
-
-				 document.querySelectorAll('.dropdown-content a').forEach(option => {
-        option.addEventListener('click', function() {
-            const selectedOption = this.getAttribute('data-value');
-            document.querySelector('.dropbtn').textContent = this.textContent; // Change button text
-            document.querySelector('.dropbtn').setAttribute('data-selected', selectedOption); // Store selected option
-        });
-    });
-
-    document.getElementById('sortButton').addEventListener('click', function() {
-        const selectedSort = document.querySelector('.dropbtn').getAttribute('data-selected');
-        console.log(`Sorting by: ${selectedSort}`);
-        // Implement sorting logic based on the selected option here
-    });
-
-
+				
 			</script>

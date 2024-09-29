@@ -1,5 +1,5 @@
-<%- include('../layout/admin/adminHeader') -%> <%-
-include('../layout/admin/adminNavbar') -%>
+<%- include('../layout/admin/adminHeader') -%> 
+<%- include('../layout/admin/adminNavbar') -%>
 
 <div class="main-panel">
   <div class="content-wrapper">
@@ -25,14 +25,74 @@ include('../layout/admin/adminNavbar') -%>
               <table class="table table-striped" id="categoryTable">
                 <thead>
                   <tr>
-                    <th>NO</th>
+                    <th>#</th>
                     <th>Category Name</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody>
+                  <% categories.forEach((category, index) => { %>
+                    <tr>
+                      <td><%= (currentPage - 1) * 10 + (index + 1) %></td> <!-- Adjust index for pagination -->
+                      <td><%= category.categoryName %></td>
+                      <td>
+                        <button class="btn btn-dark btn-sm" onclick="openEditModal('<%= category._id %>', '<%= category.categoryName %>')">Edit</button>
+                        <button class="btn <%= category.isDeleted ? 'btn-warning' : 'btn-danger' %> btn-sm" onclick="toggleCategory('<%= category._id %>')">
+                          <%= category.isDeleted ? 'Restore' : 'Delete' %>
+                        </button>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
               </table>
             </div>
+
+            <!-- Pagination Section -->
+            <div class="row mt-5">
+              <div class="col text-center">
+                <nav aria-label="Page navigation">
+                  <ul class="pagination justify-content-center">
+                    <% if (currentPage > 1) { %>
+                      <li class="page-item">
+                        <a class="page-link" href="/admin/category?page=<%= currentPage - 1 %>" aria-label="Previous">
+                          <span aria-hidden="true">&laquo;</span>
+                        </a>
+                      </li>
+                    <% } else { %>
+                      <li class="page-item disabled">
+                        <a class="page-link" href="#" aria-label="Previous">
+                          <span aria-hidden="true">&laquo;</span>
+                        </a>
+                      </li>
+                    <% } %>
+
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                      <% if (i === currentPage) { %>
+                        <li class="page-item active"><a class="page-link" href="#"><%= i %></a></li>
+                      <% } else { %>
+                        <li class="page-item"><a class="page-link" href="/admin/category?page=<%= i %>"><%= i %></a></li>
+                      <% } %>
+                    <% } %>
+
+                    <% if (currentPage < totalPages) { %>
+                      <li class="page-item">
+                        <a class="page-link" href="/admin/category?page=<%= currentPage + 1 %>" aria-label="Next">
+                          <span aria-hidden="true">&raquo;</span>
+                        </a>
+                      </li>
+                    <% } else { %>
+                      <li class="page-item disabled">
+                        <a class="page-link" href="#" aria-label="Next">
+                          <span aria-hidden="true">&raquo;</span>
+                        </a>
+                      </li>
+                    <% } %>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+            <!-- End Pagination Section -->
+
           </div>
         </div>
       </div>
@@ -40,7 +100,10 @@ include('../layout/admin/adminNavbar') -%>
   </div>
 </div>
 
+
 <%- include('../layout/admin/adminFooter') -%>
+
+
 
 <!-- Modal for Adding Category -->
 <div
@@ -92,8 +155,7 @@ include('../layout/admin/adminNavbar') -%>
   tabindex="-1"
   role="dialog"
   aria-labelledby="editCategoryModalLabel"
-  aria-hidden="true"
->
+  aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -191,52 +253,11 @@ document.getElementById("addCategory").addEventListener("submit", async (e) => {
 
 
 
-// ========================= add showing category delete category ===========
-
-// Fetching and displaying categories on page load
-document.addEventListener("DOMContentLoaded", () => {
-  fetch("/admin/api/category")
-    .then((response) => response.json())
-    .then((categories) => {
-      const categoryTableBody = document.querySelector("#categoryTable tbody");
-      let tableContent = "";
-
-      categories.forEach((category, index) => {
-        let actionButtonLabel = category.isDeleted ? "Restore" : "Delete";
-        let actionButtonClass = category.isDeleted ? "btn-warning" : "btn-danger";
-
-        let viewButton = !category.isDeleted
-          ? `<button class="btn btn-dark btn-sm" onclick="openEditModal('${category._id}', '${category.categoryName}')">Edit</button>`
-          : "";
-
-        let actionButton = `
-          <a href="#" class="btn ${actionButtonClass} btn-sm" onclick="toggleCategory('${category._id}')">
-            ${actionButtonLabel}
-          </a>`;
-
-        tableContent += `
-          <tr>
-            <td>${index + 1}</td>
-            <td>${category.categoryName}</td>
-            <td>
-              ${actionButton} <!-- Delete/Restore button -->
-              ${viewButton} <!-- Edit button -->
-            </td>
-          </tr>`;
-      });
-
-      categoryTableBody.innerHTML = tableContent;
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-});
-
 function openEditModal(categoryId, categoryName) {
   document.getElementById('editCategoryForm').action = `/admin/editCategory/${categoryId}`;
   document.getElementById('editCategoryName').value = categoryName;
   document.getElementById('editExistError').innerHTML = '';
-
+  
   $('#editCategoryModal').modal('show');
 }
 
@@ -285,36 +306,34 @@ function toggleCategory(categoryId) {
   });
 }
 
+document.getElementById("editCategoryForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-  document.getElementById("editCategoryForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+  const categoryId = document.getElementById("editCategoryForm").action.split("/").pop();
+  const categoryName = document.getElementById("editCategoryName").value.trim();
+  const existError = document.getElementById("editExistError");
+  existError.innerHTML = "";
 
-    const categoryId = document.getElementById("editCategoryForm").action.split("/").pop();
-    const categoryName = document.getElementById("editCategoryName").value.trim();
-    const existError = document.getElementById("editExistError");
-    existError.innerHTML = "";
+  try {
+    const response = await fetch(`/admin/editCategory/${categoryId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ categoryName }),
+    });
 
-    try {
-      const response = await fetch(`/admin/editCategory/${categoryId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ categoryName }),
-      });
+    const result = await response.json();
 
-      const result = await response.json();
-
-      if (result.success) {
-        $('#editCategoryModal').modal('hide');
-        location.reload(); 
-      } else {
-        existError.innerHTML = result.message;
-      }
-    } catch (error) {
-      console.log(error);
+    if (result.success) {
+      $('#editCategoryModal').modal('hide');
+      location.reload(); 
+    } else {
+      existError.innerHTML = result.message;
     }
-  });
-
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 </script>

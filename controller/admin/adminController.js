@@ -32,23 +32,35 @@ const home = (req,res)=>{
 }
 
 
-const usersList = (req,res)=>{
-    res.render('admin/usermanage')
-}
 
-const userlisting = async (req, res) => {
-    try {
-      const users = await User.find({});
-      res.json(users);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Internal Server Error' });
-    }
+const usersList = async (req, res) => {
+  try {
+      const page = parseInt(req.query.page) || 1; 
+      const limit =  10; 
+      const skip = (page - 1) * limit; 
+
+      const totalUsers = await User.countDocuments(); 
+      const users = await User.find().skip(skip).limit(limit); // Fetch users with pagination
+
+      const totalPages = Math.ceil(totalUsers / limit); // Calculate total pages
+
+      // Render the user management page with users and pagination data
+      res.render('admin/usermanage', {
+          users,
+          currentPage: page,
+          totalPages
+      });
+  } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).send('Internal Server Error');
   }
+};
+
   
   
   const block = async (req, res) => {
     try {
+      console.log("ho")
       const { id } = req.params;
       const user = await User.findOne({ _id: id });
       if (user) {
@@ -56,20 +68,37 @@ const userlisting = async (req, res) => {
         await user.save();
         res.json({ success: true, isBlocked: user.isBlocked });
       } else {
-        res.status(404).json({ success: false, message: "User not found" });
+        res.json({ success: false, message: "User not found" });
       }
     } catch (error) {
       console.log(error);
     }
   }
 
-    const brands = async (req,res)=>{
-        try{
-    
-            const brands =  await Brand.find({})
-             res.render('admin/brand',{brands})
-        }catch(error){
-            console.log(error);
-        }
+  const brands = async (req, res) => {
+    try {
+      const page = parseInt(req.query.page) || 1; 
+      const limit = 10; 
+      const skip = (page - 1) * limit; 
+  
+      const totalBrands = await Brand.countDocuments({});
+  
+      const brands = await Brand.find({})
+        .skip(skip)
+        .limit(limit)
+        .exec();
+  
+      const totalPages = Math.ceil(totalBrands / limit);
+  
+      res.render('admin/brand', {
+        brands,
+        currentPage: page,
+        totalPages: totalPages,
+      });
+    } catch (error) {
+      console.log(error);
     }
-module.exports = {login,home,brands,usersList,userlisting,block,adminLogin,logout}
+  };
+  
+    
+module.exports = {login,home,brands,usersList,block,adminLogin,logout}

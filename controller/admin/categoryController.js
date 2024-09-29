@@ -18,20 +18,31 @@ const addCategory= async (req,res)=>{
     res.json({success:false,message:"something went wrong"})
 }
 }
+const categoryPg = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const skip = (page - 1) * limit; 
 
-const categoryPg = async (req,res)=>{
-    res.render('admin/category')
+  try {
+    const categories = await Category.find()
+      .skip(skip)
+      .limit(limit);
+    
+    const totalCategories = await Category.countDocuments(); 
+    const totalPages = Math.ceil(totalCategories / limit); 
+
+    res.render('admin/category', {
+      categories: categories,
+      currentPage: page,
+      totalPages: totalPages,
+    });
+  } catch (error) {
+    console.log('Error fetching categories:', error);
+    res.status(500).send('Server Error');
+  }
 };
 
 
-const categoryListing = async (req,res)=>{
-try{
-const categoryList =await Category.find({})
-res.json(categoryList);
-}catch(error){
-console.log(error)
-}
-}
 
 
 const categoryDelete = async (req, res) => {
@@ -71,4 +82,4 @@ const categoryDelete = async (req, res) => {
   };
 
   
-module.exports = {addCategory,categoryPg,categoryListing,categoryDelete,editCategory}
+module.exports = {addCategory,categoryPg,categoryDelete,editCategory}

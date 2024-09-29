@@ -11,7 +11,7 @@ const isBlocked = async(req,res,next)=>{
         }else{
             const user = await User.findOne({_id:req.session.userExist._id});
             if(user.isBlocked){
-                req.session.destroy()
+                delete req.session.userExist;
                 res.redirect("/")
             }else{
                 next();
@@ -19,7 +19,7 @@ const isBlocked = async(req,res,next)=>{
             
         }
     }catch(error){
-        console.log("This is blocked Middleware")
+        console.log(error)
     }
 }
     const isLogin = async (req,res,next)=>{

@@ -4,10 +4,24 @@ const Brand = require('../../model/brandModel');
 const Category = require('../../model/categoryModel');
 const Order = require('../../model/orderModel');
 
-const orderDetails =async (req,res)=>{
-    const order = await Order.find({});
-    res.render('admin/orderDetails',{orders:order});
-}
+const orderDetails = async (req, res) => {
+  try {
+    const perPage = 10; // Define the number of orders per page
+    const currentPage = req.query.page ? parseInt(req.query.page) : 1;
+    const totalOrders = await Order.countDocuments();
+    const totalPages = Math.ceil(totalOrders / perPage);
+    const orders = await Order.find()
+      .skip((currentPage - 1) * perPage)
+      .limit(perPage);
+
+    res.render("admin/orderDetails", { orders, totalPages, currentPage });
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    res.status(500).send("An error occurred while fetching orders.");
+  }
+};
+
+
 const orderApproval= async(req,res)=>{
     
     const {orderId} = req.body

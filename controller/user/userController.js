@@ -214,15 +214,35 @@ const homePage = async (req, res) => {
   }
 };
 
-//Todo : Shop Page
 const shop = async (req, res) => {
-  const product = await Product.find({ isDeleted: false })
+  const page = parseInt(req.query.page) || 1; 
+  const limit = 6; 
+  const skip = (page - 1) * limit; 
+
+  const totalProducts = await Product.countDocuments({ isDeleted: false });
+
+  const products = await Product.find({ isDeleted: false })
     .populate("productBrand")
     .populate("variants")
     .populate("category")
+    .skip(skip)
+    .limit(limit)
     .exec();
-  res.render("users/shop", { user: req.session.userExist, products: product });
+  const totalPages = Math.ceil(totalProducts / limit);
+
+  res.render("users/shop", {
+    user: req.session.userExist,
+    products: products,
+    currentPage: page,
+    totalPages: totalPages,
+  });
 };
+
+const searchAndsort = (req,res)=>{
+  
+}
+
+
 
 const singleProduct = async (req, res) => {
   const { variantColor, id } = req.query;
@@ -356,7 +376,8 @@ const changePassword = async (req, res) => {
   }
 };
 
-//Todo :ForgetPassowrd
+
+
 const forgetPassowrd = (req, res) => {
   res.render("users/forgetEmail");
 };
@@ -488,14 +509,12 @@ const addAddress = async (req, res) => {
 const editAddress = async (req, res) => {
   const { addressId, name, streetAddress, city, district, pincode, phoneNo } = req.body;
 
-  // Find the address document for the user
   const addressDoc = await Address.findOne({ userId: req.session.userExist._id });
   
   if (!addressDoc) {
       return res.json({ success: false, message: 'Address document not found' });
   }
 
-  // Find the index of the address with the given addressId
   const addressIndex = addressDoc.addresses.findIndex(address => address._id.toString() === addressId);
 
   if (addressIndex === -1) {
@@ -561,5 +580,6 @@ module.exports = {
   addAddress,
   error404,
   editAddress,
-  deleteAddress
+  deleteAddress,
+  searchAndsort
 };
