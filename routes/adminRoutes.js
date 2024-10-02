@@ -48,6 +48,7 @@ adminRoutes.post('/deleteProduct/:id',adminAuth.isLogged,productController.isDel
 adminRoutes.get('/orders',adminAuth.isLogged,orderController.orderDetails);
 adminRoutes.patch("/orderApproval",adminAuth.isLogged,orderController.orderApproval);
 adminRoutes.patch("/orderStatusEdit",adminAuth.isLogged,orderController.orderStatusEdit);
+adminRoutes.get('/orders/:id', adminAuth.isLogged, orderController.getOrderDetails);
 
 
 // -------------- search----------------

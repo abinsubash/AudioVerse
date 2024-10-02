@@ -9,6 +9,7 @@ const express = require("express");
 const checkoutPge = async (req, res) => {
   const cart = await Cart.findOne({ userId: req.session.userExist._id });
   const address = await Address.findOne({ userId: req.session.userExist._id });
+  
   res.render("users/checkout", {
     user: req.session.userExist,
     cart: cart,

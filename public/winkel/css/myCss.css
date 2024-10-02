@@ -218,3 +218,31 @@
   border-radius: 4px;
   margin-left: 5px; /* Reduced margin */
 }
+
+
+
+
+.result-dropdown {
+  position: absolute; 
+  background-color: white; /* Set background color */
+  border: 1px solid #ccc; /* Add a border */
+  z-index: 1000; /* Make sure it sits above other elements */
+  max-height: 200px; /* Set a maximum height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  width: 400px; /* Set a specific width for the dropdown */
+  left: 50%; /* Center the dropdown */
+  transform: translateX(-50%); /* Adjust positioning to center */
+  display: none; /* Initially hide the dropdown */
+}
+
+.search-result-item {
+  padding: 10px; /* Add some padding */
+  cursor: pointer; /* Change cursor to pointer */
+}
+
+.search-result-item:hover {
+  background-color: #f0f0f0; /* Highlight on hover */
+}
+
+
+

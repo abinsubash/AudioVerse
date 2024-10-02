@@ -13,7 +13,6 @@ const cart =async (req, res) => {
         const cartProduct = await Cart.findOne({ userId: user._id })
         .populate('items.ProductId')  
         .populate('items.variantId');
-        console.log(cart)
         
         res.render("users/cart", { user: req.session.userExist, cartProducts: cartProduct });
       
@@ -96,15 +95,15 @@ const cartDelete = async (req, res) => {
   
       let cart = await Cart.findOne({ userId: user._id });
       const variant = await Variant.findOne({ _id: variantId });
+      console.log(variant.price)
       if (!cart) {
         cart = new Cart({
           userId: user._id,
           items: [],
-          totalPrice:variant.price
+          totalPrice:0
         });
         await cart.save();
       }
-  
       const itemExist =cart.items.some(item => item.variantId.toString() === variantId);
   
       if (!itemExist) {
@@ -121,7 +120,6 @@ const cartDelete = async (req, res) => {
           });
   
           await cart.save();
-  
           // If the user's cart ID isn't set, update it
           if (!user.cartId) {
             await User.updateOne({ _id: user._id }, { cartId: cart._id });

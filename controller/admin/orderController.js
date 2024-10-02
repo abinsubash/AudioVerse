@@ -6,7 +6,7 @@ const Order = require('../../model/orderModel');
 
 const orderDetails = async (req, res) => {
   try {
-    const perPage = 10; // Define the number of orders per page
+    const perPage = 10;
     const currentPage = req.query.page ? parseInt(req.query.page) : 1;
     const totalOrders = await Order.countDocuments();
     const totalPages = Math.ceil(totalOrders / perPage);
@@ -14,7 +14,7 @@ const orderDetails = async (req, res) => {
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
 
-    res.render("admin/orderDetails", { orders, totalPages, currentPage });
+    res.render("admin/orderpage", { orders, totalPages, currentPage });
   } catch (error) {
     console.error("Error fetching orders:", error);
     res.status(500).send("An error occurred while fetching orders.");
@@ -26,10 +26,14 @@ const orderApproval= async(req,res)=>{
     
     const {orderId} = req.body
      await Order.updateOne({_id:orderId},{isApproved:true,approvedDate:Date.now()})
-    console.log("this is order ");
     res.json({ success: true, message: "order approved" });
 }
 
+
+getOrderDetails = async (req, res) => {
+  const order = await Order.findById(req.params.id).populate('orderItem');
+  res.render('admin/orderDetails', { order });
+};
 
 const orderStatusEdit = async (req, res) => {
     const { itemId, status, orderId } = req.body;
@@ -94,4 +98,4 @@ const orderStatusEdit = async (req, res) => {
     }
   };
   
-module.exports = {orderDetails,orderApproval,orderStatusEdit}
+module.exports = {orderDetails,orderApproval,orderStatusEdit,getOrderDetails}

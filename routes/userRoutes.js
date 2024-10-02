@@ -6,7 +6,7 @@ const User = require("../model/userModel");
 const cartController = require('../controller/user/cartController');
 const checkoutController = require("../controller/user/checkoutController");
 const userRoutes = express.Router();
-
+const shopController = require('../controller/user/shopController')
 userRoutes.get("/auth/google",passport.authenticate("google", { scope: ["profile", "email"] }));
 
 userRoutes.get("/auth/google/callback",passport.authenticate("google", { failureRedirect: "/login" }),userController.googleauth);
@@ -30,8 +30,14 @@ userRoutes.get('/reset-password',userAuth.isBlocked,userController.resetPassword
 userRoutes.post('/confirmPassword',userController.confirmPassword)
 
 // Todo :product page 
-userRoutes.get("/shop",userAuth.isBlocked, userAuth.isBlocked, userController.shop);
+userRoutes.get("/shop",userAuth.isBlocked, userAuth.isBlocked, shopController.newShop);
+userRoutes.get("/api/shop", userAuth.isBlocked, shopController.shopNewPage);
+
+
+
 userRoutes.get("/search", userAuth.isBlocked, userController.searchAndsort);
+userRoutes.get("/filter", userAuth.isBlocked, userController.filter);
+
 userRoutes.get("/singleProduct", userController.singleProduct);
 
 // Todo :Profile
@@ -56,8 +62,8 @@ userRoutes.post('/addAddress',userAuth.isLogin,userController.addAddress)
 userRoutes.put("/editAddress",userAuth.isLogin,userController.editAddress)
 userRoutes.delete('/deleteAddress',userAuth.isLogin,userController.deleteAddress)
 
-userRoutes.post('/toCheckout',checkoutController.toCheckout)
 userRoutes.get("/checkout",userAuth.isBlocked,userAuth.isLogin,checkoutController.checkoutPge);
+userRoutes.post('/toCheckout',userAuth.isBlocked,userAuth.isLogin,checkoutController.toCheckout)
 userRoutes.post("/order",userAuth.isBlocked,userAuth.isLogin,checkoutController.orderTest)
 
 //Todo: Orders

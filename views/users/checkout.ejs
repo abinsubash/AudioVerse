@@ -18,15 +18,23 @@
                     <label for="storedAddresses">Select Stored Address</label>
                     <select id="storedAddresses" onchange="populateAddress(this)">
                       <option value="">-- Select an Address --</option>
-                      <% address.addresses.forEach(details=> { %>
-                        <option value="1" data-name="<%= details.name %>" data-street="<%=details.streetAddress %>"
-                          data-city="<%=details.city %>" data-district="<%=details.district %>"
-                          data-pincode="<%=details.pincode %>" data-phone="<%=details.phoneNo %>">
-                          <%=details.name%>,<%=details.streetAddress %>
-                        </option>
-                        <% })%>
-                          <!-- More dynamically generated options can go here -->
-                    </select>
+                      <% if (address && address.addresses && address.addresses.length) { %>
+                          <% address.addresses.forEach(details => { %>
+                              <option value="<%= details._id %>" 
+                                  data-name="<%= details.name %>" 
+                                  data-street="<%= details.streetAddress %>"
+                                  data-city="<%= details.city %>" 
+                                  data-district="<%= details.district %>"
+                                  data-pincode="<%= details.pincode %>" 
+                                  data-phone="<%= details.phoneNo %>">
+                                  <%= details.name %>, <%= details.streetAddress %>
+                              </option>
+                          <% }) %>
+                      <% } else { %>
+                          <option value="">No addresses available. Please add a new address.</option>
+                      <% } %>
+                  </select>
+                  
                   </div>
 
                   <!-- Address Form Fields -->
@@ -239,28 +247,37 @@
           }
 
           function populateAddress(select) {
-            const selectedOption = select.options[select.selectedIndex];
+    const selectedOption = select.options[select.selectedIndex];
 
-            if (selectedOption.value) {
-              document.getElementById('name').value = selectedOption.getAttribute('data-name');
-              document.getElementById('streetAddress').value = selectedOption.getAttribute('data-street');
-              document.getElementById('city').value = selectedOption.getAttribute('data-city');
-              document.getElementById('district').value = selectedOption.getAttribute('data-district');
-              document.getElementById('pincode').value = selectedOption.getAttribute('data-pincode');
-              document.getElementById('phoneNo').value = selectedOption.getAttribute('data-phone');
+    // Check if the selected option is "Add New Address"
+    if (selectedOption.value === "add-new") {
+        // Logic to show the form for adding a new address
+        showAddNewAddressForm(); // Replace this with your actual function to display the form
+        clearForm(); // Clear existing form fields if needed
+    } else if (selectedOption.value) {
+        // Populate fields with selected address data
+        document.getElementById('name').value = selectedOption.getAttribute('data-name');
+        document.getElementById('streetAddress').value = selectedOption.getAttribute('data-street');
+        document.getElementById('city').value = selectedOption.getAttribute('data-city');
+        document.getElementById('district').value = selectedOption.getAttribute('data-district');
+        document.getElementById('pincode').value = selectedOption.getAttribute('data-pincode');
+        document.getElementById('phoneNo').value = selectedOption.getAttribute('data-phone');
 
-              addressData = {
-                name: selectedOption.getAttribute('data-name'),
-                streetAddress: selectedOption.getAttribute('data-street'),
-                city: selectedOption.getAttribute('data-city'),
-                district: selectedOption.getAttribute('data-district'),
-                pincode: selectedOption.getAttribute('data-pincode'),
-                phoneNo: selectedOption.getAttribute('data-phone')
-              };
-            } else {
-              clearForm();
-            }
-          }
+        // Create address data object
+        addressData = {
+            name: selectedOption.getAttribute('data-name'),
+            streetAddress: selectedOption.getAttribute('data-street'),
+            city: selectedOption.getAttribute('data-city'),
+            district: selectedOption.getAttribute('data-district'),
+            pincode: selectedOption.getAttribute('data-pincode'),
+            phoneNo: selectedOption.getAttribute('data-phone')
+        };
+    } else {
+        clearForm(); // Clear the form if no valid option is selected
+    }
+}
+
+
 
          async function orderConfirm(event) {
             event.preventDefault();

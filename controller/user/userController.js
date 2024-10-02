@@ -11,7 +11,8 @@ const { isDeleted } = require("../admin/productController");
 const Variant = require("../../model/variantModel");
 const Cart = require("../../model/cartModel");
 const Address = require("../../model/addressModel");
-
+const mongoose = require("mongoose");
+const { ObjectId } = mongoose.Types;
 const generateRefferalID = () => {
   return crypto.randomBytes(6).toString("hex");
 };
@@ -214,89 +215,135 @@ const homePage = async (req, res) => {
   }
 };
 
-const shop = async (req, res) => {
-  const page = parseInt(req.query.page) || 1; 
-  const limit = 6; 
-  const skip = (page - 1) * limit; 
 
-  const totalProducts = await Product.countDocuments({ isDeleted: false });
+const searchAndsort = async (req, res) => {
+  try {
+    const { value } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = 6;
+    const skip = (page - 1) * limit;
 
-  const products = await Product.find({ isDeleted: false })
-    .populate("productBrand")
-    .populate("variants")
-    .populate("category")
-    .skip(skip)
-    .limit(limit)
-    .exec();
-  const totalPages = Math.ceil(totalProducts / limit);
-
-  res.render("users/shop", {
-    user: req.session.userExist,
-    products: products,
-    currentPage: page,
-    totalPages: totalPages,
-  });
+    const totalProducts = await Product.countDocuments({ isDeleted: false });
+    const products = await Product.find({
+      isDeleted: false,
+      productName: { $regex: value, $options: "i" },
+    })
+      .populate("productBrand")
+      .populate("variants")
+      .populate("category")
+      .skip(skip)
+      .limit(limit)
+      .exec();
+    res.json({
+      success: true,
+      products: products,
+      totalPages: Math.ceil(totalProducts / limit),
+      currentPage: page,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "An error occurred." });
+    console.error(error);
+  }
 };
 
-const searchAndsort = (req,res)=>{
-  
-}
+const filter = async (req, res) => {
+  const { values } = req.query;
+  const categoryIds = values ? values.split(",") : [];
+  console.log(categoryIds);
 
+  try {
+    const products = await Product.find({
+      category: { $in: categoryIds },
+    })
+      .populate("productBrand")
+      .populate("variants")
+      .populate("category");
 
+    console.log("This is products", products);
+    res.json({ success: true, products });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while filtering products.",
+    });
+  }
+};
 
 const singleProduct = async (req, res) => {
-  const { variantColor, id } = req.query;
+  try {
+    console.log("hi");
+    let { variantColor, id } = req.query;
+    console.log("now here");
+    const product = await Product.find({ _id: id })
+      .populate("productBrand")
+      .populate("variants")
+      .populate("category")
+      .exec();
+    if (
+      !variantColor &&
+      product[0].variants &&
+      product[0].variants.length > 0
+    ) {
+      variantColor = product[0].variants[0].color; // Set default color
+    }
+    if (!product) {
+      res.send("jo");
+    }
+    const categoryId = product[0].category._id.toString();
+    const relatedProduct = await Product.find()
+      .populate("productBrand")
+      .populate("variants")
+      .populate("category")
+      .exec();
 
-  const product = await Product.find({ _id: id })
-    .populate("productBrand")
-    .populate("variants")
-    .populate("category")
-    .exec();
-  const categoryId = product[0].category._id.toString();
-  const relatedProduct = await Product.find()
-    .populate("productBrand")
-    .populate("variants")
-    .populate("category")
-    .exec();
+    const filteredProducts = relatedProduct.filter(
+      (product) => product.category._id.toString() === categoryId
+    );
 
-  const filteredProducts = relatedProduct.filter(
-    (product) => product.category._id.toString() === categoryId
-  );
+    const productss = await Product.find({ _id: id });
 
-  const productss = await Product.find({ _id: id });
+    if (productss && productss.length > 0) {
+      const newproduct = productss[0];
+      if (newproduct.variants) {
+        newproduct.variants.forEach(async (variant) => {
+          const { _id } = variant;
+          const showVariant = await Varinat.find({ _id });
+          showVariant.forEach(async (newvariant) => {
+            if (newvariant.color == variantColor) {
+              const newVarint = await Varinat.find({ _id: newvariant.id });
+              let itemExist = false;
 
-  if (productss && productss.length > 0) {
-    const newproduct = productss[0];
-    if (newproduct.variants) {
-      newproduct.variants.forEach(async (variant) => {
-        const { _id } = variant;
-        const showVariant = await Varinat.find({ _id });
-        showVariant.forEach(async (newvariant) => {
-          if (newvariant.color == variantColor) {
-            const newVarint = await Varinat.find({ _id: newvariant.id });
-            let itemExist = false; 
+              if (req.session.userExist) {
+                const cart = await Cart.findOne({
+                  userId: req.session.userExist._id,
+                });
 
-            if (req.session.userExist) {
-                const cart = await Cart.findOne({ userId: req.session.userExist._id });
-                
-                itemExist = cart && cart.items.some(item => item.variantId.toString() === newVarint[0].id);
-            }
-            res.render("users/singleProduct", {
+                itemExist =
+                  cart &&
+                  cart.items.some(
+                    (item) => item.variantId.toString() === newVarint[0].id
+                  );
+              }
+              res.render("users/singleProduct", {
                 user: req.session.userExist,
                 products: product,
                 relatedProducts: filteredProducts,
                 newvarinats: newVarint,
-                itemExists: itemExist, 
-            });
-            
-          }
+                itemExists: itemExist,
+              });
+            }
+          });
         });
-      });
+      } else {
+        console.log("No variants found");
+      }
     } else {
-      console.log("No variants found");
+      console.log("Product not found");
     }
-  } else {
-    console.log("Product not found");
+  } catch (error) {
+    res.redirect("/404");
+    console.log(error);
   }
 };
 
@@ -376,8 +423,6 @@ const changePassword = async (req, res) => {
   }
 };
 
-
-
 const forgetPassowrd = (req, res) => {
   res.render("users/forgetEmail");
 };
@@ -418,12 +463,10 @@ const confirmEmail = async (req, res) => {
     });
 
     await transporter.sendMail(mailOptions);
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Password reset link has been sent to your email",
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Password reset link has been sent to your email",
+    });
   } catch (error) {
     console.error("Error sending email:", error);
     return res
@@ -457,16 +500,15 @@ const confirmPassword = async (req, res) => {
 };
 
 const error404 = (req, res) => {
-  res.render("users/404");
+  res.render("layout/404");
 };
-
 
 // address
 
-const address = async(req,res)=>{
-  const user = await User.findOne({_id:req.session.userExist._id});
-  const address = await Address.findOne({_id:user.addressId});
-  res.render('users/addAddress',{ user: user ,address:address})
+const address = async (req, res) => {
+  const user = await User.findOne({ _id: req.session.userExist._id });
+  const address = await Address.findOne({ _id: user.addressId });
+  res.render("users/addAddress", { user: user, address: address });
 };
 
 const addAddress = async (req, res) => {
@@ -480,7 +522,7 @@ const addAddress = async (req, res) => {
     if (!address) {
       address = new Address({
         userId: user._id,
-        addresses: []
+        addresses: [],
       });
       await address.save();
     }
@@ -491,7 +533,7 @@ const addAddress = async (req, res) => {
       city,
       district,
       pincode,
-      phoneNo
+      phoneNo,
     });
 
     await address.save();
@@ -507,51 +549,58 @@ const addAddress = async (req, res) => {
 };
 
 const editAddress = async (req, res) => {
-  const { addressId, name, streetAddress, city, district, pincode, phoneNo } = req.body;
+  const { addressId, name, streetAddress, city, district, pincode, phoneNo } =
+    req.body;
 
-  const addressDoc = await Address.findOne({ userId: req.session.userExist._id });
-  
+  const addressDoc = await Address.findOne({
+    userId: req.session.userExist._id,
+  });
+
   if (!addressDoc) {
-      return res.json({ success: false, message: 'Address document not found' });
+    return res.json({ success: false, message: "Address document not found" });
   }
 
-  const addressIndex = addressDoc.addresses.findIndex(address => address._id.toString() === addressId);
+  const addressIndex = addressDoc.addresses.findIndex(
+    (address) => address._id.toString() === addressId
+  );
 
   if (addressIndex === -1) {
-      return res.json({ success: false, message: 'Address not found' });
+    return res.json({ success: false, message: "Address not found" });
   }
 
   addressDoc.addresses[addressIndex] = {
-      ...addressDoc.addresses[addressIndex],
-      name,
-      streetAddress,
-      city,
-      district,
-      pincode,
-      phoneNo
+    ...addressDoc.addresses[addressIndex],
+    name,
+    streetAddress,
+    city,
+    district,
+    pincode,
+    phoneNo,
   };
 
   await addressDoc.save();
 
-  return res.json({ success: true, message: 'Address updated successfully' });
+  return res.json({ success: true, message: "Address updated successfully" });
 };
-
 
 const deleteAddress = async (req, res) => {
   try {
-      const { addressId } = req.body; 
+    const { addressId } = req.body;
 
-      const result = await Address.updateOne(
-          { userId: req.session.userExist._id }, 
-          { $pull: { addresses: { _id: addressId } } } 
-      );
+    const result = await Address.updateOne(
+      { userId: req.session.userExist._id },
+      { $pull: { addresses: { _id: addressId } } }
+    );
 
-      if (result.modifiedCount === 0) {
-          return res.json({ success: false, message: 'Address not found or already deleted' });
-      }
-      return res.json({ success: true, message: 'Address deleted successfully' });
+    if (result.modifiedCount === 0) {
+      return res.json({
+        success: false,
+        message: "Address not found or already deleted",
+      });
+    }
+    return res.json({ success: true, message: "Address deleted successfully" });
   } catch (error) {
-      console.error( error);
+    console.error(error);
   }
 };
 
@@ -566,7 +615,6 @@ module.exports = {
   getOtp,
   loginValidation,
   logout,
-  shop,
   singleProduct,
   googleauth,
   profile,
@@ -581,5 +629,6 @@ module.exports = {
   error404,
   editAddress,
   deleteAddress,
-  searchAndsort
+  searchAndsort,
+  filter,
 };

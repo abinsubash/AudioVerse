@@ -1,189 +1,424 @@
 <%- include('../layout/header') -%>
-	<style>
-		.color-circle {
-			width: 20px;
-			height: 20px;
-			border-radius: 50%;
-			border: 1px solid #ccc;
-			display: inline-block;
-		}
-	</style>
+    <style>
+        .color-circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1px solid #ccc;
+            display: inline-block;
+        }
+    </style>
 
-	<body class="goto-here">
-		<nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
-			<div class="container">
-				<a class="navbar-brand" href="/">AudiVerse</a>
-				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav"
-					aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
-					<span class="oi oi-menu"></span> Menu
-				</button>
+    <body class="goto-here">
+        <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
+            <div class="container">
+                <a class="navbar-brand" href="/">AudiVerse</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav"
+                    aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="oi oi-menu"></span> Menu
+                </button>
+                <div class="search-box-container">
+                    <div class="search-box">
+                        <input type="text" class="input-search" id="searchInput" value="<%= search %>"
+                            placeholder="Type to Search...">
+                        <button class="btn-search" id="searchButton"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="collapse navbar-collapse" id="ftco-nav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
+                    <li class="nav-item dropdown active">
+                        <% if (user) { %>
+                            <a class="nav-link dropdown-toggle" href="#" id="dropdown04" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                                <%= user.name%>
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="dropdown04">
+                                <a class="dropdown-item" href="/profile">Profile</a>
+                                <a class="dropdown-item" href="/logout">Logout</a>
+                            </div>
+                            <% } else { %>
+                                <a class="nav-link" href="/login">Login</a>
+                                <% } %>
 
-				<div class="search-box-container">
-					<div class="search-box">
-						<input type="text" class="input-search" id="searchInput" placeholder="Type to Search...">
-						<button class="btn-search" id="searchButton"><i class="fas fa-search"></i></button>
-					</div>
-					<div id="searchResults"></div> <!-- This will hold the dynamic search results -->
-				</div>
+                    </li>
+                    <li class="nav-item"><a href="/shop" class="nav-link">shop</a></li>
+                    <li class="nav-item"><a href="/wishlist" class="nav-link">Wishlist</a></li>
+                    <li class="nav-item"><a href="/contact" class="nav-link">Contact</a></li>
+                    <li class="nav-item cta cta-colored"><a href="/cart" class="nav-link"><span
+                                class="icon-shopping_cart"></span></a></li>
+                </ul>
+            </div>
+            </div>
+        </nav>
+        <div id="resultContainer" class="result-dropdown"></div> <!-- Add class for styling -->
 
+        <div class="hero-wrap hero-bread" style="background-image: url('/winkel/images/bg_6.jpg');">
+            <div class="container">
+                <div class="row no-gutters slider-text align-items-center justify-content-center">
+                    <div class="col-md-9 ftco-animate text-center">
+                        <p class="breadcrumbs"><span class="mr-2"><a href="index.html">Home</a></span>
+                            <span>Products</span>
+                        </p>
+                        <h1 class="mb-0 bread">Collection Products</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-			</div>
-			<div class="collapse navbar-collapse" id="ftco-nav">
-				<ul class="navbar-nav ml-auto">
-					<li class="nav-item"><a href="/" class="nav-link">Home</a></li>
-					<li class="nav-item dropdown active">
-						<% if (user) { %>
-							<a class="nav-link dropdown-toggle" href="#" id="dropdown04" data-toggle="dropdown"
-								aria-haspopup="true" aria-expanded="false">
-								<%= user.name%>
-							</a>
-							<div class="dropdown-menu" aria-labelledby="dropdown04">
-								<a class="dropdown-item" href="/profile">Profile</a>
-								<a class="dropdown-item" href="/logout">Logout</a>
-							</div>
-							<% } else { %>
-								<a class="nav-link" href="/login">Login</a>
-								<% } %>
+        <section class="ftco-section bg-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-5 col-lg-9 order-md-last">
+                        <div class="row" id="productList">
+                            <% variants.forEach(variant => { %>
+                                <div class="col-sm-6 col-md-6 col-lg-4 ftco-animate product-card"
+                                    data-name="<%= variant.productDetails ? variant.productDetails.productName.toLowerCase() : '' %>">
+                                    <div class="product">
+                                        <a href="/singleProduct/?variantColor=<%= variant.color %>&id=<%= variant.productDetails._id %>"
+                                            class="img-prod">
+                            
+                                            <% if (variant.images && variant.images.length > 0) { %>
+                                                <img class="img-fluid" src="<%= variant.images[0] %>"
+                                                    alt="Product Image">
+                                            <% } else { %>
+                                                <img class="img-fluid" src="path/to/default-image.jpg"
+                                                    alt="No Image Available">
+                                            <% } %>
+                                            <span class="status"></span>
+                                            <div class="overlay"></div>
+                                        </a>
+                                        <div class="text py-3 px-3">
+                                            <h3><a href="#">
+                                                <%= variant.productDetails ? variant.productDetails.productName : 'Unknown Product' %>
+                                            </a></h3>
+                                            <div class="d-flex">
+                                                <div class="pricing">
+                                                    <p class="price">
+                                                        <span class="price-sale">$<%= variant.price %></span>
+                                                    </p>
+                                                </div>
+                                                <div class="rating">
+                                                    <p class="text-right">
+                                                        <% for (let i = 0; i < 5; i++) { %>
+                                                            <% if (i < variant.rating) { %>
+                                                                <a href="#"><span class="ion-ios-star"></span></a>
+                                                            <% } else { %>
+                                                                <a href="#"><span class="ion-ios-star-outline"></span></a>
+                                                            <% } %>
+                                                        <% } %>
+                                                    </p>
+                                                    <p class="bottom-area d-flex px-3">
+                                                        <a href="#" class="add-to-cart text-center py-2 mr-1">
+                                                            <span>Add to cart <i class="ion-ios-add ml-1"></i></span>
+                                                        </a>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                            
+                        </div>
+                        <div class="row mt-5">
+                            <div class="col text-center">
+                                <div class="block-27">
+                                    <ul class="pagination">
+                                        <% if (currentPage > 1) { %>
+                                            <li>
+                                                <a href="/shop?page=<%= currentPage - 1 %>&query=<%= search %>&category=<%= checkedCategory %>&sort=<%= sortOption %>&priceRange=<%= priceRange %>">&lt;</a>
+                                            </li>
+                                        <% } else { %>
+                                            <li class="disabled"><span>&lt;</span></li>
+                                        <% } %>
+                                    
+                                        <% for (let i = 1; i <= totalPages; i++) { %>
+                                            <% if (i === currentPage) { %>
+                                                <li class="active"><span><%= i %></span></li>
+                                            <% } else { %>
+                                                <li>
+                                                    <a href="/shop?page=<%= i %>&query=<%= search %>&category=<%= checkedCategory %>&sort=<%= sortOption %>&priceRange=<%= priceRange %>">
+                                                        <%= i %>
+                                                    </a>
+                                                </li>
+                                            <% } %>
+                                        <% } %>
+                                    
+                                        <% if (currentPage < totalPages) { %>
+                                            <li>
+                                                <a href="/shop?page=<%= currentPage + 1 %>&query=<%= search %>&category=<%= checkedCategory %>&sort=<%= sortOption %>&priceRange=<%= priceRange %>">&gt;</a>
+                                            </li>
+                                        <% } else { %>
+                                            <li class="disabled"><span>&gt;</span></li>
+                                        <% } %>
+                                    </ul>                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-					</li>
-					<li class="nav-item"><a href="/shop" class="nav-link">shop</a></li>
-					<li class="nav-item"><a href="/wishlist" class="nav-link">Wishlist</a></li>
-					<li class="nav-item"><a href="/contact" class="nav-link">Contact</a></li>
-					<li class="nav-item cta cta-colored"><a href="/cart" class="nav-link"><span
-								class="icon-shopping_cart"></span></a></li>
-				</ul>
-			</div>
-			</div>
-		</nav>
+                    <div class="sort-container">
+                        <button type="button" style="color: black;" id="clearFiltersBtn"><a href="/shop?isClear=true">Clear
+                                Filters</a></button>
+                        <hr>
+                        <label for="sortOptions">Sort By:</label>
+                        <div class="dropdown">
+                            <button class="dropbtn">Select Sort Option</button>
+                            <div class="dropdown-content" id="sortOptions">
+                                <a href="#" data-value="alphabetical-az">Alphabetical (A-Z)</a>
+                                <a href="#" data-value="alphabetical-za">Alphabetical (Z-A)</a>
+                                <a href="#" data-value="price-low-high">Price: Low to High</a>
+                                <a href="#" data-value="price-high-low">Price: High to Low</a>
+                            </div>
+                        </div>
 
-		<div class="hero-wrap hero-bread" style="background-image: url('/winkel/images/bg_6.jpg');">
-			<div class="container">
-				<div class="row no-gutters slider-text align-items-center justify-content-center">
-					<div class="col-md-9 ftco-animate text-center">
-						<p class="breadcrumbs"><span class="mr-2"><a href="index.html">Home</a></span>
-							<span>Products</span>
-						</p>
-						<h1 class="mb-0 bread">Collection Products</h1>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<section class="ftco-section bg-light">
-			<div class="container">
-				<div class="row">
-					<div class="col-md-5 col-lg-9 order-md-last">
-						<div class="row" id="productList">
-							<% products.forEach(product=> { %>
-								<div class="col-sm-6 col-md-6 col-lg-4 ftco-animate product-card"
-									data-name="<%= product.productName.toLowerCase() %>">
-									<div class="product">
-										<a href="/singleProduct/?variantColor=<%= product.variants[0].color %>&id=<%= product._id %>"
-											class="img-prod">
-											<% if (product.variants.length> 0 &&
-												Array.isArray(product.variants[0].images)) { %>
-												<img class="img-fluid" src="<%= product.variants[0].images[0] %>"
-													alt="Product Image">
-												<% } else { %>
-													<img class="img-fluid" src="path/to/default-image.jpg"
-														alt="No Image Available">
-													<% } %>
-														<span class="status"></span>
-														<div class="overlay"></div>
-										</a>
-										<div class="text py-3 px-3">
-											<h3><a href="#">
-													<%= product.productName %>
-												</a></h3>
-											<div class="d-flex">
-												<div class="pricing">
-													<p class="price">
-														<% if (product.variants.length> 0) { %>
-															<span class="price-sale">$<%= product.variants[0].price %>
-															</span>
-															<% } else { %>
-																<span class="price-sale">Price Not Available</span>
-																<% } %>
-													</p>
-												</div>
-												<div class="rating">
-													<p class="text-right">
-														<% for (let i=0; i < 5; i++) { %>
-															<% if (i < product.rating) { %>
-																<a href="#"><span class="ion-ios-star"></span></a>
-																<% } else { %>
-																	<a href="#"><span
-																			class="ion-ios-star-outline"></span></a>
-																	<% } %>
-																		<% } %>
-													</p>
-													<p class="bottom-area d-flex px-3">
-														<a href="#" class="add-to-cart text-center py-2 mr-1"><span>Add
-																to cart <i class="ion-ios-add ml-1"></i></span></a>
-													</p>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-								<% }); %>
-						</div>
-						<div class="row mt-5">
-							<div class="col text-center">
-								<div class="block-27">
-									<ul>
-										<% if (currentPage> 1) { %>
-											<li><a href="/shop?page=<%= currentPage - 1 %>">&lt;</a></li>
-											<% } else { %>
-												<li class="disabled"><span>&lt;</span></li>
-												<% } %>
-
-													<% for (let i=1; i <=totalPages; i++) { %>
-														<% if (i===currentPage) { %>
-															<li class="active"><span>
-																	<%= i %>
-																</span></li>
-															<% } else { %>
-																<li><a href="/shop?page=<%= i %>">
-																		<%= i %>
-																	</a></li>
-																<% } %>
-																	<% } %>
-
-																		<% if (currentPage < totalPages) { %>
-																			<li><a
-																					href="/shop?page=<%= currentPage + 1 %>">&gt;</a>
-																			</li>
-																			<% } else { %>
-																				<li class="disabled"><span>&gt;</span>
-																				</li>
-																				<% } %>
-									</ul>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<div class="sort-container">
-						<label for="sortOptions">Sort By:</label>
-						<div class="dropdown">
-							<button class="dropbtn">Select Sort Option</button>
-							<div class="dropdown-content" id="sortOptions">
-								<a href="#" data-value="alphabetical-az">Alphabetical (A-Z)</a>
-								<a href="#" data-value="alphabetical-za">Alphabetical (Z-A)</a>
-								<a href="#" data-value="price-low-high">Price: Low to High</a>
-								<a href="#" data-value="price-high-low">Price: High to Low</a>
-							</div>
-						</div>
-						<button id="sortButton">Sort</button>
-					</div>
+                        <input type="hidden" id="sortOption" name="sortOption" value="">
 
 
-				</div>
-			</div>
-		</section>
+                        <div class="filter-container mt-5">
+                            <h5 style="font-weight: bold;">Filter by Category:</h5>
+                            <div id="categoryOptions">
+                                <% category.forEach((categoryItem) => { %>
+                                    <label>
+                                        <input type="radio" name="category" value="<%= categoryItem._id %>"
+                                            class="category-radio" 
+                                            <% if (checkedCategory && checkedCategory.includes(categoryItem._id.toString())) { %> checked <% } %>
+                                        >
+                                        <%= categoryItem.categoryName %>
+                                    </label>
+                                    <br>
+                                <% }) %>
+                                    
+                            </div>
 
-		<%- include('../layout/footer') -%>
-			<script>
-				
-			</script>
+                            <h5 style="font-weight: bold;">Filter by Price:</h5>
+                            <div id="priceOptions">
+                                <label>
+                                    <input type="radio" name="priceRange" value="1-500">
+                                    Below 500
+                                </label>
+                                <br>
+                                <label>
+                                    <input type="radio" name="priceRange" value="500-1000">
+                                    500 - 1000
+                                </label>
+                                <br>
+                                <label>
+                                    <input type="radio" name="priceRange" value="1000-2000">
+                                    1000 - 2000
+                                </label>
+                                <br>
+                                <label>
+                                    <input type="radio" name="priceRange" value="2000-5000">
+                                    2000 - 5000
+                                </label>
+                                <br>
+                                <label>
+                                    <input type="radio" name="priceRange" value="5000-10000">
+                                    5000 - 10000
+                                </label>
+                                <br>
+                                <label>
+                                    <input type="radio" name="priceRange" value="10000-1000000">
+                                    Above 10000
+                                </label>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <%- include('../layout/footer') -%>
+            <script>
+                document.getElementById('searchInput').addEventListener('input', (event) => {
+                    const searchValue = event.target.value;
+                    console.log(searchValue)
+                    if (!searchValue) {
+                        document.getElementById('resultContainer').innerHTML = '';
+                        window.location.href = `/shop?searchHist=true`;
+                        return;
+                    }
+
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', `/search?value=${encodeURIComponent(searchValue)}`, true);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+
+                    xhr.onload = function () {
+                        if (xhr.status === 200) {
+                            const data = JSON.parse(xhr.responseText); // Parse JSON response
+                            updateSearchResults(data.products);
+                        }
+                    };
+                    xhr.send();
+                });
+
+                function updateSearchResults(products) {
+                    const resultContainer = document.getElementById('resultContainer');
+                    resultContainer.innerHTML = '';
+
+                    if (products.length === 0) {
+                        resultContainer.innerHTML = '<div>No products found</div>';
+                        resultContainer.style.display = 'none';
+                        return;
+                    } else {
+                        resultContainer.style.display = 'block'; // Show dropdown if there are results
+                    }
+
+                    products.forEach(product => {
+                        const resultItem = document.createElement('div');
+                        resultItem.textContent = product.productName;
+                        resultItem.className = 'search-result-item';
+
+                        resultItem.addEventListener('click', () => {
+                            window.location.href = `/singleProduct/?id=${product._id}`;
+                        });
+
+                        resultContainer.appendChild(resultItem);
+                    });
+                }
+
+
+                // search-------------------------
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    console.log(window.location.href);
+
+                    let selectedSort = '';
+                    let searchQuery = '';    
+                    let categoryFilter = '';  
+                    let priceFilter = '';
+                    let currentPage = 1;
+
+                    // Check if a page number exists in the URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.has('page')) {
+                        currentPage = parseInt(urlParams.get('page'), 10) || 1; // Use the page number if exists, otherwise default to 1
+                    }
+
+                    console.log("Current Page:", currentPage); // Log the current page number
+
+                    // Function to construct the query string and navigate to the /shop route
+                    function navigateToShop() {
+                        const queryParams = new URLSearchParams();
+
+                        // Always include selected values or empty
+                        queryParams.set('category', categoryFilter); // Always include category
+                        queryParams.set('sort', selectedSort);       // Always include sort
+                        queryParams.set('query', searchQuery);       // Include search query
+                        queryParams.set('priceRange', priceFilter);  // Include price range
+                        queryParams.set('page', currentPage);        // Always set the page
+
+                        // Log the constructed query string for debugging
+                        console.log("Navigating to /shop with query:", queryParams.toString());
+
+                        // Navigate to the /shop route with query parameters
+                        window.location.href = '/shop?' + queryParams.toString();
+                    }
+
+                    // 1. Category Options
+                    document.querySelectorAll('input[name="category"]').forEach(categoryRadio => {
+                        categoryRadio.addEventListener('change', function () {
+                            if (this.checked) {
+                                categoryFilter = this.value; // Store selected category
+                                console.log("Category Filter set to:", categoryFilter); // Log selected category
+                                navigateToShop();  // Navigate to shop with updated query
+                            }
+                        });
+                    });
+
+                    // 2. Sort Options
+                    document.querySelectorAll('.dropdown-content a').forEach(option => {
+                        option.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            selectedSort = this.getAttribute('data-value'); // Store selected sort
+                            console.log("Selected Sort set to:", selectedSort); // Log selected sort
+                            navigateToShop();  // Navigate to shop with updated query
+                        });
+                    });
+
+                    // 3. Search Input
+                    document.getElementById('searchButton').addEventListener('click', function () {
+                        searchQuery = document.getElementById('searchInput').value; // Store search query
+                        console.log("Search Query set to:", searchQuery); // Log search query
+                        navigateToShop();  // Navigate to shop with updated query
+                    });
+
+                    // 4. Price Range Options
+                    document.querySelectorAll('input[name="priceRange"]').forEach(priceRadio => {
+                        priceRadio.addEventListener('change', function () {
+                            if (this.checked) {
+                                priceFilter = this.value;
+                                console.log("Price Filter set to:", priceFilter);
+                                navigateToShop(); 
+                            }
+                        });
+                    });
+
+                });
+                // document.getElementById('searchButton').addEventListener('click', updateUrl);
+                // const radioButtons = document.querySelectorAll('.category-radio');
+
+                // radioButtons.forEach(radio => {
+                //     radio.addEventListener('change', updateCategory);
+                // });
+
+                // function updateUrl() {
+                //     const searchQuery = document.getElementById('searchInput').value.trim();
+                //     console.log('Update URL triggered');
+                //     console.log(searchQuery)
+                //     let url = new URL(window.location.href)
+                //     console.log("This is url", url);
+                //     return
+                //     if (searchQuery) {
+                //         const params = new URLSearchParams();
+                //         params.append('search', encodeURIComponent(searchQuery));
+                //         window.location.href = `/shop?${params.toString()}`;
+                //     }
+                // }
+
+                // function updateCategory() {
+                //     const checkedValue = Array.from(radioButtons).find(rb => rb.checked)?.value;
+                //     const searchQuery = document.getElementById('searchInput').value.trim();
+                //     console.log('Category changed:', checkedValue);
+
+                //     const params = new URLSearchParams();
+                //     if (searchQuery) {
+                //         params.append('search', encodeURIComponent(searchQuery));
+                //     }
+                //     if (checkedValue) {
+                //         params.append('checkedCategory', encodeURIComponent(checkedValue));
+                //     }
+
+                //     window.location.href = `/shop?${params.toString()}`;
+                // }
+
+
+
+
+
+
+                // document.querySelectorAll('#sortOptions a').forEach(link => {
+                //     link.addEventListener('click', function (event) {
+                //         event.preventDefault(); // Prevent default anchor behavior
+                //         const sortValue = this.getAttribute('data-value');
+
+                //         // Set the sort option in the hidden input
+                //         document.getElementById('sortOption').value = sortValue;
+
+                //         // Get current query parameters
+                //         const urlParams = new URLSearchParams(window.location.search);
+
+                //         // Update the query parameters with the selected sort option
+                //         urlParams.set('sortOption', sortValue);
+
+                //         // Redirect to the shop page with the updated query parameters
+                //         window.location.search = urlParams.toString();
+                //     });
+                // });
+
+            </script>

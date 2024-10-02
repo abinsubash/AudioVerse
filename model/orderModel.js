@@ -137,7 +137,8 @@ const orderSchema = mongoose.Schema({
   },
   totalAmount:{
     type:Number,
-    required:true
+    required:true,
+    default:0
   },
   paymentMethod:{
     type:String,

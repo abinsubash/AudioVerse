@@ -143,6 +143,7 @@
             const result = await response.json(); 
             console.log(result.success)
             if (result.success) {
+                window.location.reload()
                 Toastify({
                     text: result.message,
                     backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",

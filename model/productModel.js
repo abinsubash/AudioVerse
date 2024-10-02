@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+
 const productSchema = mongoose.Schema({
     productName: {
         type: String,
@@ -20,17 +21,17 @@ const productSchema = mongoose.Schema({
     variants: [
         {
             type: mongoose.Schema.Types.ObjectId,
-         ref: 'Variant'
+            ref: 'Variant'
         }
     ],
     createdAt: {
         type: Date,
         default: Date.now
     },
-    isDeleted:{
-        type:Boolean,
-        default:false,
-        required:true
+    isDeleted: {
+        type: Boolean,
+        default: false,
+        required: true
     }
 });
 

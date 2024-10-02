@@ -60,7 +60,6 @@ const usersList = async (req, res) => {
   
   const block = async (req, res) => {
     try {
-      console.log("ho")
       const { id } = req.params;
       const user = await User.findOne({ _id: id });
       if (user) {

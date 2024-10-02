@@ -55,7 +55,7 @@
 													</div>
 												</td>
 												<td class="total">
-													$<%= item.ProductId && item.variantId ? (item.variantId.price * item.quantity).toFixed(2) : '0.00' %>
+													$<%= item.ProductId && item.variantId ? (item.variantId.price * item.quantity) : '0.00' %>
 												</td>
 												<td>
 													<button class="delete-btn" onclick="deleteItem('<%= item._id %>')" title="Delete">
@@ -155,7 +155,9 @@
 										backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
 										duration: 5000
 									}).showToast();
-
+									setTimeout(() => {
+										window.location.reload()
+									}, 1000);
 								} else {
 									window.location.reload()
 								}

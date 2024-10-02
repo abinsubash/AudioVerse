@@ -50,7 +50,6 @@ const addProduct = async (req, res) => {
     const { productName, brandName, categoryName, description, variants } =
       req.body;
 
-    console.log(req.files);
     const images = req.files;
     const productExist = await Product.findOne({ productName: productName });
     if (productExist) {
@@ -192,9 +191,6 @@ const updateVariant = async (req, res) => {
   const { productId, variantId } = req.query;
   const { color, price, stock, imagesToRemove } = req.body;
   const files = req.files;
-  console.log(productId, variantId);
-  console.log(color, price, stock, imagesToRemove);
-  console.log(files.length);
   try {
     const variant = await Variant.findById(variantId);
     if (!variant) {

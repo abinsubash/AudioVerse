@@ -38,7 +38,6 @@ const categoryPg = async (req, res) => {
     });
   } catch (error) {
     console.log('Error fetching categories:', error);
-    res.status(500).send('Server Error');
   }
 };
 
