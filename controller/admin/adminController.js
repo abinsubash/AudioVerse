@@ -35,20 +35,26 @@ const home = (req,res)=>{
 
 const usersList = async (req, res) => {
   try {
+    const searchName = req.query.searchName
       const page = parseInt(req.query.page) || 1; 
       const limit =  10; 
       const skip = (page - 1) * limit; 
 
       const totalUsers = await User.countDocuments(); 
-      const users = await User.find().skip(skip).limit(limit); // Fetch users with pagination
+      const users = await User.find({
+        name: { 
+          $regex: new RegExp(searchName, 'i')  
+        }
+      }).skip(skip).limit(limit);
+
 
       const totalPages = Math.ceil(totalUsers / limit); // Calculate total pages
 
-      // Render the user management page with users and pagination data
       res.render('admin/usermanage', {
           users,
           currentPage: page,
-          totalPages
+          totalPages,
+          searchName
       });
   } catch (error) {
       console.error('Error fetching users:', error);
@@ -76,28 +82,31 @@ const usersList = async (req, res) => {
 
   const brands = async (req, res) => {
     try {
+      const searchBrand = req.query.searchBrand||""
       const page = parseInt(req.query.page) || 1; 
       const limit = 10; 
       const skip = (page - 1) * limit; 
   
       const totalBrands = await Brand.countDocuments({});
   
-      const brands = await Brand.find({})
-        .skip(skip)
-        .limit(limit)
-        .exec();
-  
+        const brands = await Brand.find({
+          brandName: { 
+            $regex: new RegExp(searchBrand, 'i')  
+          }
+        }).skip(skip)
+          .limit(limit)
+          .exec();
       const totalPages = Math.ceil(totalBrands / limit);
   
       res.render('admin/brand', {
         brands,
         currentPage: page,
         totalPages: totalPages,
+        searchBrand:searchBrand
       });
     } catch (error) {
       console.log(error);
     }
   };
-  
     
 module.exports = {login,home,brands,usersList,block,adminLogin,logout}

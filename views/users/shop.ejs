@@ -72,27 +72,28 @@
                 <div class="row">
                     <div class="col-md-5 col-lg-9 order-md-last">
                         <div class="row" id="productList">
-                            <% variants.forEach(variant => { %>
+                            <% variants.forEach(variant=> { %>
                                 <div class="col-sm-6 col-md-6 col-lg-4 ftco-animate product-card"
                                     data-name="<%= variant.productDetails ? variant.productDetails.productName.toLowerCase() : '' %>">
                                     <div class="product">
                                         <a href="/singleProduct/?variantColor=<%= variant.color %>&id=<%= variant.productDetails._id %>"
                                             class="img-prod">
-                            
-                                            <% if (variant.images && variant.images.length > 0) { %>
+
+                                            <% if (variant.images && variant.images.length> 0) { %>
                                                 <img class="img-fluid" src="<%= variant.images[0] %>"
                                                     alt="Product Image">
-                                            <% } else { %>
-                                                <img class="img-fluid" src="path/to/default-image.jpg"
-                                                    alt="No Image Available">
-                                            <% } %>
-                                            <span class="status"></span>
-                                            <div class="overlay"></div>
+                                                <% } else { %>
+                                                    <img class="img-fluid" src="path/to/default-image.jpg"
+                                                        alt="No Image Available">
+                                                    <% } %>
+                                                        <span class="status"></span>
+                                                        <div class="overlay"></div>
                                         </a>
                                         <div class="text py-3 px-3">
                                             <h3><a href="#">
-                                                <%= variant.productDetails ? variant.productDetails.productName : 'Unknown Product' %>
-                                            </a></h3>
+                                                    <%= variant.productDetails ? variant.productDetails.productName
+                                                        : 'Unknown Product' %>
+                                                </a></h3>
                                             <div class="d-flex">
                                                 <div class="pricing">
                                                     <p class="price">
@@ -101,13 +102,14 @@
                                                 </div>
                                                 <div class="rating">
                                                     <p class="text-right">
-                                                        <% for (let i = 0; i < 5; i++) { %>
+                                                        <% for (let i=0; i < 5; i++) { %>
                                                             <% if (i < variant.rating) { %>
                                                                 <a href="#"><span class="ion-ios-star"></span></a>
-                                                            <% } else { %>
-                                                                <a href="#"><span class="ion-ios-star-outline"></span></a>
-                                                            <% } %>
-                                                        <% } %>
+                                                                <% } else { %>
+                                                                    <a href="#"><span
+                                                                            class="ion-ios-star-outline"></span></a>
+                                                                    <% } %>
+                                                                        <% } %>
                                                     </p>
                                                     <p class="bottom-area d-flex px-3">
                                                         <a href="#" class="add-to-cart text-center py-2 mr-1">
@@ -119,53 +121,69 @@
                                         </div>
                                     </div>
                                 </div>
-                            <% }); %>
-                            
+                                <% }); %>
+
                         </div>
                         <div class="row mt-5">
                             <div class="col text-center">
                                 <div class="block-27">
                                     <ul class="pagination">
-                                        <% if (currentPage > 1) { %>
+                                        <% if (currentPage> 1) { %>
                                             <li>
-                                                <a href="/shop?page=<%= currentPage - 1 %>&query=<%= search %>&category=<%= checkedCategory %>&sort=<%= sortOption %>&priceRange=<%= priceRange %>">&lt;</a>
+                                                <a
+                                                    href="/shop?page=<%= currentPage - 1 %>&query=<%= search %>&category=<%= checkedCategory %>&sort=<%= sortOption %>&priceRange=<%= priceRange %>">&lt;</a>
                                             </li>
-                                        <% } else { %>
-                                            <li class="disabled"><span>&lt;</span></li>
-                                        <% } %>
-                                    
-                                        <% for (let i = 1; i <= totalPages; i++) { %>
-                                            <% if (i === currentPage) { %>
-                                                <li class="active"><span><%= i %></span></li>
                                             <% } else { %>
-                                                <li>
-                                                    <a href="/shop?page=<%= i %>&query=<%= search %>&category=<%= checkedCategory %>&sort=<%= sortOption %>&priceRange=<%= priceRange %>">
-                                                        <%= i %>
-                                                    </a>
-                                                </li>
-                                            <% } %>
-                                        <% } %>
-                                    
-                                        <% if (currentPage < totalPages) { %>
-                                            <li>
-                                                <a href="/shop?page=<%= currentPage + 1 %>&query=<%= search %>&category=<%= checkedCategory %>&sort=<%= sortOption %>&priceRange=<%= priceRange %>">&gt;</a>
-                                            </li>
-                                        <% } else { %>
-                                            <li class="disabled"><span>&gt;</span></li>
-                                        <% } %>
-                                    </ul>                                    
+                                                <li class="disabled"><span>&lt;</span></li>
+                                                <% } %>
+
+                                                    <% for (let i=1; i <=totalPages; i++) { %>
+                                                        <% if (i===currentPage) { %>
+                                                            <li class="active"><span>
+                                                                    <%= i %>
+                                                                </span></li>
+                                                            <% } else { %>
+                                                                <li>
+                                                                    <a
+                                                                        href="/shop?page=<%= i %>&query=<%= search %>&category=<%= checkedCategory %>&sort=<%= sortOption %>&priceRange=<%= priceRange %>">
+                                                                        <%= i %>
+                                                                    </a>
+                                                                </li>
+                                                                <% } %>
+                                                                    <% } %>
+
+                                                                        <% if (currentPage < totalPages) { %>
+                                                                            <li>
+                                                                                <a
+                                                                                    href="/shop?page=<%= currentPage + 1 %>&query=<%= search %>&category=<%= checkedCategory %>&sort=<%= sortOption %>&priceRange=<%= priceRange %>">&gt;</a>
+                                                                            </li>
+                                                                            <% } else { %>
+                                                                                <li class="disabled"><span>&gt;</span>
+                                                                                </li>
+                                                                                <% } %>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="sort-container">
-                        <button type="button" style="color: black;" id="clearFiltersBtn"><a href="/shop?isClear=true">Clear
+                        <button type="button" style="color: black;" id="clearFiltersBtn"><a
+                                href="/shop?isClear=true">Clear
                                 Filters</a></button>
                         <hr>
                         <label for="sortOptions">Sort By:</label>
                         <div class="dropdown">
-                            <button class="dropbtn">Select Sort Option</button>
+                            <button class="dropbtn">
+                                <% if (sortOption) { %>
+                                    <%= sortOption==="alphabetical-az" ? "Alphabetical (A-Z)" :
+                                        sortOption==="alphabetical-za" ? "Alphabetical (Z-A)" :
+                                        sortOption==="price-low-high" ? "Price: Low to High" :
+                                        sortOption==="price-high-low" ? "Price: High to Low" : "None" %>
+                                        <% } else { %>
+                                            Select Sort Option:None
+                                            <% } %>
+                            </button>
                             <div class="dropdown-content" id="sortOptions">
                                 <a href="#" data-value="alphabetical-az">Alphabetical (A-Z)</a>
                                 <a href="#" data-value="alphabetical-za">Alphabetical (Z-A)</a>
@@ -174,58 +192,80 @@
                             </div>
                         </div>
 
+
                         <input type="hidden" id="sortOption" name="sortOption" value="">
 
 
                         <div class="filter-container mt-5">
                             <h5 style="font-weight: bold;">Filter by Category:</h5>
                             <div id="categoryOptions">
+                                <% if (checkedCategory) { %>
+                                    <p>Selected Category: <%= category.find(c => c._id.toString() === checkedCategory).categoryName %></p>
+                                <% } else { %>
+                                    <p>No category selected</p>
+                                <% } %>
+                        
                                 <% category.forEach((categoryItem) => { %>
                                     <label>
                                         <input type="radio" name="category" value="<%= categoryItem._id %>"
                                             class="category-radio" 
-                                            <% if (checkedCategory && checkedCategory.includes(categoryItem._id.toString())) { %> checked <% } %>
+                                            <% if (checkedCategory && checkedCategory === categoryItem._id.toString()) { %> checked <% } %>
                                         >
                                         <%= categoryItem.categoryName %>
                                     </label>
                                     <br>
                                 <% }) %>
-                                    
                             </div>
-
+                        
                             <h5 style="font-weight: bold;">Filter by Price:</h5>
                             <div id="priceOptions">
+                                <% if (priceRange) { %>
+                                    <p>Selected Price Range: <%= priceRange %></p>
+                                <% } else { %>
+                                    <p>No price range selected</p>
+                                <% } %>
                                 <label>
-                                    <input type="radio" name="priceRange" value="1-500">
+                                    <input type="radio" name="priceRange" value="1-500" 
+                                        <% if (priceRange === "1-500") { %> checked <% } %> 
+                                    >
                                     Below 500
                                 </label>
                                 <br>
                                 <label>
-                                    <input type="radio" name="priceRange" value="500-1000">
+                                    <input type="radio" name="priceRange" value="500-1000" 
+                                        <% if (priceRange === "500-1000") { %> checked <% } %> 
+                                    >
                                     500 - 1000
                                 </label>
                                 <br>
                                 <label>
-                                    <input type="radio" name="priceRange" value="1000-2000">
+                                    <input type="radio" name="priceRange" value="1000-2000" 
+                                        <% if (priceRange === "1000-2000") { %> checked <% } %> 
+                                    >
                                     1000 - 2000
                                 </label>
                                 <br>
                                 <label>
-                                    <input type="radio" name="priceRange" value="2000-5000">
+                                    <input type="radio" name="priceRange" value="2000-5000" 
+                                        <% if (priceRange === "2000-5000") { %> checked <% } %> 
+                                    >
                                     2000 - 5000
                                 </label>
                                 <br>
                                 <label>
-                                    <input type="radio" name="priceRange" value="5000-10000">
+                                    <input type="radio" name="priceRange" value="5000-10000" 
+                                        <% if (priceRange === "5000-10000") { %> checked <% } %> 
+                                    >
                                     5000 - 10000
                                 </label>
                                 <br>
                                 <label>
-                                    <input type="radio" name="priceRange" value="10000-1000000">
+                                    <input type="radio" name="priceRange" value="10000-1000000" 
+                                        <% if (priceRange === "10000-1000000") { %> checked <% } %> 
+                                    >
                                     Above 10000
                                 </label>
                             </div>
-
                         </div>
 
                     </div>
@@ -289,8 +329,8 @@
                     console.log(window.location.href);
 
                     let selectedSort = '';
-                    let searchQuery = '';    
-                    let categoryFilter = '';  
+                    let searchQuery = '';
+                    let categoryFilter = '';
                     let priceFilter = '';
                     let currentPage = 1;
 
@@ -354,7 +394,7 @@
                             if (this.checked) {
                                 priceFilter = this.value;
                                 console.log("Price Filter set to:", priceFilter);
-                                navigateToShop(); 
+                                navigateToShop();
                             }
                         });
                     });

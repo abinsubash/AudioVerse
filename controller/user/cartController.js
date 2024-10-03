@@ -95,7 +95,6 @@ const cartDelete = async (req, res) => {
   
       let cart = await Cart.findOne({ userId: user._id });
       const variant = await Variant.findOne({ _id: variantId });
-      console.log(variant.price)
       if (!cart) {
         cart = new Cart({
           userId: user._id,

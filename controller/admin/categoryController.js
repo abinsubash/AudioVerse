@@ -19,12 +19,17 @@ const addCategory= async (req,res)=>{
 }
 }
 const categoryPg = async (req, res) => {
+  const searchCategory =req.query.searchCategory||''
   const page = parseInt(req.query.page) || 1;
   const limit = 10;
   const skip = (page - 1) * limit; 
 
   try {
-    const categories = await Category.find()
+    const categories = await Category.find({
+      categoryName: { 
+        $regex: new RegExp(searchCategory, 'i')  
+      }
+    })
       .skip(skip)
       .limit(limit);
     
@@ -35,6 +40,7 @@ const categoryPg = async (req, res) => {
       categories: categories,
       currentPage: page,
       totalPages: totalPages,
+      searchCategory:searchCategory
     });
   } catch (error) {
     console.log('Error fetching categories:', error);
@@ -63,22 +69,35 @@ const categoryDelete = async (req, res) => {
 };
 
 
-  const editCategory = async (req, res) => {
-    try {
+const editCategory = async (req, res) => {
+  try {
       const { categoryId } = req.params;
       const { categoryName } = req.body;
-        const category = await Category.findById(categoryId);
-        if (!category) {
-        return res.status(404).json({ success: false, message: "Category not found" });
+
+      // Check if the category exists
+      const category = await Category.findById(categoryId);
+      if (!category) {
+          return res.status(404).json({ success: false, message: "Category not found" });
       }
-        category.categoryName = categoryName;
+
+      const existingCategory = await Category.findOne({
+          categoryName: { $regex: new RegExp('^' + categoryName + '$', 'i') },
+          _id: { $ne: categoryId }
+      });
+
+      if (existingCategory) {
+          return res.status(409).json({ success: false, message: 'Category name already exists' });
+      }
+
+      category.categoryName = categoryName;
+
       await category.save();
-        res.json({ success: true, message: "Category updated successfully" });
-    } catch (error) {
+      res.json({ success: true, message: "Category updated successfully" });
+  } catch (error) {
       console.error(error);
       res.status(500).json({ success: false, message: "Internal server error" });
-    }
-  };
+  }
+};
 
   
 module.exports = {addCategory,categoryPg,categoryDelete,editCategory}

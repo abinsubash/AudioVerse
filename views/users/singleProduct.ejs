@@ -48,9 +48,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-lg-5 mb-4 ftco-animate">
-                        <!-- Image Zoom Container -->
                         <div class="zoom-container">
-                            <!-- Set the image as a background to enable zooming -->
                             <div id="zoom-background" class="zoom-background"
                                 style="background-image: url('<%= newvarinats[0].images[0] %>');">
                             </div>
@@ -72,6 +70,7 @@
                                     <% }); %>
                                         <% } %>
                         </div>
+
                     </div>
 
                     <div class="col-lg-6 product-details pl-md-5 ftco-animate">
@@ -82,76 +81,83 @@
 
                             <p class="price"><span>
                                     $<%= newvarinats[0].price %>
+                                        <i onclick="wishlist('<%= newvarinats[0]._id %>', this)" class="fa fa-heart"
+                                            style="color: <%= wishlist.items.some(item => item.variantId.equals(newvarinats[0]._id)) ? 'red' : 'white' %>; 
+                                           font-size: 28px; 
+                                           cursor: pointer; 
+                                           text-shadow: 0 0 2px black;">
+                                        </i>
+
                                 </span></p>
 
-                            <p>
-                                <%= product.description %>
-                            </p>
-
-                            <!-- Rating Section -->
-                            <div class="rating d-flex">
-                                <p class="text-right">
-                                    <% for (let i=0; i < 5; i++) { %>
-                                        <a href="#"><span class="ion-ios-star-outline"></span></a>
-                                        <% } %>
+                            <%= product.description %>
                                 </p>
-                                <p class="text-left mr-4">
-                                    <a href="#" class="mr-2" style="color: #000;">100 <span
-                                            style="color: #bbb;">Rating</span></a>
-                                </p>
-                            </div>
 
-                            <!-- Variants Section -->
-                            <div class="row mt-4">
-                                <div class="col-md-6">
-                                    <div class="form-group d-flex">
-                                        <% if (products[0].variants && products[0].variants.length> 0) { %>
-                                            <% products[0].variants.forEach(variant=> { %>
-                                                <a href="/singleProduct/?variantColor=<%= variant.color %>&id=<%= products[0]._id %>"
-                                                    class="mr-2">
-                                                    <div class="color-circle"
-                                                        style="background-color: <%= variant.color %>"></div>
-                                                </a>
-                                                <% }); %>
-                                                    <% } else { %>
-                                                        <p>No color variants available</p>
-                                                        <% } %>
+                                <!-- Rating Section -->
+                                <div class="rating d-flex">
+                                    <p class="text-right">
+                                        <% for (let i=0; i < 5; i++) { %>
+                                            <a href="#"><span class="ion-ios-star-outline"></span></a>
+                                            <% } %>
+                                    </p>
+                                    <p class="text-left mr-4">
+                                        <a href="#" class="mr-2" style="color: #000;">100 <span
+                                                style="color: #bbb;">Rating</span></a>
+                                    </p>
+                                </div>
+
+                                <!-- Variants Section -->
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group d-flex">
+                                            <% if (products[0].variants && products[0].variants.length> 0) { %>
+                                                <% products[0].variants.forEach(variant=> { %>
+                                                    <a href="/singleProduct/?variantColor=<%= variant.color %>&id=<%= products[0]._id %>"
+                                                        class="mr-2">
+                                                        <div class="color-circle"
+                                                            style="background-color: <%= variant.color %>"></div>
+                                                    </a>
+                                                    <% }); %>
+                                                        <% } else { %>
+                                                            <p>No color variants available</p>
+                                                            <% } %>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                          
-                            <% if (newvarinats[0].stock <= 0) { %>
-                                <p class="newdiv"><span style="color: red;">
-                                    Out of Stock
-                                </span></p>
-                            <% } else if (newvarinats[0].stock <= 10) { %>
-                                <p class="newdiv"><span style="color: green;">
-                                    <%= newvarinats[0].stock %> stock is available
-                                </span></p>
-                            <% } else { %>
-                                <p class="newdiv"><span style="color: green;">
-                                    Stock is available
-                                </span></p>
-                            <% } %>
-                            
-                                
 
-                            <% if (itemExists) { %>
-                                
-                                <p><a href="/cart" class="btn btn-black py-3 px-5">Show in Cart</a></p>
-                               
-                                <% } else { %>
-                                    <% if (newvarinats[0].stock > 0) { %>
-                                    <p>
-                                        <a href="#"
-                                            onclick="addToCart('<%= newvarinats[0].id %>', '<%= products[0].id %>');"
-                                            class="btn btn-black py-3 px-5">
-                                            Add to Cart
-                                        </a>
-                                    </p>
-                                    <% } %>
-                                    <% } %>
+                                <% if (newvarinats[0].stock <=0) { %>
+                                    <p class="newdiv"><span style="color: red;">
+                                            Out of Stock
+                                        </span></p>
+                                    <% } else if (newvarinats[0].stock <=10) { %>
+                                        <p class="newdiv"><span style="color: green;">
+                                                <%= newvarinats[0].stock %> stock is available
+                                            </span></p>
+                                        <% } else { %>
+                                            <p class="newdiv"><span style="color: green;">
+                                                    Stock is available
+                                                </span></p>
+                                            <% } %>
+
+
+
+                                                <% if (itemExists) { %>
+
+                                                    <p><a href="/cart" class="btn btn-black py-3 px-5">Show in Cart</a>
+                                                    </p>
+
+                                                    <% } else { %>
+                                                        <% if (newvarinats[0].stock> 0) { %>
+                                                            <p>
+                                                                <a href="#"
+                                                                    onclick="addToCart('<%= newvarinats[0].id %>', '<%= products[0].id %>');"
+                                                                    class="btn btn-black py-3 px-5">
+                                                                    Add to Cart
+                                                                </a>
+                                                            </p>
+                                                            <% } %>
+                                                                <% } %>
 
                     </div>
                 </div>
@@ -203,7 +209,7 @@
                                                 <p class="price">
                                                     <% if (product.variants.length> 0) { %>
                                                         <span class="price-sale">$<%= product.variants[0].price %>
-                                                                </span>
+                                                        </span>
                                                         <% } else { %>
                                                             <span class="price-sale">Price Not Available</span>
                                                             <% } %>
@@ -312,6 +318,45 @@
                         .catch(error => {
                             console.error('Error adding to cart:', error);
                         });
+                }
+
+
+
+                // Todo: wishlist manage 
+
+                function wishlist(variantid, element) {
+                    console.log(variantid);
+
+                    if (element.style.color === 'red') {
+                        element.style.color = 'white';
+                    } else {
+                        element.style.color = 'red';
+                    }
+                    $.ajax({
+                        url: '/addAndRemoveWishlist',
+                        method: "POST",
+                        data: {
+                            variantid: variantid
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                Toastify({
+                                    text: response.message,
+                                    backgroundColor: response.message.includes("added") ? "green" : "red",
+                                    className: "info",
+                                    duration: 3000 
+                                }).showToast();
+                            } else if (response.redirect) {
+                                window.location.href = '/login'; 
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // Handle any errors here
+                            console.error(error);
+                        }
+                    });
+
+
                 }
 
             </script>

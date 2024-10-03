@@ -6,30 +6,37 @@ const fs = require("fs");
 
 const productPage = async (req, res) => {
   try {
+    const searchProduct = req.query.searchProduct || ''; // Get the search term from query or empty string
     const page = parseInt(req.query.page) || 1;
-    const limit = 10; // Number of products per page
-    const skip = (page - 1) * limit; // Calculate how many products to skip
-
-    // Find the total number of products
-    const totalProducts = await Product.countDocuments({});
-
-    // Fetch the products with pagination
-    const products = await Product.find({})
+    const limit = 10;
+    const skip = (page - 1) * limit;
+    
+    // Use the searchProduct in your query
+    const totalProducts = await Product.countDocuments({
+      productName: {
+        $regex: new RegExp(searchProduct, 'i') // Case-insensitive search for product name
+      }
+    });
+    
+    const products = await Product.find({
+      productName: {
+        $regex: new RegExp(searchProduct, 'i')
+      }
+    })
       .populate("productBrand")
       .populate("category")
       .skip(skip)
       .limit(limit)
       .exec();
-
-    // Calculate total pages
+    
     const totalPages = Math.ceil(totalProducts / limit);
-
-    // Render the view and pass pagination info
+    
     res.render("admin/product", {
       products,
       currentPage: page,
       totalPages,
-    });
+      searchProduct // Pass the search term to the template
+    });    
   } catch (error) {
     console.error("Error fetching products:", error);
   }

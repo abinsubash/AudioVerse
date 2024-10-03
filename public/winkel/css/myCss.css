@@ -245,4 +245,15 @@
 }
 
 
+.black-button {
+  background-color: black;
+  padding: 8px 20px;  /* Adjust padding for width and height */
+  border: none;
+  cursor: pointer;
+  color: white;
+  width: 70%;         /* Decreased width */
+}
 
+.black-button:hover {
+  background-color: #ffa45c;
+}

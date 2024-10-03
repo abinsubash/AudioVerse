@@ -7,9 +7,12 @@ const Order = require("../../model/orderModel");
 const express = require("express");
 
 const checkoutPge = async (req, res) => {
-  const cart = await Cart.findOne({ userId: req.session.userExist._id });
+  const cart = await Cart.findOne({ userId: req.session.userExist._id })
+    .populate("items.ProductId")
+    .populate("items.variantId");
+
   const address = await Address.findOne({ userId: req.session.userExist._id });
-  
+
   res.render("users/checkout", {
     user: req.session.userExist,
     cart: cart,
@@ -17,12 +20,12 @@ const checkoutPge = async (req, res) => {
   });
 };
 
-const toCheckout=  async (req, res) => {
+const toCheckout = async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.session.userExist._id });
-    
+
     if (!cart || cart.items.length === 0) {
-      return res.json({ success: false, message: 'Your cart is empty.' });
+      return res.json({ success: false, message: "Your cart is empty." });
     }
 
     let currentQuantity = true;
@@ -31,28 +34,37 @@ const toCheckout=  async (req, res) => {
 
     for (const item of cart.items) {
       const variant = await Variant.findOne({ _id: item.variantId.toString() });
-      
+
       if (!variant || variant.stock < item.quantity) {
         currentQuantity = false;
         color = variant.color;
-        const product = await Product.findOne({ _id: item.ProductId.toString() });
-        ProductName = product ? product.productName : 'Unknown Product';
-        break;  // Stop checking if one product is already out of stock
+        const product = await Product.findOne({
+          _id: item.ProductId.toString(),
+        });
+        ProductName = product ? product.productName : "Unknown Product";
+        break; 
       }
     }
 
     if (!currentQuantity) {
-      return res.json({ success: false, message: `${ProductName} (${color}) is out of stock or insufficient quantity.` });
+      return res.json({
+        success: false,
+        message: `${ProductName} (${color}) is out of stock or insufficient quantity.`,
+      });
     }
 
     // Proceed to checkout if everything is in stock
-    return res.json({ success: true, message: 'Stock is available. Proceeding to checkout.' });
-    
+    return res.json({
+      success: true,
+      message: "Stock is available. Proceeding to checkout.",
+    });
   } catch (error) {
     console.error("Error during checkout:", error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
   }
-}
+};
 
 const orderTest = async (req, res) => {
   try {
@@ -117,12 +129,14 @@ const orderTest = async (req, res) => {
         { $inc: { stock: -item.quantity } }
       );
     });
-    const deletedCart = await Cart.findOneAndDelete({ userId: req.session.userExist._id });
+    const deletedCart = await Cart.findOneAndDelete({
+      userId: req.session.userExist._id,
+    });
     if (!deletedCart) {
-      console.log('Cart not found');
-      return res.json({ success: false, message: 'Cart not found' });
+      console.log("Cart not found");
+      return res.json({ success: false, message: "Cart not found" });
     }
-    res.json({success:true, message: "Order created successfully" });
+    res.json({ success: true, message: "Order created successfully" });
   } catch (error) {
     console.error("Error fetching order details:", error);
   }
@@ -149,7 +163,8 @@ const orderCancellation = async (req, res) => {
         const canceledItem = order.orderItem[itemIndex];
 
         canceledItem.isCancelled = true;
-        canceledItem.cancellationReason = reason;
+        canceledItem.orderStatus ='cancelled'
+        canceledItem.cancelReson = reason;
         canceledItem.cancelDate = Date.now();
         await order.save();
         const variantId = canceledItem.variantId;
@@ -158,13 +173,39 @@ const orderCancellation = async (req, res) => {
           variant.stock += canceledItem.quantity;
           await variant.save();
         }
-        res.json({success:true, message: "Order item successfully cancelled" });
+
+
+        updateOrderStatus(order);
+
+        res.json({
+          success: true,
+          message: "Order item successfully cancelled",
+        });
       }
     }
   } catch (error) {
     conosle.log(error);
   }
 };
+
+
+async function updateOrderStatus(order) {
+  const allDelivered = order.orderItem.every(item => item.orderStatus === 'delivered');
+  const allCancelled = order.orderItem.every(item => item.orderStatus === 'cancelled');
+  const allShipped = order.orderItem.every(item => item.orderStatus === 'shipped');
+
+  if (allCancelled) {
+    order.orderStatus = 'cancelled';
+  } else if (allDelivered) {
+    order.orderStatus = 'delivered';
+  } else if (allShipped) {
+    order.orderStatus = 'shipped';
+  }
+
+  await order.save();
+}
+
+
 module.exports = {
   checkoutPge,
   orderTest,

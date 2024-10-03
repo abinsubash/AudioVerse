@@ -1,4 +1,26 @@
 <%- include('../layout/admin/adminHeader') -%> 
+<nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+  <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+    <a class="navbar-brand brand-logo" href="index.html">AudioVerse</a>
+    <a class="navbar-brand brand-logo-mini" href="index.html"><img src="/assets/images/logo-mini.svg"
+        alt="logo" /></a>
+  </div>
+  <div class="navbar-menu-wrapper d-flex align-items-stretch">
+    <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+      <span class="mdi mdi-menu"></span>
+    </button>
+
+    <div class="search-field d-none d-md-block">
+      <div class="d-flex align-items-center h-100">
+        <div class="input-group">
+          <div class="input-group-prepend bg-transparent">
+            <button class="btn-search border-0" id="searchButton">
+              <i class="input-group-text border-0 mdi mdi-magnify"></i></button>
+          </div>
+          <input type="text" class="input-search" id="searchInput" value="<%= searchCategory%>" placeholder="Type to Search...">
+        </div>
+      </div>
+    </div>
 <%- include('../layout/admin/adminNavbar') -%>
 
 <div class="main-panel">
@@ -336,4 +358,23 @@ document.getElementById("editCategoryForm").addEventListener("submit", async (e)
   }
 });
 
+
+              const searchInput = document.getElementById('searchInput');
+              searchInput.addEventListener('input', function () {
+                const inputValue = searchInput.value;
+                if(!inputValue){
+                  window.location.href = '/admin/category';
+                }
+                console.log(inputValue);
+              });
+
+              const searchButton = document.getElementById('searchButton');
+              searchButton.addEventListener('click', function () {
+              const query = searchInput.value;
+                if (query.trim() !== "") {
+                  window.location.href = `/admin/category?searchCategory=${encodeURIComponent(query)}`;
+                } else {
+                  alert('Please enter a search term');
+                }
+              });
 </script>

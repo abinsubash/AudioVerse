@@ -70,12 +70,16 @@ userRoutes.post("/order",userAuth.isBlocked,userAuth.isLogin,checkoutController.
 userRoutes.get("/orderDetails",userAuth.isBlocked, userAuth.isLogin, checkoutController.orderDetails);
 userRoutes.post("/orderCancellation", userAuth.isLogin, checkoutController.orderCancellation);
 
+
+//Todo:Wishlist
+userRoutes.post('/deleteFromWishlist',userAuth.isBlocked,userAuth.isLogin,shopController.deleteFromWishlist)
+userRoutes.get('/wishlist',userAuth.isBlocked,userAuth.isLogin,shopController.wishlist)
+userRoutes.post('/addAndRemoveWishlist',shopController.addAndRemoveWishlist)
+
+
 userRoutes.get("/contact", userAuth.isBlocked, (req, res) => {
   res.render("users/contact", { user: req.session.userExist });
 });
 
-// userRoutes.get("/profile", userAuth.isBlocked, (req, res) => {
-//   res.render("users/profile", { user: req.session.userExist });
-// });
 
 module.exports = userRoutes;

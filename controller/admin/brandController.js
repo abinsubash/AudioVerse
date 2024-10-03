@@ -53,12 +53,18 @@ const getBrand = async (req, res) => {
 
 const updateBrand = async (req, res) => {
     try {
-
         const { brandName } = req.body;
-        const brand = await Brand.findById(req.params.id);
+        const brandId = req.params.id;
 
+        const brand = await Brand.findById(brandId);
         if (!brand) {
             return res.status(404).json({ success: false, message: 'Brand not found' });
+        }
+
+        const existingBrand = await Brand.findOne({brandName: { $regex: new RegExp('^' + brandName + '$', 'i') },});
+
+        if (existingBrand) {
+            return res.json({ success: false, message: 'Brand name already exists' });
         }
 
         if (brandName) {

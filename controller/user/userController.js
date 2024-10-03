@@ -12,6 +12,7 @@ const Variant = require("../../model/variantModel");
 const Cart = require("../../model/cartModel");
 const Address = require("../../model/addressModel");
 const mongoose = require("mongoose");
+const Wishlist = require("../../model/wishlistModel");
 const { ObjectId } = mongoose.Types;
 const generateRefferalID = () => {
   return crypto.randomBytes(6).toString("hex");
@@ -215,7 +216,6 @@ const homePage = async (req, res) => {
   }
 };
 
-
 const searchAndsort = async (req, res) => {
   try {
     const { value } = req.query;
@@ -249,7 +249,6 @@ const searchAndsort = async (req, res) => {
 const filter = async (req, res) => {
   const { values } = req.query;
   const categoryIds = values ? values.split(",") : [];
-  console.log(categoryIds);
 
   try {
     const products = await Product.find({
@@ -259,7 +258,6 @@ const filter = async (req, res) => {
       .populate("variants")
       .populate("category");
 
-    console.log("This is products", products);
     res.json({ success: true, products });
   } catch (error) {
     console.error(error);
@@ -272,9 +270,7 @@ const filter = async (req, res) => {
 
 const singleProduct = async (req, res) => {
   try {
-    console.log("hi");
     let { variantColor, id } = req.query;
-    console.log("now here");
     const product = await Product.find({ _id: id })
       .populate("productBrand")
       .populate("variants")
@@ -285,10 +281,10 @@ const singleProduct = async (req, res) => {
       product[0].variants &&
       product[0].variants.length > 0
     ) {
-      variantColor = product[0].variants[0].color; // Set default color
+      variantColor = product[0].variants[0].color;
     }
     if (!product) {
-      res.send("jo");
+      console.log("no products");
     }
     const categoryId = product[0].category._id.toString();
     const relatedProduct = await Product.find()
@@ -300,7 +296,10 @@ const singleProduct = async (req, res) => {
     const filteredProducts = relatedProduct.filter(
       (product) => product.category._id.toString() === categoryId
     );
-
+    let wishlist;
+    if (req.session.userExist) {
+      wishlist = await Wishlist.findOne({ userId: req.session.userExist._id });
+    }
     const productss = await Product.find({ _id: id });
 
     if (productss && productss.length > 0) {
@@ -326,6 +325,7 @@ const singleProduct = async (req, res) => {
                   );
               }
               res.render("users/singleProduct", {
+                wishlist: wishlist || { items: [] },
                 user: req.session.userExist,
                 products: product,
                 relatedProducts: filteredProducts,
@@ -603,7 +603,6 @@ const deleteAddress = async (req, res) => {
     console.error(error);
   }
 };
-
 
 module.exports = {
   login,

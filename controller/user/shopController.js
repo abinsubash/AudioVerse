@@ -11,116 +11,10 @@ const { isDeleted } = require("../admin/productController");
 const Variant = require("../../model/variantModel");
 const Cart = require("../../model/cartModel");
 const Address = require("../../model/addressModel");
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const Wishlist = require("../../model/wishlistModel");
 const { lookup } = require("dns");
 const { ObjectId } = mongoose.Types;
-
-const shop = async (req, res) => {
-  try {
-    const { search, checkedCategory, sortOption } = req.query;
-    console.log("This is sort option", sortOption);
-    let variantsQuery = { isDeleted: false };
-
-    let productIds = [];
-    const page = parseInt(req.query.page) || 1;
-    const limit = 6;
-    const skip = (page - 1) * limit;
-
-    // Search products by name
-    if (search) {
-      const products = await Product.find({
-        productName: { $regex: search, $options: "i" },
-        isDeleted: false,
-      }).select("_id");
-
-      productIds = products.map((product) => product._id);
-    }
-
-    // Filter by category
-    if (checkedCategory) {
-      const categoryId = new mongoose.Types.ObjectId(checkedCategory);
-
-      const productsInCategory = await Product.find({
-        category: categoryId,
-        isDeleted: false,
-      }).select("_id");
-
-      const categoryProductIds = productsInCategory.map(
-        (product) => product._id
-      );
-      productIds =
-        productIds.length > 0
-          ? productIds.filter((id) => categoryProductIds.includes(id))
-          : categoryProductIds;
-    }
-
-    // If product IDs were found, add them to the query
-    if (productIds.length > 0) {
-      variantsQuery.productId = { $in: productIds };
-    }
-
-    // Handle sorting by price in the database query
-    let sortQuery = {};
-    if (sortOption === "price-low-high") {
-      sortQuery = { price: 1 }; // Sort by price ascending
-    } else if (sortOption === "price-high-low") {
-      sortQuery = { price: -1 }; // Sort by price descending
-    }
-
-    // Fetch variants from MongoDB
-    let variants = await Variant.find(variantsQuery)
-      .populate("productId") // Populate product reference
-      .sort(sortQuery) // Apply price sorting if applicable
-      .skip(skip) // Apply pagination
-      .limit(limit) // Limit to 6 results per page
-      .exec();
-
-    // Handle sorting by productName in-memory (since productName is in the populated product)
-    if (sortOption === "alphabetical-az") {
-      variants = variants.sort((a, b) =>
-        a.productId.productName
-          .trim()
-          .localeCompare(b.productId.productName.trim())
-      );
-    } else if (sortOption === "alphabetical-za") {
-      variants = variants.sort((a, b) =>
-        b.productId.productName
-          .trim()
-          .localeCompare(a.productId.productName.trim())
-      );
-    }
-    console.log("Paginated and Sorted Variants:", variants);
-
-    // Count total variants (for pagination)
-    const totalVariants = await Variant.countDocuments(variantsQuery);
-
-    // Calculate total pages
-    const totalPages = Math.ceil(totalVariants / limit);
-
-    // Render the response
-    res.render("users/shop", {
-      user: req.session.userExist,
-      variants: variants,
-      currentPage: page,
-      totalPages: totalPages,
-      category: await Category.find({}),
-      brands: await Brand.find({}),
-      search: search || "",
-      checkedCategory: checkedCategory ? [checkedCategory] : [],
-      sortOption: sortOption || "",
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
-  }
-};
-
-
-
-
-
-
-
 
 let previousSearch = "";
 let previousCheckedCategory = "";
@@ -135,7 +29,6 @@ const newShop = async (req, res) => {
     if (req.query.searchHist || req.query.isClear) {
       previousSearch = ""
     }
-    console.log("This is req:", req.query);
     const itemsPerPage = 6;
     let currentPage = parseInt(req.query.page) || 1;
     const skip = (currentPage - 1) * itemsPerPage;
@@ -173,14 +66,11 @@ const newShop = async (req, res) => {
         sortPrice = '',
         sortFont = ''
     }
-    if (req.query.query || req.query.category || req.query.sort || req.query.priceRange &&!req.query.searchHist ||! req.query.isClear) {
-      console.log("Search:", search);
-      console.log("Checked Category:", checkedCategory);
-      console.log("Sort Option:", sortOption);
-      console.log("Price Range:", priceRange);
+    if ((req.query.query || req.query.category || req.query.sort || req.query.priceRange) && (!req.query.searchHist || !req.query.isClear)) {
+     
       const [minPrice, maxPrice] = priceRange.split('-').map(Number);
-      console.log(minPrice,maxPrice);
       if (sortPrice) {
+
         const variantsData = await Variant.aggregate([
           {
             $match: {
@@ -203,9 +93,8 @@ const newShop = async (req, res) => {
               "productDetails.productName": { $regex: search, $options: "i" },
             },
           },
-          // Check if checkedCategory is provided and create a new ObjectId instance for it
           {
-            $match: checkedCategory ? { "productDetails.category": new mongoose.Types.ObjectId(checkedCategory) } : {},
+            $match: checkedCategory ? { "productDetails.category": new mongoose.Types.ObjectId(checkedCategory) } :'',
           },
           // Price range filter
           {
@@ -251,7 +140,6 @@ const newShop = async (req, res) => {
 
         const totalPages = Math.ceil(totalVariantsCount / itemsPerPage);
 
-        console.log("hi")
         // Render the response
         res.render("users/shop", {
           variants: variants,
@@ -266,8 +154,7 @@ const newShop = async (req, res) => {
           priceRange: priceRange || "",  // Pass the price range
 
         });
-      } else if (sortFont) {
-
+      }else if (sortFont) {
         const variantsData = await Variant.aggregate([
           {
             $match: {
@@ -290,11 +177,9 @@ const newShop = async (req, res) => {
               "productDetails.productName": { $regex: search, $options: "i" },
             },
           },
-          // Check if checkedCategory is provided and create a new ObjectId instance for it
           {
             $match: checkedCategory ? { "productDetails.category": new mongoose.Types.ObjectId(checkedCategory) } : {},
           },
-          // Price range filter
           {
             $match: {
               ...(minPrice && maxPrice ? { price: { $gte: minPrice, $lte: maxPrice } } : {}),
@@ -318,7 +203,7 @@ const newShop = async (req, res) => {
                   },
                 },
                 {
-                  $sort: { price: sortFont },
+                  $sort: { productNameLower: sortFont },
                 },
                 { $skip: skip },
                 { $limit: itemsPerPage },
@@ -338,9 +223,8 @@ const newShop = async (req, res) => {
 
         const totalPages = Math.ceil(totalVariantsCount / itemsPerPage);
 
-        console.log("hi")
         // Render the response
-        res.render("users/shop", {
+       return res.render("users/shop", {
           variants: variants,
           user: req.session.userExist,
           currentPage: currentPage,
@@ -353,8 +237,8 @@ const newShop = async (req, res) => {
           priceRange: priceRange || "",
 
         });
+        return
       }
-      console.log("andiii")
 
       const variantsData = await Variant.aggregate([
         {
@@ -411,14 +295,13 @@ const newShop = async (req, res) => {
         },
       ]);
       
-      
       const variants = variantsData[0].data;
 
       const totalVariantsCount = variantsData[0].totalCount.length > 0 ? variantsData[0].totalCount[0].count : 0;
 
       const totalPages = Math.ceil(totalVariantsCount / itemsPerPage);
 
-      res.render("users/shop", {
+         res.render("users/shop", {
         variants: variants,
         user: req.session.userExist,
         currentPage: currentPage,
@@ -431,6 +314,7 @@ const newShop = async (req, res) => {
         priceRange: priceRange || "",
 
       });
+      return
     } else {
       const variantsData = await Variant.aggregate([
         {
@@ -478,7 +362,6 @@ const newShop = async (req, res) => {
       const totalVariantsCount = variantsData[0].totalCount.length > 0 ? variantsData[0].totalCount[0].count : 0;
       const totalPages = Math.ceil(totalVariantsCount / itemsPerPage);
 
-
       res.render("users/shop", {
         variants: variants,
         user: req.session.userExist,
@@ -491,6 +374,7 @@ const newShop = async (req, res) => {
         sortOption: sortOption || "",
         priceRange: priceRange || "",
       });
+      return
     }
   } catch (error) {
     console.error(error);
@@ -503,11 +387,10 @@ const newShop = async (req, res) => {
 
 
 const shopNewPage = async (req, res) => {
-  console.log("pooda patti");
   const page = parseInt(req.query.page) || 1;
   const limit = 6;
   const skip = (page - 1) * limit;
-  previousSearch = ''
+  previousSearch = "";
   try {
     const totalProducts = await Product.countDocuments({ isDeleted: false });
 
@@ -521,9 +404,6 @@ const shopNewPage = async (req, res) => {
 
     const totalPages = Math.ceil(totalProducts / limit);
 
-    // Send products as JSON response
-    console.log("sadanam send");
-
     res.json({
       products,
       currentPage: page,
@@ -535,4 +415,111 @@ const shopNewPage = async (req, res) => {
   }
 };
 
-module.exports = { shop, newShop, shopNewPage };
+const wishlist = async (req, res) => {
+  const _id = req.session.userExist._id;
+  const wishlist = await Wishlist.aggregate([
+    { $match: { userId: new mongoose.Types.ObjectId(_id) } },  
+    {
+      $lookup: {
+        from: 'products',             
+        localField: 'items.productId', 
+        foreignField: '_id',          
+        as: 'productDetails'          
+      }
+    },
+    {
+      $lookup: {
+        from: 'variants',              
+        localField: 'items.variantId', 
+        foreignField: '_id',           
+        as: 'variantDetails'          
+      }
+    }
+  ]);
+    
+  console.log(wishlist);
+  res.render("users/wishlist", { user: req.session.userExist ,wishlist:wishlist});
+};
+
+
+
+
+const addAndRemoveWishlist = async (req, res) => {
+
+  if(!req.session.userExist){
+    res.json({ success: false, message: "User does not exist", redirect: true });
+    return
+  }
+  const _id = req.session.userExist._id;
+  const { variantid } = req.body;
+  try {
+    const wishlist = await Wishlist.findOne({ userId: _id });
+    console.log(wishlist);
+    const variant = await Varinat.findOne({ _id: variantid });
+    if (!wishlist) {
+      console.log("Creating a new wishlist");
+      const newWishlist = new Wishlist({
+        userId: _id,
+        items: [
+          {
+            productId: variant.productId,
+            variantId: variantid,
+          },
+        ],
+      });
+      await newWishlist.save();
+      res.json({success:true,message:"Item added to wishlist"})
+    } else {
+      const itemIndex = wishlist.items.findIndex((item) =>
+        item.variantId.equals(variantid)
+      );
+
+      if (itemIndex === -1) {
+        wishlist.items.push({
+          productId: variant.productId,
+          variantId: variantid,
+        });
+
+        await wishlist.save();
+        res.json({success:true,message:"Item added to wishlist"})
+      } else {
+        wishlist.items.splice(itemIndex, 1);
+        await wishlist.save();
+        res.json({success:true,message:"Item removed from wishlist"})
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+
+
+
+
+const deleteFromWishlist = async (req, res) => {
+  const { objectId } = req.body; 
+  try {
+      const userId = req.session.userExist._id; 
+      const wishlist = await Wishlist.findOne({ userId: userId });
+      console.log(wishlist);
+      
+      if (!wishlist) {
+          return res.json({ success: false, message: 'Wishlist not found' });
+      }
+
+      wishlist.items = wishlist.items.filter(item => !item._id.equals(new mongoose.Types.ObjectId(objectId)));
+      
+      await wishlist.save();
+      console.log('item deleted ')
+      return res.json({ success: true, message: 'Item removed from wishlist successfully' });
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+
+
+
+module.exports = { newShop, shopNewPage, wishlist, addAndRemoveWishlist,deleteFromWishlist };

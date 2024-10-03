@@ -6,15 +6,20 @@ const Order = require('../../model/orderModel');
 
 const orderDetails = async (req, res) => {
   try {
+    const searchOrder = req.query.searchOrder||''
     const perPage = 10;
     const currentPage = req.query.page ? parseInt(req.query.page) : 1;
     const totalOrders = await Order.countDocuments();
     const totalPages = Math.ceil(totalOrders / perPage);
-    const orders = await Order.find()
+    const orders = await Order.find({
+      orderId: { 
+        $regex: new RegExp(searchOrder, 'i')  
+      }
+    })
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
 
-    res.render("admin/orderpage", { orders, totalPages, currentPage });
+    res.render("admin/orderpage", { orders, totalPages, currentPage ,searchOrder});
   } catch (error) {
     console.error("Error fetching orders:", error);
     res.status(500).send("An error occurred while fetching orders.");
@@ -47,7 +52,6 @@ const orderStatusEdit = async (req, res) => {
       if (!order) {
         return res.json({ success: false, message: "Order not found" });
       }
-  
       const orderItem = order.orderItem.find(item => item._id.toString() === itemId);
       if (!orderItem) {
         return res.json({ success: false, message: "Item not found in the order" });
@@ -91,11 +95,31 @@ const orderStatusEdit = async (req, res) => {
       if (!updatedOrder) {
         return res.json({ success: false, message: "Order or Item not found" });
       }
+      updateOrderStatus(updatedOrder);
+
       return res.json({ success: true, message: "Order status updated", order: updatedOrder });
     } catch (error) {
       console.error("Error updating order status:", error);
       return res.json({ success: false, message: "Error updating order status" });
     }
   };
+  
+  async function updateOrderStatus(order) {
+    const allCancelled = order.orderItem.every(item => item.isCancelled);
+    const allDelivered = order.orderItem.every(item => item.orderStatus === 'Delivered');
+    const allShipped = order.orderItem.every(item => item.orderStatus === 'Shipped');
+  
+    if (allCancelled) {
+      order.orderStatus = 'cancelled';
+    } else if (allDelivered) {
+      order.orderStatus = 'delivered';
+    } else if (allShipped) {
+      order.orderStatus = 'shipped';
+    }
+  
+    // Save changes to the order
+    await order.save();
+  }
+  
   
 module.exports = {orderDetails,orderApproval,orderStatusEdit,getOrderDetails}

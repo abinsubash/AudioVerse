@@ -12,7 +12,7 @@ const isBlocked = async(req,res,next)=>{
             const user = await User.findOne({_id:req.session.userExist._id});
             if(user.isBlocked){
                 delete req.session.userExist;
-                res.redirect("/")
+                res.redirect("/login")
             }else{
                 next();
             }
@@ -28,11 +28,11 @@ const isBlocked = async(req,res,next)=>{
             if(!user.isBlocked){
                 next()
             }else{
-                res.redirect('/')
+                res.redirect('/login')
             }
             
         }else{
-            res.redirect('/')
+            res.redirect('/login')
         }
     }
 

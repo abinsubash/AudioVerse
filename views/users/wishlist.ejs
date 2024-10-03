@@ -1,0 +1,183 @@
+<%- include('../layout/header') -%>
+
+	<body class="goto-here">
+		<%- include('../layout/navbar') -%>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/Toastify.min.css" />
+
+			<div class="hero-wrap hero-bread" style="background-image: url('/winkel/images/bg_6.jpg');">
+				<div class="container">
+					<div class="row no-gutters slider-text align-items-center justify-content-center">
+						<div class="col-md-9 ftco-animate text-center">
+							<p class="breadcrumbs"><span class="mr-2"><a>Home</a></span>
+								<span>Wishlist</span>
+							</p>
+							<h1 class="mb-0 bread">My Wishlist</h1>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<section class="ftco-section ftco-cart">
+				<div class="container">
+					<div class="row">
+						<div class="col-md-12 ftco-animate">
+							<div class="cart-list">
+								<table class="table">
+									<thead class="thead-primary">
+										<tr class="text-center">
+											<th>&nbsp;</th>
+											<th>&nbsp;</th>
+											<th>Product</th>
+											<th>Color</th>
+											<th>Price</th>
+											<th>Add to cart</th>
+											<th>Action</th>
+										</tr>
+									</thead>
+									<tbody>
+										<% if (wishlist && wishlist.length > 0 && wishlist[0].items.length > 0) { %>
+											<% wishlist[0].items.forEach((item, index) => { %>
+												<tr class="text-center">
+													<td class="product-remove">
+														<a href="#"><span class="ion-ios-close"></span></a>
+													</td>
+													<td class="image-prod">
+														<div class="img" style="background-image:url(<%= wishlist[0].variantDetails[index]?.images[0] %>);"></div>
+													</td>
+													<td class="product-name">
+														<p><%= wishlist[0].productDetails.find(pd => pd._id.toString() === item.productId.toString())?.productName || 'Product name not found' %></p>
+													</td>
+													<td class="color">
+														<p><%= wishlist[0].variantDetails[index]?.color || 'Color not available' %></p>
+													</td>
+													<td class="price">
+														<p>$<%= wishlist[0].variantDetails[index]?.price || 'Price not available' %></p>
+													</td>
+													<td class="price">
+														<!-- Check stock availability -->
+														<% if (wishlist[0].variantDetails[index]?.stock > 0) { %>
+															<!-- Add to cart button -->
+															<button class="black-button"
+																onclick="addtocart('<%= wishlist[0].variantDetails[index]._id %>', '<%= wishlist[0].variantDetails[index].productId %>')">
+																<p class="mt-3" style="color: white;">ADD TO CART</p>
+															</button>
+														<% } else { %>
+															<p style="color: red;">Out of Stock</p>
+														<% } %>
+													</td>
+													<td class="price">
+														<button class="delete-btn" onclick="deleteItem('<%=wishlist[0].items[0]._id%>')" title="Delete">
+															<span class="delete-icon">&#10006;</span>
+														</button>
+													</td>
+												</tr>
+											<% }); %> 
+										<% } else { %>
+											<tr>
+												<td colspan="6" class="text-center">Your wishlist is empty.</td>
+											</tr>
+										<% } %>
+									</tbody>
+								</table>
+							</div>							
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<%- include('../layout/footer') -%>
+
+            <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+				<script>
+					function addtocart(variantId, productId) {
+						function addtocart(variantId, productId) {
+							fetch('/addtoCart', {
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/json', // Set the content type to JSON
+								},
+								body: JSON.stringify({
+									variantId: variantId,
+									productId: productId
+								})
+							})
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(response => {
+									if (response.success) {
+										Toastify({
+											text: response.message,
+											backgroundColor: "green",
+											className: "info",
+											duration: 3000
+										}).showToast();
+									} else {
+										Toastify({
+											text: response.message,
+											backgroundColor: "red",
+											className: "info",
+											duration: 3000
+										}).showToast();
+									}
+								})
+								.catch(error => {
+									console.error('Error:', error);
+									Toastify({
+										text: "An error occurred while adding to cart.",
+										backgroundColor: "red",
+										className: "info",
+										duration: 3000
+									}).showToast();
+								});
+						}
+
+					}
+
+
+
+					async function deleteItem(objectId) {
+						console.log(objectId)
+    try {
+        const response = await fetch('/deleteFromWishlist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ objectId })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            Toastify({
+                text: data.message,
+                backgroundColor: "green",
+                className: "info",
+                duration: 3000
+            }).showToast();
+			setTimeout(() => {
+				window.location.reload(); 
+			}, 1500);
+        } else {
+            Toastify({
+                text: data.message,
+                backgroundColor: "red",
+                className: "info",
+                duration: 3000
+            }).showToast();
+        }
+    } catch (error) {
+        console.error(error);
+        Toastify({
+            text: "An error occurred while deleting the item.",
+            backgroundColor: "red",
+            className: "info",
+            duration: 3000
+        }).showToast();
+    }
+}
+				</script>
