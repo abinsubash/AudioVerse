@@ -6,7 +6,7 @@ const fs = require("fs");
 
 const productPage = async (req, res) => {
   try {
-    const searchProduct = req.query.searchProduct || ''; // Get the search term from query or empty string
+    const searchProduct = req.query.searchProduct || ''; 
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
     const skip = (page - 1) * limit;
@@ -54,9 +54,10 @@ const addProductPage = async (req, res) => {
 
 const addProduct = async (req, res) => {
   try {
-    const { productName, brandName, categoryName, description, variants } =
-      req.body;
-
+    const { productName, brandName, categoryName, description, variants } =req.body;
+    if(!variants){
+      return console.log('no variant ');
+    }
     const images = req.files;
     const productExist = await Product.findOne({ productName: productName });
     if (productExist) {
@@ -263,6 +264,49 @@ const isDeleted = async (req, res) => {
   }
 };
 
+
+
+const addNewVariant = async (req, res) => {
+  const { color, stock, price } = req.body;
+  const productId = req.params.productId
+  console.log(productId)
+  const imagePaths = req.files.map(file => {
+    const relativePath = `/uploads/${file.filename}`;
+    return relativePath;
+  });
+
+  try {
+    const newVariant = new Variant({
+      productId:productId,
+      color: color,
+      stock: stock,
+      price: price,
+      images: imagePaths
+    });
+
+    await newVariant.save();
+    await Product.updateOne(
+      { _id: productId }, 
+      { $push: { variants: newVariant._id } } 
+    );
+    const proudct = await Product.findOne({_id:productId});
+    console.log(proudct)
+
+    res.json({success:true, message: 'Variant added successfully!' ,productId:productId });
+  } catch (err) {
+    console.error('Error adding variant and updating product:', err);
+    res.status(500).json({ error: 'Failed to add variant or update product' });
+  }
+};
+
+
+
+const newVariant =async (req,res)=>{
+  const productId = req.params.productId;
+  const product = await Product.findOne({_id:productId});
+res.render('admin/addnewVariant',{product})
+}
+
 module.exports = {
   productPage,
   addProductPage,
@@ -273,4 +317,6 @@ module.exports = {
   editVariant,
   updateVariant,
   isDeleted,
+  newVariant,
+  addNewVariant
 };

@@ -42,13 +42,15 @@ adminRoutes.get('/editProduct/:id',adminAuth.isLogged,productController.editProd
 adminRoutes.post('/updateProduct/:id', adminAuth.isLogged,upload.any(), productController.updateProduct);
 adminRoutes.get('/editVariant',adminAuth.isLogged, productController.editVariant);
 adminRoutes.post('/updateVariant',adminAuth.isLogged,upload.any(), productController.updateVariant);
-adminRoutes.post('/deleteProduct/:id',adminAuth.isLogged,productController.isDeleted)
+adminRoutes.post('/deleteProduct/:id',adminAuth.isLogged,productController.isDeleted);
+adminRoutes.get('/NewVariant/:productId',adminAuth.isLogged,productController.newVariant);
+adminRoutes.post('/addNewVariant/:productId',upload.any(),productController.addNewVariant)
 // adminRoutes.post('/addVariant/:id')
 
 adminRoutes.get('/orders',adminAuth.isLogged,orderController.orderDetails);
 adminRoutes.patch("/orderApproval",adminAuth.isLogged,orderController.orderApproval);
 adminRoutes.patch("/orderStatusEdit",adminAuth.isLogged,orderController.orderStatusEdit);
-adminRoutes.get('/orders/:id', adminAuth.isLogged, orderController.getOrderDetails);
+adminRoutes.get('/orders/:id', orderController.getOrderDetails);
 
 
 // -------------- search----------------

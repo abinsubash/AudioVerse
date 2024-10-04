@@ -5,6 +5,9 @@ const Category = require('../../model/categoryModel');
 const Admin = require('../../model/adminModel');
 const bcrypt = require('bcrypt');
 const login = (req,res)=>{
+  if(req.session.adminLogged){
+    return res.redirect('/admin/home')
+  }
     res.render('admin/login');
 }
 const adminLogin = async (req, res) => {

@@ -70,7 +70,7 @@ const newShop = async (req, res) => {
      
       const [minPrice, maxPrice] = priceRange.split('-').map(Number);
       if (sortPrice) {
-
+        console.log('pooda myraa')
         const variantsData = await Variant.aggregate([
           {
             $match: {
@@ -90,16 +90,16 @@ const newShop = async (req, res) => {
           },
           {
             $match: {
-              "productDetails.productName": { $regex: search, $options: "i" },
+              "productDetails.productName": { $regex: search?search:'a', $options: "i" },
             },
           },
           {
-            $match: checkedCategory ? { "productDetails.category": new mongoose.Types.ObjectId(checkedCategory) } :'',
+            $match: checkedCategory ? { "productDetails.category": new mongoose.Types.ObjectId(checkedCategory) } :{},
           },
           // Price range filter
           {
             $match: {
-              ...(minPrice && maxPrice ? { price: { $gte: minPrice, $lte: maxPrice } } : {}),
+              ...(minPrice && maxPrice ? { price: { $gte: minPrice, $lte: maxPrice } } : ''),
             },
           },
           {
@@ -384,8 +384,6 @@ const newShop = async (req, res) => {
 
 
 
-
-
 const shopNewPage = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = 6;
@@ -440,8 +438,6 @@ const wishlist = async (req, res) => {
   console.log(wishlist);
   res.render("users/wishlist", { user: req.session.userExist ,wishlist:wishlist});
 };
-
-
 
 
 const addAndRemoveWishlist = async (req, res) => {
