@@ -95,7 +95,7 @@
               <button id="addressSubmit" type="submit" class="btn btn-primary">Save Address</button>
             </form>
           </div>
-        </div> 
+        </div>
 
         <!-- Right Column -->
         <div class="col-md-6">
@@ -148,8 +148,8 @@
             <div class="form-group">
               <div class="col-md-12">
                 <div class="radio">
-                  <label><input type="radio" value="RazerPay" name="paymentMethod" class="mr-2">
-                    RazerPay</label>
+                  <label><input type="radio" value="Razorpay" name="paymentMethod" class="mr-2">
+                    Razorpay</label>
                 </div>
               </div>
             </div>
@@ -171,7 +171,7 @@
     <%- include('../layout/footer') -%>
       <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
       <script>
         var addressData
@@ -304,7 +304,7 @@
           const selectedOption = select.options[select.selectedIndex];
 
           if (selectedOption.value === "add-new") {
-            showAddNewAddressForm(); 
+            showAddNewAddressForm();
             clearForm();
           } else if (selectedOption.value) {
             // Populate fields with selected address data
@@ -343,8 +343,8 @@
           }
           const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
           let paymentMethodInput
-          if(paymentMethod){
-             paymentMethodInput = paymentMethod.value;
+          if (paymentMethod) {
+            paymentMethodInput = paymentMethod.value;
           }
           const termsAccepted = document.querySelector('input[type="checkbox"]').checked;
           if (!paymentMethodInput) {
@@ -355,7 +355,6 @@
             }).showToast();
             return;
           }
-          console.log(paymentMethodInput)
           if (!termsAccepted) {
             Toastify({
               text: "Please accept the terms and conditions",
@@ -364,36 +363,119 @@
             }).showToast();
             return;
           }
-          const responce = await fetch('/order', {
-            method: "POST",
-            headers: {
-              "content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              addressData,
-              paymentMethodInput
+
+          console.log("this is razor pay", paymentMethod)
+          if (paymentMethod.value == "Cash On Delivery") {
+            const responce = await fetch('/order', {
+              method: "POST",
+              headers: {
+                "content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                addressData,
+                paymentMethodInput
+              })
             })
-          })
-          const data = await responce.json();
-          console.log(data);
-          if (data.success) {
-            Swal.fire({
-              title: 'Updated!',
-              text: `Order status has been updated to ${status}.`,
-              icon: 'success',
-              confirmButtonText: 'View Orders',
-              showCancelButton: true,
-              cancelButtonText: 'Continue Shopping'
-            }).then((result) => {
-              if (result.isConfirmed) {
-                window.location.href = '/orderDetails';
-              } else {
-                window.location.href = '/shop';
+            const data = await responce.json();
+            if (data.success) {
+              Swal.fire({
+                title: 'Updated!',
+                text: `Order status has been updated to ${status}.`,
+                icon: 'success',
+                confirmButtonText: 'View Orders',
+                showCancelButton: true,
+                cancelButtonText: 'Continue Shopping'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  window.location.href = '/orderDetails';
+                } else {
+                  window.location.href = '/shop';
+                }
+              });
+            }
+
+          }
+
+          else if (paymentMethod.value === "Razorpay") {
+            const response = await fetch('/Razorpay', {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
               }
             });
+
+
+            const data = await response.json();
+
+            if (data.success) {
+              console.log("kadsfkasdjflsd");
+
+              const options = {
+                key: data.key_id,
+                amount: data.amount,
+                currency: data.currency,
+                name: "Your Company Name",
+                description: "Purchase Description",
+                order_id: data.order_id,
+                handler: async function (response) {
+                  const paymentData = {
+                    order_id: data.order_id,
+                    payment_id: response.razorpay_payment_id,
+                    signature: response.razorpay_signature,
+                  };
+                  console.log("kadsfkasdjflsd")
+                  const verificationResponse = await fetch('/verifyRazorpay', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      paymentData, addressData,
+                      paymentMethodInput
+                    }),
+                  });
+
+                  const verificationData = await verificationResponse.json();
+
+                  if (verificationData.success) {
+                    Swal.fire({
+                      title: 'Updated!',
+                      text: `Order status has been updated to ${status}.`,
+                      icon: 'success',
+                      confirmButtonText: 'View Orders',
+                      showCancelButton: true,
+                      cancelButtonText: 'Continue Shopping'
+                    }).then((result) => {
+                      if (result.isConfirmed) {
+                        window.location.href = '/orderDetails';
+                      } else {
+                        window.location.href = '/shop';
+                      }
+                    });
+
+                  } else {
+                    alert('Payment verification failed: ' + verificationData.message);
+                  }
+                },
+                prefill: {
+                  name: addressData.name,
+                  email: "no",
+                  contact: addressData.phoneNo
+                },
+                theme: {
+                  color: "#F37254"
+                }
+              };
+
+              const rzp = new Razorpay(options);
+              rzp.open();
+            } else {
+              console.error(data.message);
+              alert(data.message);
+            }
           }
+
         }
-        // Function to clear the form
         function clearForm() {
           document.getElementById('name').value = '';
           document.getElementById('streetAddress').value = '';
@@ -403,28 +485,27 @@
           document.getElementById('phoneNo').value = '';
         }
 
-        
+
 
         function showAddNewAddressForm() {
-  // Show the form
-  document.getElementById('addressFormContainer').style.display = 'block';
+          document.getElementById('addressFormContainer').style.display = 'block';
 
-  // Make sure the submit button is visible
-  const submitButton = document.getElementById('addressSubmit');
-  submitButton.style.display = 'inline-block'; // or 'block' depending on your layout
-}
+          const submitButton = document.getElementById('addressSubmit');
+          submitButton.style.display = 'inline-block'; // or 'block' depending on your layout
+        }
 
-function clearForm() {
-  // Clear input fields if necessary
-  document.getElementById('name').value = '';
-  document.getElementById('streetAddress').value = '';
-  document.getElementById('city').value = '';
-  document.getElementById('district').value = '';
-  document.getElementById('pincode').value = '';
-  document.getElementById('phoneNo').value = '';
+        function clearForm() {
+          // Clear input fields if necessary
+          document.getElementById('name').value = '';
+          document.getElementById('streetAddress').value = '';
+          document.getElementById('city').value = '';
+          document.getElementById('district').value = '';
+          document.getElementById('pincode').value = '';
+          document.getElementById('phoneNo').value = '';
 
-  // Make sure to show the submit button if it's hidden
-  document.getElementById('addressSubmit').style.display = 'inline-block'; 
-}
+          // Make sure to show the submit button if it's hidden
+          document.getElementById('addressSubmit').style.display = 'inline-block';
+        }
+
 
       </script>

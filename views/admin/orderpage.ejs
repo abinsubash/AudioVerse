@@ -1,168 +1,264 @@
 <%- include('../layout/admin/adminHeader') -%>
-<nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
-    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
-      <a class="navbar-brand brand-logo" href="">AudioVerse</a>
-      <a class="navbar-brand brand-logo-mini" href=""><img src="/assets/images/logo-mini.svg"
-          alt="logo" /></a>
-    </div>
-    <div class="navbar-menu-wrapper d-flex align-items-stretch">
-      <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
-        <span class="mdi mdi-menu"></span>
-      </button>
-
-      <div class="search-field d-none d-md-block">
-        <div class="d-flex align-items-center h-100">
-          <div class="input-group">
-            <div class="input-group-prepend bg-transparent">
-              <button class="btn-search border-0" id="searchButton">
-                <i class="input-group-text border-0 mdi mdi-magnify"></i></button>
-            </div>
-            <input type="text" class="input-search" id="searchInput" value="<%= searchOrder%>" placeholder="Type to Search...">
-          </div>
+    <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+            <a class="navbar-brand brand-logo" href="">AudioVerse</a>
+            <a class="navbar-brand brand-logo-mini" href=""><img src="/assets/images/logo-mini.svg" alt="logo" /></a>
         </div>
-      </div>
-<%- include('../layout/admin/adminNavbar') -%>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+        <div class="navbar-menu-wrapper d-flex align-items-stretch">
+            <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+                <span class="mdi mdi-menu"></span>
+            </button>
 
-<div class="row">
-    <div class="col-12 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Orders</h4>
-                <p class="card-description">List of all orders</p>
-                <div class="table-responsive">
-                    <table class="table table-striped" id="orderTable">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Order ID</th>
-                                <th>User Name</th>
-                                <th>Payment Method</th>
-                                <th>Total Amount</th>
-                                <th>Order Status</th>
-                                <th>Order Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% orders.forEach((order, index) => { %>
-                                <tr>
-                                    <td><%= index + 1 %></td>
-                                    <td><%= order.orderId %></td>
-                                    <td><%= order.address.name %></td>
-                                    <td><%= order.paymentMethod %></td>
-                                    <td>$<%= order.totalAmount %></td>
-                                    <td><%= order.orderStatus %></td>
-                                    <td><%= new Date(order.orderDate).toLocaleDateString() %></td>
-                                    <td>
-                                        <button class="btn btn-info btn-sm" onclick="window.location.href='/admin/orders/<%= order._id %>'">View</button>
-                                        <% if (!order.isCancelled) { %>
-                                            <% if (!order.isApproved) { %>
-                                                <button class="btn btn-warning btn-sm" id="orderApproval" value="<%= order._id %>">Approve</button>
-                                            <% } else { %>
-                                                <button class="btn btn-success btn-sm" disabled>Approved</button>
-                                            <% } %>
-                                        <% } else { %>
-                                            <p><strong style="color: red;">Order Cancelled</strong></p>
-                                        <% } %>
-                                    </td>
-                                </tr>
-                            <% }) %>
-                        </tbody>
-                    </table>
+            <div class="search-field d-none d-md-block">
+                <div class="d-flex align-items-center h-100">
+                    <div class="input-group">
+                        <div class="input-group-prepend bg-transparent">
+                            <button class="btn-search border-0" id="searchButton">
+                                <i class="input-group-text border-0 mdi mdi-magnify"></i></button>
+                        </div>
+                        <input type="text" class="input-search" id="searchInput" value="<%= searchOrder%>"
+                            placeholder="Type to Search...">
+                    </div>
                 </div>
-                <!-- Pagination -->
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center">
-                        <% if (currentPage > 1) { %>
-                            <li class="page-item">
-                                <a class="page-link" href="/admin/orders?page=<%= currentPage - 1 %>" aria-label="Previous">
-                                    <span aria-hidden="true">&laquo;</span>
-                                </a>
-                            </li>
-                        <% } else { %>
-                            <li class="page-item disabled">
-                                <a class="page-link" href="#" aria-label="Previous">
-                                    <span aria-hidden="true">&laquo;</span>
-                                </a>
-                            </li>
-                        <% } %>
-
-                        <% for (let i = 1; i <= totalPages; i++) { %>
-                            <% if (i === currentPage) { %>
-                                <li class="page-item active"><a class="page-link" href="#"><%= i %></a></li>
-                            <% } else { %>
-                                <li class="page-item"><a class="page-link" href="/admin/orders?page=<%= i %>"><%= i %></a></li>
-                            <% } %>
-                        <% } %>
-
-                        <% if (currentPage < totalPages) { %>
-                            <li class="page-item">
-                                <a class="page-link" href="/admin/orders?page=<%= currentPage + 1 %>" aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
-                                </a>
-                            </li>
-                        <% } else { %>
-                            <li class="page-item disabled">
-                                <a class="page-link" href="#" aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
-                                </a>
-                            </li>
-                        <% } %>
-                    </ul>
-                </nav>
             </div>
-        </div>
-    </div>
-</div>
+            <%- include('../layout/admin/adminNavbar') -%>
+                <link rel="stylesheet"
+                    href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
 
-<%- include('../layout/admin/adminFooter') -%>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+                <div class="row">
+                    <div class="col-12 grid-margin stretch-card">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Orders</h4>
+                                <p class="card-description">List of all orders</p>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-sm" id="orderTable">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Order ID</th>
+                                                <th>User Name</th>
+                                                <th>Payment Method</th>
+                                                <th>Total Amount</th>
+                                                <th>Order Status</th>
+                                                <th>Order Date</th>
+                                                <th>Actions</th>
+                                                <th></th>
+                                                <th></th>
 
-<script>
-    document.getElementById("orderApproval").addEventListener('click', async (event) => {
-        event.preventDefault();
-        const orderId = document.getElementById("orderApproval").value;
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% orders.forEach((order, index)=> { %>
+                                                <tr>
+                                                    <td>
+                                                        <%= index + 1 %>
+                                                    </td>
+                                                    <td>
+                                                        <%= order.orderId %>
+                                                    </td>
+                                                    <td>
+                                                        <%= order.address.name %>
+                                                    </td>
+                                                    <td>
+                                                        <%= order.paymentMethod %>
+                                                    </td>
+                                                    <td>$<%= order.totalAmount %>
+                                                    </td>
+                                                    <td>
+                                                        <%= order.orderStatus %>
+                                                    </td>
+                                                    <td>
+                                                        <%= new Date(order.orderDate).toLocaleDateString() %>
+                                                    </td>
 
-        try {
-            const response = await fetch("/admin/orderApproval", {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ orderId })
-            });
-            const data = await response.json();
-            if (data.success) {
-                swal("Success!", "Order has been approved successfully!", "success");
-            }
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        } catch (error) {
-            console.error("Error approving order:", error);
-        }
-    });
+                                                    <td>
+                                                        <button class="btn btn-info btn-sm"
+                                                            onclick="window.location.href='/admin/orders/<%= order._id %>'">View</button>
+                                                    </td>
+                                                    <% if(!order.isCancelled){ %>
+                                                        <% if (order.orderStatus==="Pending" ) { %>
+                                                            <td>
+                                                                <button class="btn btn-primary btn-sm"
+                                                                    onclick='orderEdit(`<%= order._id %>`,"Shipped")'>Shipping</button>
+                                                            </td>
+                                                            <td>
+                                                                <button class="btn btn-danger btn-sm"
+                                                                    onclick='orderEdit(`<%= order._id %>`,"Cancel")'>Cancel</button>
+                                                            </td>
+                                                            <% } else if (order.orderStatus==="Shipped" ) { %>
+                                                                <td>
+                                                                    <button class="btn btn-success btn-sm"
+                                                                        onclick='orderEdit(`<%= order._id %>`,"Delivered")'>Delivered</button>
+                                                                </td>
+                                                                <td>
+                                                                    <button class="btn btn-danger btn-sm"
+                                                                        onclick='orderEdit(`<%= order._id %>`,"Cancel")'>Cancel</button>
+                                                                </td>
+                                                                <% } else if (order.orderStatus==="Delivered" ) { %>
+                                                                    <!-- Order is delivered -->
+                                                                    <td>
+                                                                        <p class="text-success "
+                                                                            style="font-size: 11px; margin-top: 10px;">
+                                                                            <strong>Order
+                                                                                Delivered</strong></p>
+                                                                    </td>
+
+                                                                    <% } %>
+                                                                        <% }else{%>
+                                                                            <td>
+                                                                                <p
+                                                                                    style="color: red; font-size: 10px; margin-top: 10px;">
+                                                                                    <strong> Order Cancelled </strong>
+                                                                                </p>
+                                                                            </td>
+                                                                            <td>
+
+                                                                            </td>
+                                                                            <% }%>
+                                                </tr>
+                                                <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Pagination -->
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination justify-content-center">
+                                        <% if (currentPage> 1) { %>
+                                            <li class="page-item">
+                                                <a class="page-link" href="/admin/orders?page=<%= currentPage - 1 %>"
+                                                    aria-label="Previous">
+                                                    <span aria-hidden="true">&laquo;</span>
+                                                </a>
+                                            </li>
+                                            <% } else { %>
+                                                <li class="page-item disabled">
+                                                    <a class="page-link" href="#" aria-label="Previous">
+                                                        <span aria-hidden="true">&laquo;</span>
+                                                    </a>
+                                                </li>
+                                                <% } %>
+
+                                                    <% for (let i=1; i <=totalPages; i++) { %>
+                                                        <% if (i===currentPage) { %>
+                                                            <li class="page-item active"><a class="page-link" href="#">
+                                                                    <%= i %>
+                                                                </a></li>
+                                                            <% } else { %>
+                                                                <li class="page-item"><a class="page-link"
+                                                                        href="/admin/orders?page=<%= i %>">
+                                                                        <%= i %>
+                                                                    </a></li>
+                                                                <% } %>
+                                                                    <% } %>
+
+                                                                        <% if (currentPage < totalPages) { %>
+                                                                            <li class="page-item">
+                                                                                <a class="page-link"
+                                                                                    href="/admin/orders?page=<%= currentPage + 1 %>"
+                                                                                    aria-label="Next">
+                                                                                    <span
+                                                                                        aria-hidden="true">&raquo;</span>
+                                                                                </a>
+                                                                            </li>
+                                                                            <% } else { %>
+                                                                                <li class="page-item disabled">
+                                                                                    <a class="page-link" href="#"
+                                                                                        aria-label="Next">
+                                                                                        <span
+                                                                                            aria-hidden="true">&raquo;</span>
+                                                                                    </a>
+                                                                                </li>
+                                                                                <% } %>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <style>
+                    .table-sm {
+                        font-size: 12px;
+                        padding: 4px;
+                    }
+
+                    .table-sm th,
+                    .table-sm td {
+                        padding: 6px;
+                    }
+
+                    .btn-sm {
+                        padding: 3px 8px;
+                        font-size: 11px;
+                    }
+
+                    .pagination {
+                        font-size: 12px;
+                    }
+                </style>
+                <%- include('../layout/admin/adminFooter') -%>
+
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+                    <script>
+                        const searchInput = document.getElementById('searchInput');
+                        searchInput.addEventListener('input', function () {
+                            const inputValue = searchInput.value;
+                            if (!inputValue) {
+                                searchBrand = ''
+                                window.location.href = `/admin/orders?${searchBrand}`;
+                            }
+                            console.log(inputValue);
+                        });
+
+                        const searchButton = document.getElementById('searchButton');
+                        searchButton.addEventListener('click', function () {
+                            const query = searchInput.value;
+                            if (query.trim() !== "") {
+                                window.location.href = `/admin/orders?searchOrder=${encodeURIComponent(query)}`;
+                            } else {
+                                alert('Please enter a search term');
+                            }
+                        });
+
+                        async function orderEdit(orderId, orderStatus) {
+                            console.log(orderId)
+                            try {
+                                const response = await fetch('/admin/orderStatusEdit', {
+                                    method: "PATCH",
+                                    headers: {
+                                        "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify({ orderId, orderStatus })
+                                });
+
+                                const data = await response.json();
+                                if (data.success) {
+                                    swal({
+                                        title: "Success!",
+                                        text: data.message, 
+                                        icon: "success",
+                                        button: "Okay",
+                                    });
+                                    setTimeout(() => {
+                                        window.location.reload()
+                                    }, 1500);
+                                } else {
+                                    swal({
+                                        title: "Error!",
+                                        text: data.message, // Message from the API response
+                                        icon: "error",
+                                        button: "Try Again",
+                                    });
+                                }
 
 
-    const searchInput = document.getElementById('searchInput');
-              searchInput.addEventListener('input', function () {
-                const inputValue = searchInput.value;
-                if(!inputValue){
-                    searchBrand =''
-                  window.location.href = `/admin/orders?${searchBrand}`;
-                }
-                console.log(inputValue);
-              });
+                            } catch (error) {
+                                console.error("Error:", error);
+                                alert("An error occurred while updating the order status.");
+                            }
+                        }
 
-              const searchButton = document.getElementById('searchButton');
-              searchButton.addEventListener('click', function () {
-              const query = searchInput.value;
-                if (query.trim() !== "") {
-                  window.location.href = `/admin/orders?searchOrder=${encodeURIComponent(query)}`;
-                } else {
-                  alert('Please enter a search term');
-                }
-              });
-
-</script>
+                    </script>

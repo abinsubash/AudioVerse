@@ -38,8 +38,27 @@
                                     <p style="font-size: 0.9rem;"><strong>Total Price:</strong> $<%= product.totalPrice
                                             %>
                                     </p>
-                                    <p style="font-size: 0.9rem;"><strong>Description:</strong>
-                                        <%= product.description %>
+                                    <h4>Address </h4>
+                                    <p style="font-size: 0.9rem;"><strong>Name:</strong>
+                                        <%= order.address.name %>
+                                    </p>
+                                    <p style="font-size: 0.9rem;"><strong>Email:</strong>
+                                        <%= order.address.email %>
+                                    </p>
+                                    <p style="font-size: 0.9rem;"><strong>Phone Number:</strong>
+                                        <%= order.address.phoneNo %>
+                                    </p>
+                                    <p style="font-size: 0.9rem;"><strong> Street Address:</strong>
+                                        <%= order.address.streetAddress %>
+                                    </p>
+                                    <p style="font-size: 0.9rem;"><strong>City</strong>
+                                        <%= order.address.city %>
+                                    </p>
+                                    <p style="font-size: 0.9rem;"><strong>District:</strong>
+                                        <%= order.address.district %>
+                                    </p>
+                                    <p style="font-size: 0.9rem;"><strong>Pincode:</strong>
+                                        <%= order.address.pincode %>
                                     </p>
                                     <img src="<%= product.image || 'https://via.placeholder.com/60' %>"
                                         alt="Product Image" class="order-image">

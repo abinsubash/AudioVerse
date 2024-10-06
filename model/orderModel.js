@@ -161,16 +161,17 @@ const orderSchema = mongoose.Schema({
   discount:{
     type:Number,
   },
-  isApproved:{
-    type:Boolean,
-    default:false,
-  },
-  approvedDate:{
-    type:Date,
-  },
   isCancelled:{
     type:Boolean,
     default:false
+  },
+  isDelivered:{
+    type:Boolean,
+    default:false,
+    required:true
+  },
+  deliveredDate:{
+    type:Date
   }
 });
 

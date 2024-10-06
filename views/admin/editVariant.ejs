@@ -86,7 +86,7 @@
 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-success">Update Variant</button>
-                    <a href="/admin/variants" class="btn btn-secondary">Cancel</a>
+                    <a href="/admin/viewProduct/<%= productId%>" class="btn btn-secondary">Cancel</a>
                 </div>
             </form>
         </div>
@@ -155,7 +155,7 @@
 
                         const fileInput = document.getElementById(`variantImage_${currentFieldIndex}`);
                         const dataTransfer = new DataTransfer();
-                        const croppedFile = new File([blob], `croppedImage_${currentFieldIndex}.png`, { type: 'image/png' });
+                        const croppedFile = new File([blob], `${currentFieldIndex}.croppedImage_${currentFieldIndex}.png`, { type: 'image/png' });
                         dataTransfer.items.add(croppedFile);
                         fileInput.files = dataTransfer.files;
                     });

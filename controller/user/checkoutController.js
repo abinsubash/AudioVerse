@@ -5,12 +5,17 @@ const User = require("../../model/userModel");
 const Address = require("../../model/addressModel");
 const Order = require("../../model/orderModel");
 const express = require("express");
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
+require("dotenv").config();
 
 const checkoutPge = async (req, res) => {
   const cart = await Cart.findOne({ userId: req.session.userExist._id })
     .populate("items.ProductId")
     .populate("items.variantId");
-
+  if (!cart) {
+    return res.redirect("/cart");
+  }
   const address = await Address.findOne({ userId: req.session.userExist._id });
 
   res.render("users/checkout", {
@@ -42,7 +47,7 @@ const toCheckout = async (req, res) => {
           _id: item.ProductId.toString(),
         });
         ProductName = product ? product.productName : "Unknown Product";
-        break; 
+        break;
       }
     }
 
@@ -144,7 +149,10 @@ const orderTest = async (req, res) => {
 
 const orderDetails = async (req, res) => {
   const user = await User.findOne({ _id: req.session.userExist._id });
-  const orders = await Order.find({ userId: req.session.userExist._id });
+  const orders = await Order.find({ userId: req.session.userExist._id }).sort({
+    _id: -1,
+  });
+  console.log(orders);
   res.render("users/order", { user: user, orderdItem: orders });
 };
 
@@ -163,7 +171,7 @@ const orderCancellation = async (req, res) => {
         const canceledItem = order.orderItem[itemIndex];
 
         canceledItem.isCancelled = true;
-        canceledItem.orderStatus ='cancelled'
+        canceledItem.orderStatus = "Cancelled";
         canceledItem.cancelReson = reason;
         canceledItem.cancelDate = Date.now();
         await order.save();
@@ -174,12 +182,11 @@ const orderCancellation = async (req, res) => {
           await variant.save();
         }
 
-
         updateOrderStatus(order);
 
         res.json({
           success: true,
-          message: "Order item successfully cancelled",
+          message: "Order item successfully Cancelled",
         });
       }
     }
@@ -188,23 +195,151 @@ const orderCancellation = async (req, res) => {
   }
 };
 
-
 async function updateOrderStatus(order) {
-  const allDelivered = order.orderItem.every(item => item.orderStatus === 'delivered');
-  const allCancelled = order.orderItem.every(item => item.orderStatus === 'cancelled');
-  const allShipped = order.orderItem.every(item => item.orderStatus === 'shipped');
+  const allDelivered = order.orderItem.every(
+    (item) => item.orderStatus === "delivered"
+  );
+  const allCancelled = order.orderItem.every(
+    (item) => item.orderStatus === "Cancelled"
+  );
+  const allShipped = order.orderItem.every(
+    (item) => item.orderStatus === "shipped"
+  );
 
   if (allCancelled) {
-    order.orderStatus = 'cancelled';
+    order.orderStatus = "Cancelled";
   } else if (allDelivered) {
-    order.orderStatus = 'delivered';
+    order.orderStatus = "delivered";
   } else if (allShipped) {
-    order.orderStatus = 'shipped';
+    order.orderStatus = "shipped";
   }
 
   await order.save();
 }
 
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAYX_KEY_ID,
+  key_secret: process.env.RAZORPAYX_KEY_SECRET,
+});
+const RazorpaySet = async (req, res) => {
+  try {
+    const cart = await Cart.findOne({ userId: req.session.userExist._id });
+    let amount = cart.totalPrice;
+    console.log("Key ID:", process.env.RAZORPAYX_KEY_ID);
+    console.log("Key Secret:", process.env.RAZORPAYX_KEY_SECRET);
+
+    amount = amount * 100;
+    const razorpayOrder = await razorpay.orders.create({
+      amount: amount,
+      currency: "INR",
+      receipt: "receipt#1",
+      payment_capture: 1,
+    });
+    console.log("hikasdfksad")
+    res.json({
+      success: true,
+      key_id: process.env.RAZORPAYX_KEY_ID,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      order_id: razorpayOrder.id,
+    });
+  } catch (error) {
+    console.error("Error creating Razorpay order:", error);
+  }
+};
+
+const verifyRazorpay = async (req, res) => {
+  try {
+    console.log(req.body)
+    const { paymentData, addressData, paymentMethodInput } = req.body;
+    const generatedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAYX_KEY_SECRET)
+      .update(paymentData.order_id + "|" + paymentData.payment_id)
+      .digest("hex");
+    if (generatedSignature !== paymentData.signature) {
+      return res.json({
+        success: false,
+        message: "Payment verification failed!",
+      });
+    }
+    const cart = await Cart.findOne({ userId: req.session.userExist._id })
+      .populate("items.ProductId")
+      .populate("items.variantId");
+
+    if (!cart) {
+      return res.send({success:false, message: "Cart not found" });
+    }
+
+    const itemsDetails = await Promise.all(
+      cart.items.map(async (item) => {
+        const product = await Product.findById(item.ProductId);
+        const variant = await Variant.findById(item.variantId);
+
+        return {
+          productId: product._id,
+          productName: product.productName,
+          description: product.description,
+          category: product.category,
+          variantId: variant._id,
+          variantColor: variant.color,
+          quantity: item.quantity,
+          price: variant.price,
+          totalPrice: item.total,
+          discountAmount: 0,
+          brand: product.brand,
+          image: variant.images[0],
+          color: variant.color,
+          orderDate: Date.now(),
+        };
+      })
+    );
+
+    // Store order details in the database
+    const newOrder = new Order({
+      userId: req.session.userExist._id,
+      orderId: `ORD-${Date.now()}`,
+      orderItem: itemsDetails,
+      address: {
+        name: addressData.name,
+        email: req.session.userExist.email,
+        phoneNo: addressData.phoneNo,
+        streetAddress: addressData.streetAddress,
+        city: addressData.city,
+        district: addressData.district,
+        pincode: addressData.pincode,
+      },
+      totalAmount: cart.totalPrice,
+      paymentMethod: paymentMethodInput,
+      orderStatus: "Pending",
+      paymentStatus: "Paid",
+    });
+
+    await newOrder.save();
+
+    cart.items.forEach(async (item) => {
+      const variantId = item.variantId._id
+        ? item.variantId._id.toString()
+        : item.variantId.toString();
+      await Variant.updateOne(
+        { _id: variantId },
+        { $inc: { stock: -item.quantity } }
+      );
+    });
+
+    const deletedCart = await Cart.findOneAndDelete({
+      userId: req.session.userExist._id,
+    });
+
+    if (!deletedCart) {
+      return res.json({ success: false, message: "Cart not found" });
+    }
+
+    res.json({ success: true, message: "Order created successfully" });
+  } catch (error) {
+    console.error("Error verifying Razorpay payment:", error);
+    res.json({ success: false, message: "Error processing the order" });
+  }
+};
 
 module.exports = {
   checkoutPge,
@@ -212,4 +347,6 @@ module.exports = {
   orderDetails,
   orderCancellation,
   toCheckout,
+  RazorpaySet,
+  verifyRazorpay,
 };

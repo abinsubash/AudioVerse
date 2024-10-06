@@ -69,6 +69,10 @@ userRoutes.post("/order",userAuth.isBlocked,userAuth.isLogin,checkoutController.
 //Todo: Orders
 userRoutes.get("/orderDetails",userAuth.isBlocked, userAuth.isLogin, checkoutController.orderDetails);
 userRoutes.post("/orderCancellation", userAuth.isLogin, checkoutController.orderCancellation);
+userRoutes.post('/Razorpay',userAuth.isBlocked,checkoutController.RazorpaySet)
+userRoutes.post('/verifyRazorpay', userAuth.isBlocked,checkoutController.verifyRazorpay);
+
+
 
 
 //Todo:Wishlist

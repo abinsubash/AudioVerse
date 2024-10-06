@@ -32,22 +32,6 @@
                     <p><strong>Status:</strong> <%= items.orderStatus %></p>
                     <p><strong>Order Date:</strong> <%= new Date(order.orderDate).toLocaleDateString() %></p>
                     <img src="<%= items.image %>" alt="Product Image" style="width: 100px; height: auto;">
-
-                    <% if (!order.isCancelled && !items.isCancelled) { %>
-                        <% if (order.isApproved) { %>
-                        <div class="product-action-buttons mt-2">
-                            <% if (items.orderStatus !== "Shipped" && items.orderStatus !== "Delivered" && items.orderStatus !== "Cancel") { %>
-                            <button class="btn btn-primary btn-sm" onclick='shipped("<%= items._id %>", "<%= order._id %>", "Shipped")'>Shipping</button>
-                            <% } %>
-                            <% if (items.orderStatus === "Shipped") { %>
-                            <button class="btn btn-success btn-sm" onclick='shipped("<%= items._id %>", "<%= order._id %>", "Delivered")'>Delivered</button>
-                            <% } %>
-                            <% if (items.orderStatus !== "Delivered") { %>
-                            <button class="btn btn-danger btn-sm" onclick='shipped("<%= items._id %>", "<%= order._id %>", "Cancel")'>Cancel</button>
-                            <% } %>
-                        </div>
-                        <% } %>
-                    <% } %>
                 </div>
                 <hr>
                 <% }) %>
@@ -63,7 +47,6 @@
                     <p><strong>District:</strong> <%= order.address.district %></p>
                     <p><strong>Pincode:</strong> <%= order.address.pincode %></p>
                 </div>
-
                 <a href="/admin/orders" class="btn btn-primary">Back to Orders</a>
             </div>
         </div>
@@ -72,22 +55,3 @@
 
 <%- include('../layout/admin/adminFooter') -%>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
-
-<script>
-    async function shipped(itemId, orderId, status) {
-        const response = await fetch('/admin/orderStatusEdit', {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ itemId, status, orderId })
-        });
-        const data = await response.json();
-        if (data.success) {
-            swal("Success!", "Order status has been updated successfully!", "success");
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        }
-    }
-</script>

@@ -141,7 +141,7 @@
     const nameError = document.getElementById('nameError');
     const phoneError = document.getElementById('phoneError');
     const nameRegex = /^[A-Za-z\s]+$/;
-    const phonenumberRegex = /^\d{10}$/;
+    const phonenumberRegex = /^[1-9](?!([0-9])\1{9})\d{9}/;
 
     nameError.innerHTML = '';
     phoneError.innerHTML = '';

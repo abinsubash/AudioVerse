@@ -45,10 +45,8 @@ adminRoutes.post('/updateVariant',adminAuth.isLogged,upload.any(), productContro
 adminRoutes.post('/deleteProduct/:id',adminAuth.isLogged,productController.isDeleted);
 adminRoutes.get('/NewVariant/:productId',adminAuth.isLogged,productController.newVariant);
 adminRoutes.post('/addNewVariant/:productId',upload.any(),productController.addNewVariant)
-// adminRoutes.post('/addVariant/:id')
 
 adminRoutes.get('/orders',adminAuth.isLogged,orderController.orderDetails);
-adminRoutes.patch("/orderApproval",adminAuth.isLogged,orderController.orderApproval);
 adminRoutes.patch("/orderStatusEdit",adminAuth.isLogged,orderController.orderStatusEdit);
 adminRoutes.get('/orders/:id', orderController.getOrderDetails);
 

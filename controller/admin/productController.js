@@ -195,9 +195,10 @@ const editVariant = async (req, res) => {
   res.render("admin/editVariant", { variants: variant, productId });
 };
 
-const updateVariant = async (req, res) => {
+const updateVariant = async (req, res) =>{
   const { productId, variantId } = req.query;
   const { color, price, stock, imagesToRemove } = req.body;
+  console.log(req.body)
   const files = req.files;
   try {
     const variant = await Variant.findById(variantId);
@@ -206,13 +207,14 @@ const updateVariant = async (req, res) => {
     }
 
     let images = variant.images || [];
+    console.log("this is images",images)
     if (files && files.length > 0) {
       if (images.length > 1) {
         images.splice(0, files.length);
       }
     }
 
-    if (imagesToRemove && Array.isArray(imagesToRemove)) {
+    if (imagesToRemove && Array.isArray(imagesToRemove)){
       images = images.filter((image) => !imagesToRemove.includes(image));
     }
     if (files && files.length > 0) {

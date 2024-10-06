@@ -491,9 +491,6 @@ const addAndRemoveWishlist = async (req, res) => {
 
 
 
-
-
-
 const deleteFromWishlist = async (req, res) => {
   const { objectId } = req.body; 
   try {
