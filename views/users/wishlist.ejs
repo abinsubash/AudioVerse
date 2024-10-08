@@ -35,49 +35,58 @@
 										</tr>
 									</thead>
 									<tbody>
-										<% if (wishlist && wishlist.length > 0 && wishlist[0].items.length > 0) { %>
-											<% wishlist[0].items.forEach((item, index) => { %>
+										<% if (wishlist && wishlist.items.length > 0) { %>
+											<% wishlist.items.forEach((item) => { %>
 												<tr class="text-center">
 													<td class="product-remove">
 														<a href="#"><span class="ion-ios-close"></span></a>
 													</td>
 													<td class="image-prod">
-														<div class="img" style="background-image:url(<%= wishlist[0].variantDetails[index]?.images[0] %>);"></div>
+														<div class="img" style="background-image:url(<%= item.variantId ? item.variantId.images[0] : '/images/default.jpg' %>);"></div>
 													</td>
 													<td class="product-name">
-														<p><%= wishlist[0].productDetails.find(pd => pd._id.toString() === item.productId.toString())?.productName || 'Product name not found' %></p>
+														<p>
+															<%= item.productId ? item.productId.productName : 'Product name not found' %>
+														</p>
 													</td>
 													<td class="color">
-														<p><%= wishlist[0].variantDetails[index]?.color || 'Color not available' %></p>
+														<p><%= item.variantId ? item.variantId.color : 'Color not available' %></p>
 													</td>
 													<td class="price">
-														<p>$<%= wishlist[0].variantDetails[index]?.price || 'Price not available' %></p>
+														<p>$<%= item.variantId ? item.variantId.price : 'Price not available' %></p>
 													</td>
-													<td class="price">
-														<!-- Check stock availability -->
-														<% if (wishlist[0].variantDetails[index]?.stock > 0) { %>
-															<!-- Add to cart button -->
-															<button class="black-button"
-																onclick="addtocart('<%= wishlist[0].variantDetails[index]._id %>', '<%= wishlist[0].variantDetails[index].productId %>')">
-																<p class="mt-3" style="color: white;">ADD TO CART</p>
-															</button>
+													<td class="actions">
+														<% if (item.variantId && item.variantId.stock > 0) { %> <!-- Check if in stock -->
+															<% if (cartVariantIds.includes(item.variantId._id.toString())) { %>
+																<button class="black-button" onclick="viewInCart('<%= item.variantId._id %>')">
+																	<p class="mt-3" style="color: white;">View in Cart</p>
+																</button>
+															<% } else { %>
+																<button class="black-button" onclick="addToCart('<%= item.variantId._id %>', '<%= item.productId._id %>')">
+																	<p class="mt-3" style="color: white;">ADD TO CART</p>
+																</button>
+															<% } %>
 														<% } else { %>
-															<p style="color: red;">Out of Stock</p>
+															<p style="color: red;">Out of Stock</p> <!-- Show out of stock message -->
 														<% } %>
 													</td>
-													<td class="price">
-														<button class="delete-btn" onclick="deleteItem('<%=wishlist[0].items[0]._id%>')" title="Delete">
+													
+													<td class="delete">
+														<button class="delete-btn" onclick="deleteItem('<%= item._id %>')" title="Delete">
 															<span class="delete-icon">&#10006;</span>
 														</button>
 													</td>
 												</tr>
-											<% }); %> 
+											<% }); %>
 										<% } else { %>
 											<tr>
 												<td colspan="6" class="text-center">Your wishlist is empty.</td>
 											</tr>
 										<% } %>
+										
+										
 									</tbody>
+									
 								</table>
 							</div>							
 						</div>
@@ -180,4 +189,42 @@
         }).showToast();
     }
 }
+
+function viewInCart(variantId){
+	window.location.href='/cart'
+}
+function addToCart(variantId, productId) {
+    // Prepare the request payload
+    const payload = {
+        variantId: variantId,
+        productId: productId
+    };
+
+    fetch('/addtoCart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Toastify({
+                    text: "Item added to cart!",
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                    duration: 3000
+                }).showToast();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                alert('Failed to add item to cart: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error adding to cart:', error);
+        });
+}
+
 				</script>

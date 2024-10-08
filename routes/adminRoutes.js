@@ -48,7 +48,8 @@ adminRoutes.post('/addNewVariant/:productId',upload.any(),productController.addN
 
 adminRoutes.get('/orders',adminAuth.isLogged,orderController.orderDetails);
 adminRoutes.patch("/orderStatusEdit",adminAuth.isLogged,orderController.orderStatusEdit);
-adminRoutes.get('/orders/:id', orderController.getOrderDetails);
+adminRoutes.get('/orders/:id', adminAuth.isLogged,orderController.getOrderDetails);
+adminRoutes.post('/return/:orderId/:orderItemId', orderController.returnConfirm);
 
 
 // -------------- search----------------

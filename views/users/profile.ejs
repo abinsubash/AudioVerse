@@ -1,4 +1,7 @@
 <%- include('../layout/profileHeader') -%>
+<%- include('../layout/navbar') -%>
+<%- include('../layout/profileNav') -%>
+
         <div class="col-lg-8">
           <div class="card mb-4">
             <div class="card-body">
@@ -31,17 +34,15 @@
               <hr>
               <div class="row">
                 <div class="col-sm-3">
-                  <p class="mb-0">Address</p>
+                  <p class="mb-0">Refferal code</p>
                 </div>
                 <div class="col-sm-9">
-       
-                  <p class="text-muted mb-0"><%= user.address ? user.address : "add address" %></p>
-               
+                  <p class="text-muted mb-0"><%= user.referalID%></p>
                 </div>
               </div>
             </div>
           </div>
-          <!-- Profile action buttons -->
+          <!-- Profile action buttons --> 
           <div class="d-flex justify-content-end mt-4">
             <a href="#" class="btn btn-success btn-sm me-2" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</a>
             <button type="button" class="btn btn-warning-custom btn-sm" data-toggle="modal" data-target="#changePasswordModal">Change Password</button>

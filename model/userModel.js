@@ -25,9 +25,6 @@ const userSchema = mongoose.Schema({
         type:String,
         unique:true
     },
-    referredBy:{
-        type:String
-    },
     signUpCount:{
         type:Number,
         default:0
@@ -47,6 +44,9 @@ const userSchema = mongoose.Schema({
     addressId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Address"
+    },
+    walletId:{
+        type:mongoose.Schema.Types.ObjectId
     }
 });
 const User = mongoose.model("User",userSchema);

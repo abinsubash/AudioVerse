@@ -1,185 +1,309 @@
-<%- include('../layout/profileHeader') -%>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Toastify-js/1.11.2/Toastify.min.css">
+<%- include('../layout/profileHeader') -%> <%- include('../layout/navbar') -%>
+        <%- include('../layout/profileNav') -%>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Toastify-js/1.11.2/Toastify.min.css" />
 
-    <div class="col-lg-8">
-        <h1 class="mt-4" style="font-size: 1.5rem;">Order Details</h1>
-        <div id="orderList">
-            <div id="orderList">
-                <% orderdItem.forEach(order=> { %>
-                    <div class="order-item">
-                        <div class="order-summary" onclick="toggleOrderDetails('<%= order._id %>')">
-                            <h5 style="font-size: 1rem;">OrderID: <%= order.orderId %>
-                            </h5>
-                            <p style="font-size: 0.9rem;">Total Price: $<%= order.totalAmount %>
-                            <p style="font-size: 0.9rem;">Order Status: <%= order.orderStatus %>
-                            </p>
-                            <p style="font-size: 0.9rem;">Order Date: <%= new Date(order.orderDate).toLocaleDateString()
-                                    %>
-                            </p>
-                            <button class="btn btn-info btn-sm">View</button>
-                        </div>
-
-                        <div class="order-details" id="details-<%= order._id %>">
-                            <h6 style="font-size: 1rem;">Order Details:</h6>
-
-                            <% order.orderItem.forEach(product=> { %>
-                                <div class="product-details">
-                                    <p style="font-size: 0.9rem;"><strong>Product Name:</strong>
-                                        <%= product.productName %>
+            <div class="col-lg-8">
+                <h1 class="mt-4" style="font-size: 1.5rem">Order Details</h1>
+                <div id="orderList">
+                    <div id="orderList">
+                        <% orderdItem.forEach(order=> { %>
+                            <div class="order-item">
+                                <div class="order-summary" onclick="toggleOrderDetails('<%= order._id %>')">
+                                    <h5 style="font-size: 1rem">OrderID: <%= order.orderId %>
+                                    </h5>
+                                    <p style="font-size: 0.9rem">
+                                        Total Price: $<%= order.totalAmount %>
                                     </p>
-                                    <p style="font-size: 0.9rem;"><strong>Product Color:</strong>
-                                        <%= product.color %>
+                                    <p style="font-size: 0.9rem">
+                                        Order Status: <%= order.orderStatus %>
                                     </p>
-                                    <p style="font-size: 0.9rem;"><strong>Quantity:</strong>
-                                        <%= product.quantity %>
+                                    <p style="font-size: 0.9rem">
+                                        Order Date: <%= new Date(order.orderDate).toLocaleDateString() %>
                                     </p>
-                                    <p style="font-size: 0.9rem;"><strong>Real Price:</strong> $<%= product.price %>
-                                    </p>
-                                    <p style="font-size: 0.9rem;"><strong>Total Price:</strong> $<%= product.totalPrice
-                                            %>
-                                    </p>
-                                    <h4>Address </h4>
-                                    <p style="font-size: 0.9rem;"><strong>Name:</strong>
-                                        <%= order.address.name %>
-                                    </p>
-                                    <p style="font-size: 0.9rem;"><strong>Email:</strong>
-                                        <%= order.address.email %>
-                                    </p>
-                                    <p style="font-size: 0.9rem;"><strong>Phone Number:</strong>
-                                        <%= order.address.phoneNo %>
-                                    </p>
-                                    <p style="font-size: 0.9rem;"><strong> Street Address:</strong>
-                                        <%= order.address.streetAddress %>
-                                    </p>
-                                    <p style="font-size: 0.9rem;"><strong>City</strong>
-                                        <%= order.address.city %>
-                                    </p>
-                                    <p style="font-size: 0.9rem;"><strong>District:</strong>
-                                        <%= order.address.district %>
-                                    </p>
-                                    <p style="font-size: 0.9rem;"><strong>Pincode:</strong>
-                                        <%= order.address.pincode %>
-                                    </p>
-                                    <img src="<%= product.image || 'https://via.placeholder.com/60' %>"
-                                        alt="Product Image" class="order-image">
-                                    <p style="font-size: 0.9rem;"><strong>Status:</strong>
-                                        <%= product.orderStatus %>
-                                    </p>
-                                    <p style="font-size: 0.9rem;"><strong>Payment Method:</strong>
-                                        <%= order.paymentMethod %>
-                                    </p>
-                                    <% if (product.isDelivered) { %>
-                                        <span style="color: green; font-weight: bold;">Order Delivered</span>
-
-                                        <% } else if (!product.isCancelled) { %>
-                                            <button class="btn btn-danger btn-sm"
-                                                onclick="openCancelModal('<%= product._id %>', '<%= order._id %>')">
-                                                Cancel Order
-                                            </button>
-                                            <% } else { %>
-                                                <span style="color: red; font-weight: bold;">Order Cancelled</span>
-                                                <% } %>
+                                    <button class="btn btn-info btn-sm">View</button>
                                 </div>
-                                <hr>
-                                <% }) %>
-                        </div>
-                        <hr>
+
+                                <div class="order-details" id="details-<%= order._id %>">
+                                    <h6 style="font-size: 1rem">Order Details:</h6>
+
+                                    <% order.orderItem.forEach(product=> { %>
+                                        <div class="product-details">
+                                            <p style="font-size: 0.9rem">
+                                                <strong>Product Name:</strong>
+                                                <%= product.productName %>
+                                            </p>
+                                            <p style="font-size: 0.9rem">
+                                                <strong>Product Color:</strong>
+                                                <%= product.color %>
+                                            </p>
+                                            <p style="font-size: 0.9rem">
+                                                <strong>Quantity:</strong>
+                                                <%= product.quantity %>
+                                            </p>
+                                            <p style="font-size: 0.9rem">
+                                                <strong>Real Price:</strong> $<%= product.price %>
+                                            </p>
+                                            <p style="font-size: 0.9rem">
+                                                <strong>Total Price:</strong> $<%= product.totalPrice %>
+                                            </p>
+                                            
+                                            <img src="<%= product.image || 'https://via.placeholder.com/60' %>"
+                                                alt="Product Image" class="order-image" />
+                                            <p style="font-size: 0.9rem">
+                                                <strong>Status:</strong>
+                                                <%= product.orderStatus %>
+                                            </p>
+                                            <p style="font-size: 0.9rem">
+                                                <strong>Payment Method:</strong>
+                                                <%= order.paymentMethod %>
+                                            </p>
+                                            <%if(product.isReturn){%>
+                                                <span style="color: green; font-weight: bold">Return appoved ! please Check Your wallet </span>
+                                            <% }else{%>
+                                            <%if(product.returnStatus==="Returned"){%>
+                                                
+                                                <span style="color: rgb(255, 0, 55); font-weight: bold">Request
+                                                    Sent !please wait </span>
+                                                    <% }else if(product.returnStatus==="Rejected"){%>
+                                                        <span style="color: rgb(255, 0, 55); font-weight: bold">Sorry ! Return Request rejected </span>
+                                                    
+                                                    <% }else{%>
+
+                                                    <% if (product.isDelivered) { %>
+                                                        <span style="color: green; font-weight: bold">Order
+                                                            Delivered</span>
+                                                        <button class="btn btn-success btn-sm"
+                                                            onclick="openReturnModal('<%= product._id %>', '<%= order._id %>')">
+                                                            Return
+                                                        </button>
+                                                        <% } else if (!product.isCancelled) { %>
+                                                            <button class="btn btn-danger btn-sm"
+                                                                onclick="openCancelModal('<%= product._id %>', '<%= order._id %>')">
+                                                                Cancel Order
+                                                            </button>
+                                                            <% } else { %>
+                                                                <span style="color: red; font-weight: bold">Order
+                                                                    Cancelled</span>
+                                                                <% } %>
+                                                                    <% }%>
+                                                                    <% }%>
+                                        </div>
+                                        <hr />
+                                        
+                                        <% }) %>
+                                        <h4>Address</h4>
+                                            <p style="font-size: 0.9rem">
+                                                <strong>Name:</strong>
+                                                <%= order.address.name %>
+                                            </p>
+                                            <p style="font-size: 0.9rem">
+                                                <strong>Email:</strong>
+                                                <%= order.address.email %>
+                                            </p>
+                                            <p style="font-size: 0.9rem">
+                                                <strong>Phone Number:</strong>
+                                                <%= order.address.phoneNo %>
+                                            </p>
+                                            <p style="font-size: 0.9rem">
+                                                <strong> Street Address:</strong>
+                                                <%= order.address.streetAddress %>
+                                            </p>
+                                            <p style="font-size: 0.9rem">
+                                                <strong>City</strong>
+                                                <%= order.address.city %>
+                                            </p>
+                                            <p style="font-size: 0.9rem">
+                                                <strong>District:</strong>
+                                                <%= order.address.district %>
+                                            </p>
+                                            <p style="font-size: 0.9rem">
+                                                <strong>Pincode:</strong>
+                                                <%= order.address.pincode %>
+                                            </p>
+                                </div>
+                                <hr />
+                                
+                            </div>
+                            <% }) %>
                     </div>
-                    <% }) %>
-            </div>
-        </div>
-
-    </div>
-    <!-- Bootstrap Cancel Modal -->
-    <div class="modal fade" id="cancelOrderModal" tabindex="-1" role="dialog" aria-labelledby="cancelOrderModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="cancelOrderModalLabel">Cancel Order</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
                 </div>
-                <div class="modal-body">
-                    <form id="cancelForm">
-                        <input type="hidden" id="productId" name="productId">
-                        <input type="hidden" id="orderId" name="orderId">
-                        <div class="form-group">
-                            <label for="cancellationReason">Reason for Cancellation:</label>
-                            <textarea class="form-control" id="cancellationReason" rows="3"></textarea>
+            </div>
+            <!-- Bootstrap Cancel Modal -->
+            <div class="modal fade" id="cancelOrderModal" tabindex="-1" role="dialog"
+                aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="cancelOrderModalLabel">Cancel Order</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
                         </div>
-                        <small style="color: red;" id="resonError"> </small>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-danger" onclick="submitCancellation()">Submit
-                        Cancellation</button>
+                        <div class="modal-body">
+                            <form id="cancelForm">
+                                <input type="hidden" id="productId" name="productId" />
+                                <input type="hidden" id="orderId" name="orderId" />
+                                <div class="form-group">
+                                    <label for="cancellationReason">Reason for Cancellation:</label>
+                                    <textarea class="form-control" id="cancellationReason" rows="3"></textarea>
+                                </div>
+                                <small style="color: red" id="resonError"> </small>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="submitCancellation()">
+                                Submit Cancellation
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Toastify-js/1.11.2/Toastify.min.js"></script>
 
+            <!-- Bootstrap Return Modal -->
 
-    <script>
-        function toggleOrderDetails(orderId) {
-            const detailsDiv = document.getElementById(`details-${orderId}`);
-            if (detailsDiv.style.display === "none" || detailsDiv.style.display === "") {
-                detailsDiv.style.display = "block";
-            } else {
-                detailsDiv.style.display = "none";
-            }
-        }
+            <div class="modal fade" id="returnOrderModal" tabindex="-1" role="dialog"
+                aria-labelledby="returnOrderModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="returnOrderModalLabel">Return Order</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="returnForm">
+                                <input type="hidden" id="returnProductId" name="returnProductId" />
+                                <input type="hidden" id="returnOrderId" name="returnOrderId" />
+                                <div class="form-group">
+                                    <label for="returnReason">Reason for Return:</label>
+                                    <textarea class="form-control" id="returnReason" rows="3"></textarea>
+                                </div>
+                                <small style="color: red" id="returnReasonError"></small>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="submitReturn()">
+                                Submit Return
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/Toastify-js/1.11.2/Toastify.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+            <script>
+                function toggleOrderDetails(orderId) {
+                    const detailsDiv = document.getElementById(`details-${orderId}`);
+                    if (
+                        detailsDiv.style.display === "none" ||
+                        detailsDiv.style.display === ""
+                    ) {
+                        detailsDiv.style.display = "block";
+                    } else {
+                        detailsDiv.style.display = "none";
+                    }
+                }
 
-        function openCancelModal(productId, orderId) {
-            document.getElementById('productId').value = orderId;
-            document.getElementById('orderId').value = productId;
-            $('#cancelOrderModal').modal('show');
-        }
+                function openCancelModal(productId, orderId) {
+                    document.getElementById("productId").value = orderId;
+                    document.getElementById("orderId").value = productId;
+                    $("#cancelOrderModal").modal("show");
+                }
 
-        async function submitCancellation() {
-            const orderId = document.getElementById('productId').value;
-            const variantId = document.getElementById('orderId').value;
-            const reason = document.getElementById('cancellationReason').value.trim();
-            const reasonRegex = /^.{10,}$/;
-            const resonError = document.getElementById('resonError');
-            resonError.innerHTML = ''
-            if (!reasonRegex.test(reason)) {
-                resonError.innerHTML = 'The reason must be at least 10 characters long.'
-                return
-            }
-            const response = await fetch('/orderCancellation', {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ reason, variantId, orderId }),
-            });
+                async function submitCancellation() {
+                    const orderId = document.getElementById("productId").value;
+                    const variantId = document.getElementById("orderId").value;
+                    const reason = document.getElementById("cancellationReason").value.trim();
+                    const reasonRegex = /^.{10,}$/;
+                    const resonError = document.getElementById("resonError");
+                    resonError.innerHTML = "";
+                    if (!reasonRegex.test(reason)) {
+                        resonError.innerHTML = "The reason must be at least 10 characters long.";
+                        return;
+                    }
+                    const response = await fetch("/orderCancellation", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ reason, variantId, orderId }),
+                    });
 
-            $('#cancelOrderModal').modal('hide');
-            const result = await response.json(); 
-            console.log(result.success)
-            if (result.success) {
-                window.location.reload()
-                Toastify({
-                    text: result.message,
-                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                    duration: 5000,
-                }).showToast();
-            }
-            window.location.reload()
-            document.getElementById('cancelForm').reset();
+                    $("#cancelOrderModal").modal("hide");
+                    const result = await response.json();
+                    console.log(result.success);
+                    if (result.success) {
+                        window.location.reload();
+                        Toastify({
+                            text: result.message,
+                            backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                            duration: 5000,
+                        }).showToast();
+                    }
+                    window.location.reload();
+                    document.getElementById("cancelForm").reset();
+                }
 
-        }
+                function openReturnModal(productId, orderId) {
+                    document.getElementById("returnProductId").value = productId;
+                    document.getElementById("returnOrderId").value = orderId;
 
-    </script>
+                    // Show the modal
+                    $("#returnOrderModal").modal("show");
+                }
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
-    </section>
-    </body>
+                async function submitReturn() {
+                    const returnProductId = document.getElementById('returnProductId').value;
+                    const returnOrderId = document.getElementById('returnOrderId').value;
+                    const returnReason = document.getElementById("returnReason").value.trim();
+                    const reasonRegex = /^.{10,}$/;
+                    const returnReasonError = document.getElementById('returnReasonError')
+                    returnReasonError.innerHTML = ''
+                    if (!reasonRegex.test(returnReason)) {
+                        return returnReasonError.innerHTML = "The reason must be at least 10 characters long."
+                    }
+                    const response = await fetch('/return', {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ returnReason, returnProductId, returnOrderId })
+                    })
+                    const data = await response.json()
+                    console.log("This is data", data);
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: data.message,
+                            confirmButtonText: 'OK',
+                            timer: 2000,
+                            showConfirmButton: true
+                        });
+                        setTimeout(() => {
+                            window.location.reload()
+                        }, 2000);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: data.message || 'Something went wrong!',
+                            confirmButtonText: 'OK',
+                            timer: 3000,
+                            showConfirmButton: true
+                        });
+                    }
 
-    </html>
+                }
+            </script>
+
+            <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>

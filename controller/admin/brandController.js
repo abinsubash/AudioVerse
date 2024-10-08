@@ -2,7 +2,6 @@ const Brand = require("../../model/brandModel");
 
 const addBrand = async (req, res) => {
   const brandName = req.body.brandName;
-  console.log("hiadfhasdf", brandName);
 
   if (!brandName) {
     return res.send("Brand name is required");
@@ -10,7 +9,6 @@ const addBrand = async (req, res) => {
   const brand = await Brand.findOne({
     brandName: { $regex: new RegExp(brandName, "i") },
   });
-  console.log(brand);
   if (brand) {
     return console.log("brand exist");
   }

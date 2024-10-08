@@ -13,6 +13,7 @@ const Cart = require("../../model/cartModel");
 const Address = require("../../model/addressModel");
 const mongoose = require("mongoose");
 const Wishlist = require("../../model/wishlistModel");
+const Wallet = require("../../model/walletModel");
 const { ObjectId } = mongoose.Types;
 const generateRefferalID = () => {
   return crypto.randomBytes(6).toString("hex");
@@ -58,9 +59,14 @@ const signup = (req, res) => {
 
 const signupValidation = async (req, res) => {
   try {
-    const { name, email, phonenumber, password } = req.body;
+    const { name, email, phonenumber, password, referral } = req.body;
     const otp = generateOTP();
-
+    const user = await User.findOne({ referalID: referral });
+    if (!user) {
+      conosle.log("refferd user not found");
+    } else {
+      req.session.refferdUser = user._id;
+    }
     const existUser = await User.findOne({ email: email, phone: phonenumber });
 
     if (existUser) {
@@ -102,13 +108,45 @@ const otpVerification = async (req, res) => {
     if (!otpUse) {
       return res.json({ success: false, message: "OTP not found" });
     }
-
     if (otpUse.otp != otp) {
       return res.json({ success: false, message: "OTP is Invalid" });
     }
-    res.json({ success: true });
     const newuser = new User(tempUser);
     await newuser.save();
+    if (req.session.refferdUser) {
+      const referredUser = await User.findById(req.session.refferdUser);
+      if (referredUser) {
+        await User.findOneAndUpdate(
+          { _id: req.session.refferdUser },
+          { $inc: { signUpCount: 1 } }
+        );
+
+        let wallet;
+        if (!referredUser.walletId) {
+          wallet = new Wallet({
+            userId: referredUser._id,
+          });
+          await wallet.save();
+
+          referredUser.walletId = wallet._id;
+          await referredUser.save();
+        }
+        wallet = await Wallet.findOne({ _id: referredUser.walletId });
+        if (wallet) {
+          const referralBonus = 200;
+          wallet.balance += referralBonus;
+          wallet.history.push({
+            date: Date.now(),
+            amount: referralBonus,
+            transactionType: "Referral Bonus",
+            newBalance: wallet.balance,
+          });
+          await wallet.save();
+
+        }
+      }
+    }
+    res.json({ success: true });
   } catch (error) {
     console.log(error);
   }
@@ -537,7 +575,6 @@ const addAddress = async (req, res) => {
     });
 
     await address.save();
-    console.log("saved");
     if (!user.addressId) {
       await User.updateOne({ _id: user._id }, { addressId: address._id });
     }
@@ -604,6 +641,22 @@ const deleteAddress = async (req, res) => {
   }
 };
 
+const refferal = async (req, res) => {
+  const referralId = req.params.referralId;
+
+  try {
+    const user = await User.findOne({ referalID: referralId });
+
+    if (user) {
+      res.json({ success: true, userName: user.name });
+    } else {
+      res.json({ success: false, message: "User not found" });
+    }
+  } catch (error) {
+    res.json({ success: false, message: "Server error" });
+  }
+};
+
 module.exports = {
   login,
   signup,
@@ -630,4 +683,5 @@ module.exports = {
   deleteAddress,
   searchAndsort,
   filter,
+  refferal,
 };

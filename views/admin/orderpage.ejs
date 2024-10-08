@@ -65,56 +65,58 @@
                                                     </td>
                                                     <td>$<%= order.totalAmount %>
                                                     </td>
-                                                    <td>
+                                                    <%if(order.orderStatus==="Delivered"){%>
+                                                    <td style="color: green;">
                                                         <%= order.orderStatus %>
                                                     </td>
+                                                    <% }else if(order.orderStatus==="Cancelled"){%>
+                                                        <td style="color: red;">
+                                                            <%= order.orderStatus %>
+                                                        </td>
+                                                    <%}else{%>
+                                                        <td >
+                                                            <%= order.orderStatus %>
+                                                        </td>
+                                                    <%}%>
+
                                                     <td>
                                                         <%= new Date(order.orderDate).toLocaleDateString() %>
                                                     </td>
+                                                    <% let hasReturnStatus=false; order.orderItem.forEach(item=> {
+                                                        if (item.returnStatus === 'Returned') {
+                                                        hasReturnStatus = true;
+                                                        }
+                                                        });
+                                                        %>
 
-                                                    <td>
-                                                        <button class="btn btn-info btn-sm"
-                                                            onclick="window.location.href='/admin/orders/<%= order._id %>'">View</button>
-                                                    </td>
-                                                    <% if(!order.isCancelled){ %>
-                                                        <% if (order.orderStatus==="Pending" ) { %>
-                                                            <td>
-                                                                <button class="btn btn-primary btn-sm"
-                                                                    onclick='orderEdit(`<%= order._id %>`,"Shipped")'>Shipping</button>
-                                                            </td>
-                                                            <td>
-                                                                <button class="btn btn-danger btn-sm"
-                                                                    onclick='orderEdit(`<%= order._id %>`,"Cancel")'>Cancel</button>
-                                                            </td>
-                                                            <% } else if (order.orderStatus==="Shipped" ) { %>
+                                                        <td>
+                                                            <button class="btn btn-sm
+                                                        btn-<%= hasReturnStatus ? 'warning' : 'danger' %>"
+                                                                onclick="window.location.href='/admin/orders/<%= order._id %>'">
+                                                                View
+                                                            </button>
+                                                            
+                                                        </td>
+                                                        <% if(!order.isCancelled){ %>
+                                                            <% if (order.orderStatus==="Pending" ) { %>
                                                                 <td>
-                                                                    <button class="btn btn-success btn-sm"
-                                                                        onclick='orderEdit(`<%= order._id %>`,"Delivered")'>Delivered</button>
+                                                                    <button class="btn btn-primary btn-sm"
+                                                                        onclick='orderEdit(`<%= order._id %>`,"Shipped")'>Shipping</button>
                                                                 </td>
                                                                 <td>
                                                                     <button class="btn btn-danger btn-sm"
                                                                         onclick='orderEdit(`<%= order._id %>`,"Cancel")'>Cancel</button>
                                                                 </td>
-                                                                <% } else if (order.orderStatus==="Delivered" ) { %>
-                                                                    <!-- Order is delivered -->
+                                                                <% } else if (order.orderStatus==="Shipped" ) { %>
                                                                     <td>
-                                                                        <p class="text-success "
-                                                                            style="font-size: 11px; margin-top: 10px;">
-                                                                            <strong>Order
-                                                                                Delivered</strong></p>
+                                                                        <button class="btn btn-success btn-sm"
+                                                                            onclick='orderEdit(`<%= order._id %>`,"Delivered")'>Delivered</button>
                                                                     </td>
-
+                                                                    <td>
+                                                                        <button class="btn btn-danger btn-sm"
+                                                                            onclick='orderEdit(`<%= order._id %>`,"Cancel")'>Cancel</button>
+                                                                    </td>
                                                                     <% } %>
-                                                                        <% }else{%>
-                                                                            <td>
-                                                                                <p
-                                                                                    style="color: red; font-size: 10px; margin-top: 10px;">
-                                                                                    <strong> Order Cancelled </strong>
-                                                                                </p>
-                                                                            </td>
-                                                                            <td>
-
-                                                                            </td>
                                                                             <% }%>
                                                 </tr>
                                                 <% }) %>
@@ -238,7 +240,7 @@
                                 if (data.success) {
                                     swal({
                                         title: "Success!",
-                                        text: data.message, 
+                                        text: data.message,
                                         icon: "success",
                                         button: "Okay",
                                     });

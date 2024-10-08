@@ -1,0 +1,117 @@
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #f39c12;
+    --background-color: #f4f7fa;
+    --card-background: #ffffff;
+    --text-color: #333333;
+}
+
+.sidebar-placeholder {
+    flex: 1;
+}
+
+.wallet-content {
+    flex: 0 0 60%;
+    max-width: 700px;
+    padding-left: 20px;
+    margin-top: 20px;
+}
+
+.wallet-card {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 15px;
+    padding: 15px;
+    /* Decrease padding slightly */
+    color: white;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+}
+
+.wallet-card:hover {
+    transform: translateY(-5px);
+}
+
+.wallet-balance {
+    font-size: 2.2em;
+    /* Reduce the size slightly */
+    font-weight: bold;
+    margin-bottom: 10px;
+    /* Add some margin below */
+}
+
+.wallet-label {
+    font-size: 1.1em;
+    /* Make the label size more proportional */
+    opacity: 0.8;
+}
+
+.transactions {
+    background-color: var(--card-background);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.transactions h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+    font-size: 1.5em;
+}
+
+.transaction-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.transaction-icon {
+    background-color: #e8f0fe;
+    color: var(--primary-color);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.transaction-details {
+    flex-grow: 1;
+}
+
+.transaction-amount {
+    font-weight: bold;
+}
+
+.transaction-amount.positive {
+    color: #27ae60;
+}
+
+.transaction-amount.negative {
+    color: #e74c3c;
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .wallet-content {
+        padding-left: 0;
+        max-width: 100%;
+    }
+}

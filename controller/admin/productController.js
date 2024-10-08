@@ -198,7 +198,6 @@ const editVariant = async (req, res) => {
 const updateVariant = async (req, res) =>{
   const { productId, variantId } = req.query;
   const { color, price, stock, imagesToRemove } = req.body;
-  console.log(req.body)
   const files = req.files;
   try {
     const variant = await Variant.findById(variantId);
@@ -271,7 +270,6 @@ const isDeleted = async (req, res) => {
 const addNewVariant = async (req, res) => {
   const { color, stock, price } = req.body;
   const productId = req.params.productId
-  console.log(productId)
   const imagePaths = req.files.map(file => {
     const relativePath = `/uploads/${file.filename}`;
     return relativePath;
@@ -292,7 +290,6 @@ const addNewVariant = async (req, res) => {
       { $push: { variants: newVariant._id } } 
     );
     const proudct = await Product.findOne({_id:productId});
-    console.log(proudct)
 
     res.json({success:true, message: 'Variant added successfully!' ,productId:productId });
   } catch (err) {

@@ -7,6 +7,8 @@ const Order = require("../../model/orderModel");
 const express = require("express");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
+const mongoose = require("mongoose");
+const Wallet = require("../../model/walletModel");
 require("dotenv").config();
 
 const checkoutPge = async (req, res) => {
@@ -152,7 +154,6 @@ const orderDetails = async (req, res) => {
   const orders = await Order.find({ userId: req.session.userExist._id }).sort({
     _id: -1,
   });
-  console.log(orders);
   res.render("users/order", { user: user, orderdItem: orders });
 };
 
@@ -161,7 +162,7 @@ const orderCancellation = async (req, res) => {
     const { reason, orderId } = req.body;
     const itemId = req.body.variantId;
     const order = await Order.findOne({ _id: orderId });
-
+    let paidPrice;
     if (order) {
       const itemIndex = order.orderItem.findIndex(
         (item) => item._id.toString() === itemId.toString()
@@ -169,7 +170,9 @@ const orderCancellation = async (req, res) => {
 
       if (itemIndex !== -1) {
         const canceledItem = order.orderItem[itemIndex];
-
+        if (canceledItem.paymentStatus === "Paid") {
+          paidPrice = canceledItem.totalPrice;
+        }
         canceledItem.isCancelled = true;
         canceledItem.orderStatus = "Cancelled";
         canceledItem.cancelReson = reason;
@@ -184,6 +187,45 @@ const orderCancellation = async (req, res) => {
 
         updateOrderStatus(order);
 
+        if (paidPrice) {
+          const userWithWallet = await User.aggregate([
+            {
+              $match: { _id: new mongoose.Types.ObjectId(order.userId) },
+            },
+            {
+              $lookup: {
+                from: "wallets",
+                localField: "_id",
+                foreignField: "userId",
+                as: "wallet",
+              },
+            },
+            {
+              $unwind: "$wallet",
+            },
+          ]);
+
+          if (userWithWallet.length > 0) {
+            const userWallet = userWithWallet[0].wallet;
+
+            // Update the wallet balance and add a new transaction to the history
+            await Wallet.updateOne(
+              { _id: userWallet._id }, // Find the user's wallet
+              {
+                $inc: { balance: paidPrice }, // Increment wallet balance
+                $push: {
+                  history: {
+                    date: new Date(),
+                    amount: paidPrice,
+                    transactionType: "Refund",
+                    newBalance: userWallet.balance + paidPrice, // New balance after payment
+                  },
+                },
+              }
+            );
+          }
+        }
+
         res.json({
           success: true,
           message: "Order item successfully Cancelled",
@@ -191,7 +233,7 @@ const orderCancellation = async (req, res) => {
       }
     }
   } catch (error) {
-    conosle.log(error);
+    console.log(error);
   }
 };
 
@@ -208,6 +250,7 @@ async function updateOrderStatus(order) {
 
   if (allCancelled) {
     order.orderStatus = "Cancelled";
+    order.isCancelled = true;
   } else if (allDelivered) {
     order.orderStatus = "delivered";
   } else if (allShipped) {
@@ -225,8 +268,6 @@ const RazorpaySet = async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.session.userExist._id });
     let amount = cart.totalPrice;
-    console.log("Key ID:", process.env.RAZORPAYX_KEY_ID);
-    console.log("Key Secret:", process.env.RAZORPAYX_KEY_SECRET);
 
     amount = amount * 100;
     const razorpayOrder = await razorpay.orders.create({
@@ -235,7 +276,6 @@ const RazorpaySet = async (req, res) => {
       receipt: "receipt#1",
       payment_capture: 1,
     });
-    console.log("hikasdfksad")
     res.json({
       success: true,
       key_id: process.env.RAZORPAYX_KEY_ID,
@@ -250,7 +290,6 @@ const RazorpaySet = async (req, res) => {
 
 const verifyRazorpay = async (req, res) => {
   try {
-    console.log(req.body)
     const { paymentData, addressData, paymentMethodInput } = req.body;
     const generatedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAYX_KEY_SECRET)
@@ -267,7 +306,7 @@ const verifyRazorpay = async (req, res) => {
       .populate("items.variantId");
 
     if (!cart) {
-      return res.send({success:false, message: "Cart not found" });
+      return res.send({ success: false, message: "Cart not found" });
     }
 
     const itemsDetails = await Promise.all(
@@ -278,6 +317,7 @@ const verifyRazorpay = async (req, res) => {
         return {
           productId: product._id,
           productName: product.productName,
+          paymentStatus: "Paid",
           description: product.description,
           category: product.category,
           variantId: variant._id,
@@ -341,6 +381,31 @@ const verifyRazorpay = async (req, res) => {
   }
 };
 
+const orderReturn = async (req, res) => {
+  try {
+    const { returnProductId, returnOrderId, returnReason } = req.body;
+    const updatedOrder = await Order.findOneAndUpdate(
+      { _id: returnOrderId, "orderItem._id": returnProductId },
+      {
+        $set: {
+          "orderItem.$.returnStatus": "Returned",
+          "orderItem.$.returnDate": new Date(),
+          "orderItem.$.returnReson": returnReason,
+        },
+      },
+      { new: true }
+    );
+    if (!updatedOrder) {
+      res.json({success:false,message:"Order item is not found"});
+      return;
+    }
+
+    res.json({success:true,message:"Return request sented "});
+  } catch (error) {
+    console.log(error)
+  }
+};
+
 module.exports = {
   checkoutPge,
   orderTest,
@@ -349,4 +414,5 @@ module.exports = {
   toCheckout,
   RazorpaySet,
   verifyRazorpay,
+  orderReturn,
 };

@@ -70,7 +70,6 @@ const newShop = async (req, res) => {
      
       const [minPrice, maxPrice] = priceRange.split('-').map(Number);
       if (sortPrice) {
-        console.log('pooda myraa')
         const variantsData = await Variant.aggregate([
           {
             $match: {
@@ -414,30 +413,29 @@ const shopNewPage = async (req, res) => {
 };
 
 const wishlist = async (req, res) => {
+
   const _id = req.session.userExist._id;
-  const wishlist = await Wishlist.aggregate([
-    { $match: { userId: new mongoose.Types.ObjectId(_id) } },  
-    {
-      $lookup: {
-        from: 'products',             
-        localField: 'items.productId', 
-        foreignField: '_id',          
-        as: 'productDetails'          
-      }
-    },
-    {
-      $lookup: {
-        from: 'variants',              
-        localField: 'items.variantId', 
-        foreignField: '_id',           
-        as: 'variantDetails'          
-      }
-    }
-  ]);
-    
-  console.log(wishlist);
-  res.render("users/wishlist", { user: req.session.userExist ,wishlist:wishlist});
-};
+
+  const wishlist = await Wishlist.findOne({ userId: _id })
+  .populate({
+      path: 'items.variantId',
+      model: 'Variant' 
+  })
+  .populate({
+      path: 'items.productId',
+      model: 'Product'
+  });
+
+    console.log(wishlist)
+
+    const cart = await Cart.findOne({ userId: _id }); // Ensure you're using the correct model for the cart
+    const cartVariantIds = cart ? cart.items.map(item => item.variantId.toString()) : [];
+    res.render("users/wishlist", { 
+      user: req.session.userExist,
+      wishlist: wishlist,
+      cartVariantIds: cartVariantIds // Pass the cart variant IDs to the template
+    });
+  };
 
 
 const addAndRemoveWishlist = async (req, res) => {
@@ -450,10 +448,8 @@ const addAndRemoveWishlist = async (req, res) => {
   const { variantid } = req.body;
   try {
     const wishlist = await Wishlist.findOne({ userId: _id });
-    console.log(wishlist);
     const variant = await Varinat.findOne({ _id: variantid });
     if (!wishlist) {
-      console.log("Creating a new wishlist");
       const newWishlist = new Wishlist({
         userId: _id,
         items: [
@@ -496,7 +492,6 @@ const deleteFromWishlist = async (req, res) => {
   try {
       const userId = req.session.userExist._id; 
       const wishlist = await Wishlist.findOne({ userId: userId });
-      console.log(wishlist);
       
       if (!wishlist) {
           return res.json({ success: false, message: 'Wishlist not found' });
@@ -505,7 +500,6 @@ const deleteFromWishlist = async (req, res) => {
       wishlist.items = wishlist.items.filter(item => !item._id.equals(new mongoose.Types.ObjectId(objectId)));
       
       await wishlist.save();
-      console.log('item deleted ')
       return res.json({ success: true, message: 'Item removed from wishlist successfully' });
   } catch (error) {
       console.error(error);

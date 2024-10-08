@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up Page</title>
     <link rel="stylesheet" href="css/signUp.css">
 </head>
+
 <body>
     <div class="container">
         <div class="image-section">
@@ -14,29 +16,32 @@
         <div class="form-section">
             <h2>Create Your Account</h2>
             <form action="/signup" method="POST" id="signup">
-                <input type="text" name="name" id="name" placeholder="Full Name" >
+                <input type="text" name="name" id="name" placeholder="Full Name">
                 <small id="nameError"></small>
 
-                <input type="email" name="email" id="email" placeholder="Email" >
+                <input type="email" name="email" id="email" placeholder="Email">
                 <small id="emailError"></small>
 
-                <input type="tel" name="phonenumber" id="phonenumber" placeholder="Phone Number" >
+                <input type="tel" name="phonenumber" id="phonenumber" placeholder="Phone Number">
                 <small id="phonenumberError"></small>
 
-                <input type="password" name="password" id="password" placeholder="Password" >
+                <input type="password" name="password" id="password" placeholder="Password">
                 <small id="passwordError"></small>
 
-                <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password" >
+                <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password">
                 <small id="confirmPasswordError"></small>
+
+                <input type="text" name="referral" id="referral" placeholder="Enter Referral ID">
+                <small id="userNameDisplay" style="margin-top: 5px;"></small>
 
                 <button type="submit" id="registerBtn">Sign Up</button>
             </form>
 
             <!-- Google Sign-Up Button -->
-            <a href="/auth/google" class="google-btn" id="registerBtn"  style="text-decoration: none;">
+            <a href="/auth/google" class="google-btn" id="registerBtn" style="text-decoration: none;">
                 <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google Logo">
                 Continue with Google
-            </a>            
+            </a>
 
             <p class="login-redirect">
                 Already have an account? <a href="/login">Login here</a>
@@ -57,6 +62,7 @@
             const phonenumberError = document.getElementById("phonenumberError");
             const passwordError = document.getElementById("passwordError");
             const confirmPasswordError = document.getElementById("confirmPasswordError");
+
 
             const nameRegex = /^[A-Za-z\s]+$/;
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -99,7 +105,38 @@
             if (!isValid) {
                 event.preventDefault();
             }
+
         });
+        let timeoutId;
+
+        document.getElementById('referral').addEventListener('input', function () {
+            const referralId = this.value;
+
+            clearTimeout(timeoutId);
+
+            timeoutId = setTimeout(() => {
+                if (referralId.length > 0) {
+                    fetch(`/findUserByReferral/${referralId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const userNameDisplay = document.getElementById('userNameDisplay');
+                            if (data.success) {
+                                userNameDisplay.style.color = "green";
+                                userNameDisplay.innerHTML = `Referred by: ${data.userName}`;
+                            } else {
+                                userNameDisplay.style.color = "red";
+                                userNameDisplay.innerHTML = 'Referral ID not found';
+                            }
+
+                        })
+                        .catch(error => console.error('Error:', error));
+                } else {
+                    document.getElementById('userNameDisplay').innerHTML = '';
+                }
+            }, 500);  // Wait 500ms before making the request
+        });
+
     </script>
 </body>
+
 </html>

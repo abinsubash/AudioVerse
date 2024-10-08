@@ -1,57 +1,145 @@
 <%- include('../layout/admin/adminHeader') -%>
-<nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
-    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
-      <a class="navbar-brand brand-logo" href="">AudioVerse</a>
-      <a class="navbar-brand brand-logo-mini" href=""><img src="/assets/images/logo-mini.svg"
-          alt="logo" /></a>
-    </div>
-    <div class="navbar-menu-wrapper d-flex align-items-stretch">
-      <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
-        <span class="mdi mdi-menu"></span>
-      </button>
-<%- include('../layout/admin/adminNavbar') -%>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
-
-<div class="row">
-    <div class="col-12 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Order Details</h4>
-                <p class="card-description">Details of Order ID: <%= order.orderId %></p>
-
-                <!-- Product Details Section -->
-                <% order.orderItem.forEach((items) => { %>
-                <div class="order-item">
-                    <h6><strong>Product Name:</strong> <%= items.productName %></h6>
-                    <p><strong>Color:</strong> <%= items.color %></p>
-                    <p><strong>Quantity:</strong> <%= items.quantity %></p>
-                    <p><strong>Price:</strong> $<%= items.price %></p>
-                    <p><strong>Total Price:</strong> $<%= items.totalPrice %></p>
-                    <p><strong>Description:</strong></p>
-                    <p style="white-space: pre-wrap;"><%= items.description %></p>
-                    <p><strong>Status:</strong> <%= items.orderStatus %></p>
-                    <p><strong>Order Date:</strong> <%= new Date(order.orderDate).toLocaleDateString() %></p>
-                    <img src="<%= items.image %>" alt="Product Image" style="width: 100px; height: auto;">
-                </div>
-                <hr>
-                <% }) %>
-
-                <!-- Shipping Address Section -->
-                <div class="address-section mt-4">
-                    <h6><strong>Shipping Address:</strong></h6>
-                    <p><strong>Name:</strong> <%= order.address.name %></p>
-                    <p><strong>Email:</strong> <%= order.address.email %></p>
-                    <p><strong>Phone No:</strong> <%= order.address.phoneNo %></p>
-                    <p><strong>Street Address:</strong> <%= order.address.streetAddress %></p>
-                    <p><strong>City:</strong> <%= order.address.city %></p>
-                    <p><strong>District:</strong> <%= order.address.district %></p>
-                    <p><strong>Pincode:</strong> <%= order.address.pincode %></p>
-                </div>
-                <a href="/admin/orders" class="btn btn-primary">Back to Orders</a>
-            </div>
+    <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+            <a class="navbar-brand brand-logo" href="">AudioVerse</a>
+            <a class="navbar-brand brand-logo-mini" href=""><img src="/assets/images/logo-mini.svg" alt="logo" /></a>
         </div>
-    </div>
-</div>
+        <div class="navbar-menu-wrapper d-flex align-items-stretch">
+            <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+                <span class="mdi mdi-menu"></span>
+            </button>
+            <%- include('../layout/admin/adminNavbar') -%>
+                <link rel="stylesheet"
+                    href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
 
-<%- include('../layout/admin/adminFooter') -%>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+                <div class="row">
+                    <div class="col-12 grid-margin stretch-card">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Order Details</h4>
+                                <p class="card-description">Details of Order ID: <%= order.orderId %>
+                                </p>
+
+                                <!-- Product Details Section -->
+                                <% order.orderItem.forEach((items)=> { %>
+                                    <div class="order-item">
+                                        <h6><strong>Product Name:</strong>
+                                            <%= items.productName %>
+                                        </h6>
+                                        <p><strong>Color:</strong>
+                                            <%= items.color %>
+                                        </p>
+                                        <p><strong>Quantity:</strong>
+                                            <%= items.quantity %>
+                                        </p>
+                                        <p><strong>Price:</strong> $<%= items.price %>
+                                        </p>
+                                        <p><strong>Total Price:</strong> $<%= items.totalPrice %>
+                                        </p>
+                                        <p><strong>Description:</strong></p>
+                                        <p style="white-space: pre-wrap;">
+                                            <%= items.description %>
+                                        </p>
+                                        <p><strong>Status:</strong>
+                                            <%= items.orderStatus %>
+                                        </p>
+                                        <p><strong>Order Date:</strong>
+                                            <%= new Date(order.orderDate).toLocaleDateString() %>
+                                        </p>
+                                        <img src="<%= items.image %>" alt="Product Image"
+                                            style="width: 100px; height: auto;">
+                                    </div>
+                                    <%if(items.isReturn){%>
+                                        <p> <strong style="color: green;">Return accept ! Cash Sent to the
+                                                Wallet</strong></p>
+                                        <%}%>
+                                            <% if(items.returnStatus==="Returned" ) { %>
+
+                                                <button
+                                                    onclick="confirmReturn('<%= items._id %>', '<%= order._id %>', 'confirm')"
+                                                    class="btn btn-success btn-sm text-white"
+                                                    style="margin-right: 5px;">
+                                                    Accept
+                                                </button>
+                                                <button
+                                                    onclick="confirmReturn('<%= items._id %>', '<%= order._id %>', 'Cancel')"
+                                                    class="btn btn-danger btn-sm text-white" style="margin-right: 5px;">
+                                                    Cancel Return
+                                                </button>
+
+                                                <% } %>
+
+                                                    <hr>
+                                                    <% }) %>
+
+                                                        <!-- Shipping Address Section -->
+                                                        <div class="address-section mt-4">
+                                                            <h6><strong>Shipping Address:</strong></h6>
+                                                            <p><strong>Name:</strong>
+                                                                <%= order.address.name %>
+                                                            </p>
+                                                            <p><strong>Email:</strong>
+                                                                <%= order.address.email %>
+                                                            </p>
+                                                            <p><strong>Phone No:</strong>
+                                                                <%= order.address.phoneNo %>
+                                                            </p>
+                                                            <p><strong>Street Address:</strong>
+                                                                <%= order.address.streetAddress %>
+                                                            </p>
+                                                            <p><strong>City:</strong>
+                                                                <%= order.address.city %>
+                                                            </p>
+                                                            <p><strong>District:</strong>
+                                                                <%= order.address.district %>
+                                                            </p>
+                                                            <p><strong>Pincode:</strong>
+                                                                <%= order.address.pincode %>
+                                                            </p>
+
+                                                        </div>
+
+                                                        <a href="/admin/orders" class="btn btn-primary">Back to
+                                                            Orders</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <%- include('../layout/admin/adminFooter') -%>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+                    <script>
+                        async function confirmReturn(orderItemId, orderId, status) {
+                            console.log(orderId, orderItemId, status);
+                            const response = await fetch(`/admin/return/${orderId}/${orderItemId}`, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({ status }) // Corrected the semicolon to a comma here
+                            });
+                            const data = await response.json();
+                            console.log(data);
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Return Accepted!',
+                                    text: data.message,
+                                    icon: 'success',
+                                    confirmButtonText: 'OK',
+                                    backdrop: true,
+                                    customClass: {
+                                        title: 'alert-title', // Add your custom styles here
+                                        popup: 'alert-popup',
+                                    },
+                                    buttonsStyling: false,
+                                    showCloseButton: true,
+                                    allowOutsideClick: false,
+                                })
+                                setTimeout(() => {
+                                    window.location.reload()
+                                }, 1500);
+                            }
+                        }
+                    </script>

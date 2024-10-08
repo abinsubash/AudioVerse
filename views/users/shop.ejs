@@ -334,24 +334,21 @@
                     let priceFilter = '';
                     let currentPage = 1;
 
-                    // Check if a page number exists in the URL
                     const urlParams = new URLSearchParams(window.location.search);
                     if (urlParams.has('page')) {
                         currentPage = parseInt(urlParams.get('page'), 10) || 1; // Use the page number if exists, otherwise default to 1
                     }
 
-                    console.log("Current Page:", currentPage); // Log the current page number
+                    console.log("Current Page:", currentPage); 
 
-                    // Function to construct the query string and navigate to the /shop route
                     function navigateToShop() {
                         const queryParams = new URLSearchParams();
 
-                        // Always include selected values or empty
-                        queryParams.set('category', categoryFilter); // Always include category
-                        queryParams.set('sort', selectedSort);       // Always include sort
-                        queryParams.set('query', searchQuery);       // Include search query
-                        queryParams.set('priceRange', priceFilter);  // Include price range
-                        queryParams.set('page', currentPage);        // Always set the page
+                        queryParams.set('category', categoryFilter);
+                        queryParams.set('sort', selectedSort);       
+                        queryParams.set('query', searchQuery);       
+                        queryParams.set('priceRange', priceFilter);  
+                        queryParams.set('page', currentPage);        
 
                         // Log the constructed query string for debugging
                         console.log("Navigating to /shop with query:", queryParams.toString());

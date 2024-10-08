@@ -7,8 +7,12 @@ const cartController = require('../controller/user/cartController');
 const checkoutController = require("../controller/user/checkoutController");
 const userRoutes = express.Router();
 const shopController = require('../controller/user/shopController')
-userRoutes.get("/auth/google",passport.authenticate("google", { scope: ["profile", "email"] }));
+const walletController = require('../controller/user/walletController')
 
+
+
+
+userRoutes.get("/auth/google",passport.authenticate("google", { scope: ["profile", "email"] }));
 userRoutes.get("/auth/google/callback",passport.authenticate("google", { failureRedirect: "/login" }),userController.googleauth);
 
 userRoutes.get("/login", userAuth.isLogout, userController.login);
@@ -18,7 +22,7 @@ userRoutes.get("/otp", userAuth.isLogout, userController.getOtp);
 userRoutes.get("/resendOtp", userController.resendOTP);
 userRoutes.get("/signup", userAuth.isLogout, userController.signup);
 userRoutes.post("/signup", userController.signupValidation);
-
+userRoutes.get('/findUserByReferral/:referralId',userController.refferal)
 //home
 userRoutes.get("/", userAuth.isBlocked, userController.homePage);
 userRoutes.get("/logout", userController.logout);
@@ -71,14 +75,19 @@ userRoutes.get("/orderDetails",userAuth.isBlocked, userAuth.isLogin, checkoutCon
 userRoutes.post("/orderCancellation", userAuth.isLogin, checkoutController.orderCancellation);
 userRoutes.post('/Razorpay',userAuth.isBlocked,checkoutController.RazorpaySet)
 userRoutes.post('/verifyRazorpay', userAuth.isBlocked,checkoutController.verifyRazorpay);
-
+userRoutes.post('/return',userAuth.isBlocked,checkoutController.orderReturn);
 
 
 
 //Todo:Wishlist
 userRoutes.post('/deleteFromWishlist',userAuth.isBlocked,userAuth.isLogin,shopController.deleteFromWishlist)
 userRoutes.get('/wishlist',userAuth.isBlocked,userAuth.isLogin,shopController.wishlist)
-userRoutes.post('/addAndRemoveWishlist',shopController.addAndRemoveWishlist)
+userRoutes.post('/addAndRemoveWishlist',userAuth.isBlocked,userAuth.isLogin,shopController.addAndRemoveWishlist)
+
+
+
+//Todo:Wallet
+userRoutes.get('/wallet',userAuth.isBlocked,userAuth.isLogin,walletController.wallet)
 
 
 userRoutes.get("/contact", userAuth.isBlocked, (req, res) => {

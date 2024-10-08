@@ -85,6 +85,10 @@ const orderSchema = mongoose.Schema({
       cancelReson:{
         type:String,
       },
+      isReturn:{
+        type:Boolean,
+        default:false
+      },
       returnDate:{
         type:Date
       },
@@ -101,9 +105,12 @@ const orderSchema = mongoose.Schema({
       },
       deliveredDate:{
         type:Date
+      },
+      returnStatus:{
+        type:String
       }
     },
-  ],
+  ],  
   address:{
     name:{
         type:String,
