@@ -8,15 +8,20 @@ const Wallet = require("../../model/walletModel");
 const orderDetails = async (req, res) => {
   try {
     const searchOrder = req.query.searchOrder || "";
+    const showReturns = req.query.showReturns === "true"; // Check if return requests should be shown
     const perPage = 10;
     const currentPage = req.query.page ? parseInt(req.query.page) : 1;
-    const totalOrders = await Order.countDocuments();
+
+    // Build the query based on whether to show return requests
+    const query = showReturns
+      ? { "orderItem.returnStatus": "Returned" }
+      : {
+          orderId: { $regex: new RegExp(searchOrder, "i") },
+        };
+
+    const totalOrders = await Order.countDocuments(query);
     const totalPages = Math.ceil(totalOrders / perPage);
-    const orders = await Order.find({
-      orderId: {
-        $regex: new RegExp(searchOrder, "i"),
-      },
-    })
+    const orders = await Order.find(query)
       .sort({ _id: -1 }) // Sort by _id in descending order (last added first)
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
@@ -26,6 +31,7 @@ const orderDetails = async (req, res) => {
       totalPages,
       currentPage,
       searchOrder,
+      showReturns, // Pass the flag to the template
     });
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -91,6 +97,34 @@ const orderStatusEdit = async (req, res) => {
         "orderItem.$[item].isDelivered": true,
         "orderItem.$[item].deliveredDate": Date.now(),
       };
+      if (order) {
+        for (const item of order.orderItem) {
+          const { productId, variantId, category } = item;
+
+          // Increment the product's boughtCount
+          const product = await Product.findOneAndUpdate(
+            { _id: productId },
+            { $inc: { boughtCount: 1 } },
+            { new: true } // Return the updated document
+          );
+
+          // Increment the category's boughtCount if category exists
+          if (category) {
+            await Category.findOneAndUpdate(
+              { _id: category },
+              { $inc: { boughtCount: 1 } }
+            );
+          }
+
+          // Increment the brand's boughtCount using productBrand
+          if (product && product.productBrand) {
+            await Brand.findOneAndUpdate(
+              { _id: product.productBrand },
+              { $inc: { boughtCount: 1 } }
+            );
+          }
+        }
+      }
       res.json({ success: true, message: "Order Delivered" });
     } else {
       return res.json({ success: false, message: "Invalid order status" });
@@ -115,8 +149,37 @@ const returnConfirm = async (req, res) => {
     if (returnStatus === "confirm") {
       const order = await Order.findOne(
         { _id: orderId, "orderItem._id": orderItemId },
-        { "orderItem.$": 1 } // Retrieve only the specific order item
+        { "orderItem.$": 1 }
       );
+      const orderItem = order.orderItem[0];
+      const productId = orderItem.productId;
+      const variantId = orderItem.variantId;
+      const product = await Product.findById(productId)
+        .populate("category")
+        .populate("productBrand");
+
+      if (!product) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Product not found" });
+      }
+
+      if (product.boughtCount > 0) {
+        product.boughtCount -= 1;
+        await product.save();
+      }
+
+      if (product.category && product.category.boughtCount > 0) {
+        await Category.findByIdAndUpdate(product.category._id, {
+          $inc: { boughtCount: -1 },
+        });
+      }
+
+      if (product.productBrand && product.productBrand.boughtCount > 0) {
+        await Brand.findByIdAndUpdate(product.productBrand._id, {
+          $inc: { boughtCount: -1 },
+        });
+      }
 
       if (!order || order.orderItem.length === 0) {
         return res
@@ -124,7 +187,6 @@ const returnConfirm = async (req, res) => {
           .json({ message: "Order or Order Item not found" });
       }
 
-      const orderItem = order.orderItem[0];
       const originalTotalPrice = orderItem.totalPrice;
       const incrementAmount = originalTotalPrice;
       const quantityToReturn = orderItem.quantity;
@@ -134,13 +196,21 @@ const returnConfirm = async (req, res) => {
           $set: {
             "orderItem.$.isReturn": true,
             "orderItem.$.returnStatus": "Accepted",
+            "orderItem.$.orderStatus":"Returned"
           },
         },
         { new: true }
       );
-      const variantId = orderItem.variantId;
       const variant = await Variant.findById(variantId);
+      const allItemsReturned = order.orderItem.every(item => item.isReturn);
 
+    if (allItemsReturned) {
+      // Update the main order status to "Returned"
+      await Order.updateOne(
+        { _id: orderId },
+        { $set: { orderStatus: "Returned" } }
+      );
+    }
       if (!variant) {
         return res.json({ message: "Variant not found" });
       }
@@ -185,26 +255,32 @@ const returnConfirm = async (req, res) => {
       });
     } else if (returnStatus === "Cancel") {
       const order = await Order.findOne(
-          { _id: orderId, 'orderItem._id': orderItemId },
-          { 'orderItem.$': 1 }
+        { _id: orderId, "orderItem._id": orderItemId },
+        { "orderItem.$": 1 }
       );
 
       if (!order || order.orderItem.length === 0) {
-          return res.json({success:false, message: 'Order or Order Item not found' });
+        return res.json({
+          success: false,
+          message: "Order or Order Item not found",
+        });
       }
 
       const updatedOrder = await Order.findOneAndUpdate(
-          { _id: orderId, 'orderItem._id': orderItemId },
-          { 
-              $set: { 
-                  'orderItem.$.returnStatus': 'Rejected',
-              }
+        { _id: orderId, "orderItem._id": orderItemId },
+        {
+          $set: {
+            "orderItem.$.returnStatus": "Rejected",
           },
-          { new: true } 
+        },
+        { new: true }
       );
 
-      return res.json({success:true, message: 'Return has been cancelled successfully!'});
-  }
+      return res.json({
+        success: true,
+        message: "Return has been cancelled successfully!",
+      });
+    }
   } catch (error) {
     console.error("Error processing return confirmation:", error);
     return res.status(500).json({ message: "Server error" });

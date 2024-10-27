@@ -7,6 +7,24 @@
             border: 1px solid #ccc;
             display: inline-block;
         }
+
+        .offer-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #ff3333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .offer-badge span {
+            display: block;
+            text-align: center;
+        }
     </style>
 
     <body class="goto-here">
@@ -76,6 +94,11 @@
                                 <div class="col-sm-6 col-md-6 col-lg-4 ftco-animate product-card"
                                     data-name="<%= variant.productDetails ? variant.productDetails.productName.toLowerCase() : '' %>">
                                     <div class="product">
+                                        <% if (variant.offerPrice) { %>
+                                            <div class="offer-badge">
+                                                <span><%= Math.round(((variant.price - variant.offerPrice) / variant.price) * 100) %> % OFF</span>
+                                            </div>
+                                        <% }  %>
                                         <a href="/singleProduct/?variantColor=<%= variant.color %>&id=<%= variant.productDetails._id %>"
                                             class="img-prod">
 
@@ -86,9 +109,11 @@
                                                     <img class="img-fluid" src="path/to/default-image.jpg"
                                                         alt="No Image Available">
                                                     <% } %>
+
                                                         <span class="status"></span>
                                                         <div class="overlay"></div>
                                         </a>
+
                                         <div class="text py-3 px-3">
                                             <h3><a href="#">
                                                     <%= variant.productDetails ? variant.productDetails.productName
@@ -97,9 +122,15 @@
                                             <div class="d-flex">
                                                 <div class="pricing">
                                                     <p class="price">
-                                                        <span class="price-sale">$<%= variant.price %></span>
+                                                        <% if (variant.offerPrice) { %>
+                                                            <span class="price-original" style="text-decoration: line-through; color: grey;">$<%= variant.price %></span>
+                                                            <span class="price-sale" style="color: red;">$<%= variant.offerPrice %></span>
+                                                        <% } else { %>
+                                                            <span class="price-sale">$<%= variant.price %></span>
+                                                        <% } %>
                                                     </p>
                                                 </div>
+                                                
                                                 <div class="rating">
                                                     <p class="text-right">
                                                         <% for (let i=0; i < 5; i++) { %>
@@ -111,19 +142,19 @@
                                                                     <% } %>
                                                                         <% } %>
                                                     </p>
-                                                    <p class="bottom-area d-flex px-3">
-                                                        <a href="#" class="add-to-cart text-center py-2 mr-1">
-                                                            <span>Add to cart <i class="ion-ios-add ml-1"></i></span>
-                                                        </a>
-                                                    </p>
                                                 </div>
                                             </div>
+                                            <p class="bottom-area d-flex px-3">
+                                                <a href="#" class="add-to-cart text-center py-2 mr-1">
+                                                    <span>Add to cart <i class="ion-ios-add ml-1"></i></span>
+                                                </a>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
                                 <% }); %>
-
                         </div>
+
                         <div class="row mt-5">
                             <div class="col text-center">
                                 <div class="block-27">
@@ -200,71 +231,74 @@
                             <h5 style="font-weight: bold;">Filter by Category:</h5>
                             <div id="categoryOptions">
                                 <% if (checkedCategory) { %>
-                                    <p>Selected Category: <%= category.find(c => c._id.toString() === checkedCategory).categoryName %></p>
-                                <% } else { %>
-                                    <p>No category selected</p>
-                                <% } %>
-                        
-                                <% category.forEach((categoryItem) => { %>
-                                    <label>
-                                        <input type="radio" name="category" value="<%= categoryItem._id %>"
-                                            class="category-radio" 
-                                            <% if (checkedCategory && checkedCategory === categoryItem._id.toString()) { %> checked <% } %>
-                                        >
-                                        <%= categoryItem.categoryName %>
-                                    </label>
-                                    <br>
-                                <% }) %>
+                                    <p>Selected Category: <%= category.find(c=> c._id.toString() ===
+                                            checkedCategory).categoryName %></p>
+                                    <% } else { %>
+                                        <p>No category selected</p>
+                                        <% } %>
+
+                                            <% category.forEach((categoryItem)=> { %>
+                                                <label>
+                                                    <input type="radio" name="category" value="<%= categoryItem._id %>"
+                                                        class="category-radio" <% if (checkedCategory &&
+                                                        checkedCategory===categoryItem._id.toString()) { %> checked <% }
+                                                        %>
+                                                        >
+                                                        <%= categoryItem.categoryName %>
+                                                </label>
+                                                <br>
+                                                <% }) %>
                             </div>
-                        
+
                             <h5 style="font-weight: bold;">Filter by Price:</h5>
                             <div id="priceOptions">
                                 <% if (priceRange) { %>
-                                    <p>Selected Price Range: <%= priceRange %></p>
-                                <% } else { %>
-                                    <p>No price range selected</p>
-                                <% } %>
-                                <label>
-                                    <input type="radio" name="priceRange" value="1-500" 
-                                        <% if (priceRange === "1-500") { %> checked <% } %> 
-                                    >
-                                    Below 500
-                                </label>
-                                <br>
-                                <label>
-                                    <input type="radio" name="priceRange" value="500-1000" 
-                                        <% if (priceRange === "500-1000") { %> checked <% } %> 
-                                    >
-                                    500 - 1000
-                                </label>
-                                <br>
-                                <label>
-                                    <input type="radio" name="priceRange" value="1000-2000" 
-                                        <% if (priceRange === "1000-2000") { %> checked <% } %> 
-                                    >
-                                    1000 - 2000
-                                </label>
-                                <br>
-                                <label>
-                                    <input type="radio" name="priceRange" value="2000-5000" 
-                                        <% if (priceRange === "2000-5000") { %> checked <% } %> 
-                                    >
-                                    2000 - 5000
-                                </label>
-                                <br>
-                                <label>
-                                    <input type="radio" name="priceRange" value="5000-10000" 
-                                        <% if (priceRange === "5000-10000") { %> checked <% } %> 
-                                    >
-                                    5000 - 10000
-                                </label>
-                                <br>
-                                <label>
-                                    <input type="radio" name="priceRange" value="10000-1000000" 
-                                        <% if (priceRange === "10000-1000000") { %> checked <% } %> 
-                                    >
-                                    Above 10000
-                                </label>
+                                    <p>Selected Price Range: <%= priceRange %>
+                                    </p>
+                                    <% } else { %>
+                                        <p>No price range selected</p>
+                                        <% } %>
+                                            <label>
+                                                <input type="radio" name="priceRange" value="1-500" <% if
+                                                    (priceRange==="1-500" ) { %> checked <% } %>
+                                                    >
+                                                    Below 500
+                                            </label>
+                                            <br>
+                                            <label>
+                                                <input type="radio" name="priceRange" value="500-1000" <% if
+                                                    (priceRange==="500-1000" ) { %> checked <% } %>
+                                                    >
+                                                    500 - 1000
+                                            </label>
+                                            <br>
+                                            <label>
+                                                <input type="radio" name="priceRange" value="1000-2000" <% if
+                                                    (priceRange==="1000-2000" ) { %> checked <% } %>
+                                                    >
+                                                    1000 - 2000
+                                            </label>
+                                            <br>
+                                            <label>
+                                                <input type="radio" name="priceRange" value="2000-5000" <% if
+                                                    (priceRange==="2000-5000" ) { %> checked <% } %>
+                                                    >
+                                                    2000 - 5000
+                                            </label>
+                                            <br>
+                                            <label>
+                                                <input type="radio" name="priceRange" value="5000-10000" <% if
+                                                    (priceRange==="5000-10000" ) { %> checked <% } %>
+                                                    >
+                                                    5000 - 10000
+                                            </label>
+                                            <br>
+                                            <label>
+                                                <input type="radio" name="priceRange" value="10000-1000000" <% if
+                                                    (priceRange==="10000-1000000" ) { %> checked <% } %>
+                                                    >
+                                                    Above 10000
+                                            </label>
                             </div>
                         </div>
 
@@ -339,16 +373,16 @@
                         currentPage = parseInt(urlParams.get('page'), 10) || 1; // Use the page number if exists, otherwise default to 1
                     }
 
-                    console.log("Current Page:", currentPage); 
+                    console.log("Current Page:", currentPage);
 
                     function navigateToShop() {
                         const queryParams = new URLSearchParams();
 
                         queryParams.set('category', categoryFilter);
-                        queryParams.set('sort', selectedSort);       
-                        queryParams.set('query', searchQuery);       
-                        queryParams.set('priceRange', priceFilter);  
-                        queryParams.set('page', currentPage);        
+                        queryParams.set('sort', selectedSort);
+                        queryParams.set('query', searchQuery);
+                        queryParams.set('priceRange', priceFilter);
+                        queryParams.set('page', currentPage);
 
                         // Log the constructed query string for debugging
                         console.log("Navigating to /shop with query:", queryParams.toString());

@@ -1,0 +1,626 @@
+<%- include('../layout/admin/adminHeader') -%>
+    <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+            <a class="navbar-brand brand-logo" href="">AudioVerse</a>
+            <a class="navbar-brand brand-logo-mini" href=""><img src="/assets/images/logo-mini.svg" alt="logo" /></a>
+        </div>
+        <div class="navbar-menu-wrapper d-flex align-items-stretch">
+            <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+                <span class="mdi mdi-menu"></span>
+            </button>
+
+            <div class="search-field d-none d-md-block">
+                <div class="d-flex align-items-center h-100">
+                    <div class="input-group">
+                        <div class="input-group-prepend bg-transparent">
+                            <button class="btn-search border-0" id="searchButton">
+                                <i class="input-group-text border-0 mdi mdi-magnify"></i></button>
+                        </div>
+                        <input type="text" class="input-search" id="searchInput" value=""
+                            placeholder="Type to Search...">
+                    </div>
+                </div>
+            </div>
+            <%- include('../layout/admin/adminNavbar') -%>
+
+
+                <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+                    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+                        <a class="navbar-brand brand-logo" href="">AudioVerse</a>
+                        <a class="navbar-brand brand-logo-mini" href=""><img src="/assets/images/logo-mini.svg"
+                                alt="logo" /></a>
+                    </div>
+                </nav>
+
+                <div class="container mt-4">
+                    <!-- Tab navigation -->
+                    <ul class="nav nav-tabs" id="offerTabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="offer-tab" data-toggle="tab" href="#offerSection"
+                                role="tab">Offer</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="product-tab" data-toggle="tab" href="#productSection"
+                                role="tab">Product</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="category-tab" data-toggle="tab" href="#categorySection"
+                                role="tab">Category</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- Offer Section -->
+                        <div class="tab-pane fade show active" id="offerSection" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <h2>All Offers</h2>
+                                <!-- Trigger button -->
+                                <button type="button" class="btn btn-primary" data-toggle="modal"
+                                    data-target="#addOfferModal">
+                                    Add New Offer
+                                </button>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col-md-12">
+                                    <h2 class="text-center mb-4">All Offers</h2>
+                                    <div class="row">
+                                        <% offers.forEach(offer=> { %>
+                                            <div class="col-md-4 mb-4">
+                                                <div class="card shadow-sm border-light">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title text-primary">
+                                                            <%= offer.offerName %>
+                                                        </h5>
+                                                        <p class="card-text"><strong>Percentage:</strong>
+                                                            <%= offer.offerPercentage %>%
+                                                        </p>
+                                                        <p class="card-text"><strong>Start Date:</strong>
+                                                            <%= offer.startDate.toLocaleDateString() %>
+                                                        </p>
+                                                        <p class="card-text"><strong>End Date:</strong>
+                                                            <%= offer.endDate.toLocaleDateString() %>
+                                                        </p>
+                                                        <div class="d-flex justify-content-between mt-3">
+                                                            <a href="#" class="btn btn-warning btn-sm"
+                                                                data-toggle="modal" data-target="#editOfferModal"
+                                                                onclick="populateEditModal('<%= offer._id %>', '<%= offer.offerName %>', '<%= offer.offerPercentage %>', '<%= offer.startDate.toISOString().split('T')[0] %>', '<%= offer.endDate.toISOString().split('T')[0] %>')">Edit</a>
+
+                                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                                onclick="deleteOffer(`<%= offer._id %>`)">Delete</button>
+
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <% }) %>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Product Section -->
+                        <div class="tab-pane fade" id="productSection" role="tabpanel">
+                            <h2>All Products</h2>
+                            <div class="row">
+                                <% products.forEach(product=> { %>
+                                    <div class="col-md-4">
+                                        <div class="card mb-4">
+                                            <div class="card-body">
+                                                <h5 class="card-title">
+                                                    <%= product.productName %>
+                                                </h5>
+                                                <p class="card-text"><strong>Brand:</strong>
+                                                    <%= product.productBrand ? product.productBrand.brandName : 'N/A' %>
+                                                </p>
+                                                <p class="card-text"><strong>Category:</strong>
+                                                    <%= product.category ? product.category.categoryName : 'N/A' %>
+                                                </p>
+
+                                                <!-- Box for offer selection -->
+                                                <div class="form-group">
+                                                    <label for="applyOfferProduct"> <strong>Apply Offer</strong>
+                                                    </label>
+                                                    <div class="d-flex align-items-center">
+                                                        <!-- Offer Selection Dropdown -->
+                                                        <select class="form-control"
+                                                            id="applyOfferProduct_<%= product._id %>"
+                                                            name="applyOfferProduct" style="width: 70%;"
+                                                            onchange="updateOffer('<%= product._id %>', this.value)">
+                                                            <option value="<%= product.offerId %>">
+                                                                <%= product.offerId ? product.offerId.offerName
+                                                                    : 'Select an Offer' %>
+                                                            </option>
+                                                            <% offers.forEach(offer=> { %>
+                                                                <option value="<%= offer._id %>">
+                                                                    <%= offer.offerName %> - <%= offer.offerPercentage
+                                                                            %>%
+                                                                </option>
+                                                                <% }) %>
+                                                        </select>
+                                                        <%if(product.offerId){%>
+                                                            <button type="button" class="btn btn-danger btn-sm ml-2"
+                                                                id="removeOfferButton" style="white-space: nowrap;"
+                                                                onclick="removeOffer(`<%=product._id %>`,`<%=product.offerId._id%>`)"
+                                                                value="<%=product.offerId._id%>">Remove</button>
+                                                            <% }%>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <% }) %>
+                            </div>
+                        </div>
+
+                        <!-- Category Section -->
+                        <div class="tab-pane fade" id="categorySection" role="tabpanel">
+                            <h2>All Categories</h2>
+                            <div class="row mt-4">
+                                <% categories.forEach(category => { %>
+                                    <div class="col-md-4">
+                                        <div class="card mb-4">
+                                            <div class="card-body">
+                                                <h5 class="card-title">
+                                                    <%= category.categoryName %>
+                                                </h5>
+                            
+                                                <!-- Box for offer selection -->
+                                                <div class="form-group">
+                                                    <label for="applyOfferCategory"> <strong>Apply Offer</strong></label>
+                                                    <div class="d-flex align-items-center">
+                                                        <!-- Offer Selection Dropdown -->
+                                                        <select class="form-control" id="applyOfferCategory_<%= category._id %>"
+                                                            name="applyOfferCategory" style="width: 70%;"
+                                                            onchange="updateCategoryOffer('<%= category._id %>', this.value)">
+                                                            <option value="<%= category.offerId ? category.offerId._id : '' %>">
+                                                                <%= category.offerId ? category.offerId.offerName : 'Select an Offer' %>
+                                                            </option>
+                                                            <% offers.forEach(offer => { %>
+                                                                <option value="<%= offer._id %>">
+                                                                    <%= offer.offerName %> - <%= offer.offerPercentage %>%
+                                                                </option>
+                                                            <% }) %>
+                                                        </select>
+                            
+                                                        <% if (category.offerId) { %>
+                                                            <button type="button" class="btn btn-danger btn-sm ml-2" id="removeOfferButton"
+                                                                style="white-space: nowrap;"
+                                                                onclick="removeCategoryOffer('<%= category._id %>', '<%= category.offerId._id %>')"
+                                                                value="<%= category.offerId._id %>">Remove</button>
+                                                        <% } %>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                            
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Modal for Adding a New Offer -->
+                <div class="modal fade" id="addOfferModal" tabindex="-1" role="dialog"
+                    aria-labelledby="addOfferModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addOfferModalLabel">Add New Offer</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="addOfferForm" action="/admin/offers/add" method="POST">
+                                    <div class="form-group">
+                                        <label for="offerName">Offer Name</label>
+                                        <input type="text" class="form-control" id="offerName" name="offerName">
+                                        <small id="nameError" class="text-danger"></small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="offerPercentage">Offer Percentage</label>
+                                        <input type="number" class="form-control" id="offerPercentage"
+                                            name="offerPercentage" min="1" max="99">
+                                        <small id="offerError" class="text-danger"></small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="startDate">Start Date</label>
+                                        <input type="date" class="form-control" id="startDate" name="startDate"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="endDate">End Date</label>
+                                        <input type="date" class="form-control" id="endDate" name="endDate" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Add Offer</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Offer Modal -->
+                <div class="modal fade" id="editOfferModal" tabindex="-1" role="dialog"
+                    aria-labelledby="editOfferModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editOfferModalLabel">Edit Offer</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form id="editOfferForm" action="/admin/offer/update" method="POST">
+                                <!-- Modal Body -->
+                                <div class="modal-body">
+                                    <input type="hidden" id="editOfferId" name="offerId">
+                                    <div class="form-group">
+                                        <label for="editOfferName">Offer Name</label>
+                                        <input type="text" class="form-control" id="editOfferName" name="offerName"
+                                            required>
+                                        <small id="nameError" class="text-danger"></small>
+                                        <!-- Error message for offer name -->
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editOfferPercentage">Offer Percentage</label>
+                                        <input type="number" class="form-control" id="editOfferPercentage"
+                                            name="offerPercentage" required>
+                                        <small id="percentageError" class="text-danger"></small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editStartDate">Start Date</label>
+                                        <input type="date" class="form-control" id="editStartDate" name="startDate"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editEndDate">End Date</label>
+                                        <input type="date" class="form-control" id="editEndDate" name="endDate"
+                                            required>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <%- include('../layout/admin/adminFooter') -%>
+                    <script>
+                        const today = new Date().toISOString().split('T')[0];
+                        document.getElementById("startDate").setAttribute("min", today);
+                        document.getElementById("endDate").setAttribute("min", today);
+
+                        document.getElementById('addOfferForm').onsubmit = function (event) {
+                            event.preventDefault(); // Prevent default form submission
+
+                            const offerName = document.getElementById('offerName').value.trim();
+                            const offerPercentage = document.getElementById('offerPercentage').value;
+                            const startDate = document.getElementById('startDate').value; // Get start date
+                            const endDate = document.getElementById('endDate').value; // Get end date
+                            const nameError = document.getElementById('nameError');
+                            const offerError = document.getElementById('offerError');
+                            const percentageRegex = /^(1?[0-9]|[1-8][0-9]|9[0-9])$/;
+
+                            // Clear previous error messages
+                            nameError.textContent = '';
+                            offerError.textContent = '';
+
+                            // Validate offer name
+                            if (offerName === '') {
+                                nameError.textContent = 'Offer name cannot be empty.';
+                                return;
+                            }
+
+                            // Validate offer percentage
+                            if (!percentageRegex.test(offerPercentage)) {
+                                offerError.textContent = 'Offer percentage must be between 1 and 99.';
+                                return;
+                            }
+
+                            // You can also add validations for start and end dates if necessary
+
+                            fetch('/admin/addOffer', {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({ offerName, offerPercentage, startDate, endDate })
+                            })
+                                .then(response => {
+                                    if (response.ok) {
+                                        return response.json();
+                                    } else {
+                                        throw new Error('Failed to create offer.'); // Throw an error to be caught below
+                                    }
+                                })
+                                .then(data => {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Offer Created!',
+                                        text: 'The offer was created successfully.',
+                                        confirmButtonText: 'OK'
+                                    });
+                                    setTimeout(() => {
+                                        window.location.reload()
+                                    }, 1500);
+                                })
+                                .catch(error => {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error!',
+                                        text: error.message || 'Something went wrong. Please try again.',
+                                        confirmButtonText: 'OK'
+                                    });
+                                });
+
+                        };
+
+                        function populateEditModal(offerId, offerName, offerPercentage, startDate, endDate) {
+                            document.getElementById('editOfferId').value = offerId;
+                            document.getElementById('editOfferName').value = offerName;
+                            document.getElementById('editOfferPercentage').value = offerPercentage;
+                            document.getElementById('editStartDate').value = startDate;
+                            document.getElementById('editEndDate').value = endDate;
+
+                            document.getElementById("editStartDate").setAttribute("min", today);
+                            document.getElementById("editEndDate").setAttribute("min", today);
+                            document.getElementById('editOfferForm').onsubmit = function (event) {
+                                event.preventDefault(); // Prevent default form submission
+
+                                const offerId = document.getElementById('editOfferId').value;
+                                const offerName = document.getElementById('editOfferName').value.trim();
+                                const offerPercentage = document.getElementById('editOfferPercentage').value;
+                                const startDate = document.getElementById('editStartDate').value;
+                                const endDate = document.getElementById('editEndDate').value;
+
+                                const percentageRegex = /^(1?[0-9]|[1-8][0-9]|9[0-9])$/;
+
+                                const nameError = document.getElementById('nameError');
+                                const percentageError = document.getElementById('percentageError');
+                                nameError.textContent = '';
+                                percentageError.textContent = ''
+                                if (offerName === '') {
+                                    nameError.textContent = 'Offer name cannot be empty.';
+                                    return;
+                                }
+
+                                if (!percentageRegex.test(offerPercentage)) {
+                                    percentageError.textContent = 'Percentage must be 1 to 99';
+                                    return;
+                                }
+
+                                fetch('/admin/updateOffer', {
+                                    method: "PATCH",
+                                    headers: {
+                                        "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify({ offerId, offerName, offerPercentage, startDate, endDate })
+                                })
+                                    .then(response => {
+                                        if (response.ok) {
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: 'Success!',
+                                                text: 'Offer updated successfully!',
+                                            });
+                                            setTimeout(() => {
+                                                window.location.reload()
+                                            }, 1500);
+                                        } else {
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Oops...',
+                                                text: 'Something went wrong! Please try again.',
+                                            });
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error:', error);
+                                    });
+                            };
+
+                        }
+
+
+
+                        function deleteOffer(offerId) {
+                            console.log(offerId)
+                            Swal.fire({
+                                title: 'Are you sure?',
+                                text: "Do you really want to delete this offer?",
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#d33',
+                                cancelButtonColor: '#3085d6',
+                                confirmButtonText: 'Yes, delete it!'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    fetch(`/admin/deleteOffer/${offerId}`, {
+                                        method: 'DELETE',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        }
+                                    })
+                                        .then(response => {
+                                            if (response.ok) {
+                                                Swal.fire(
+                                                    'Deleted!',
+                                                    'The offer has been deleted.',
+                                                    'success'
+                                                );
+                                                setTimeout(() => {
+                                                    location.reload();
+                                                }, 1000);
+                                            } else {
+                                                // Handle error response
+                                                Swal.fire(
+                                                    'Error!',
+                                                    'There was a problem deleting the offer.',
+                                                    'error'
+                                                );
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                            Swal.fire(
+                                                'Error!',
+                                                'Something went wrong. Please try again.',
+                                                'error'
+                                            );
+                                        });
+                                }
+                            });
+                        }
+
+                        function updateOffer(productId, offerId) {
+                            console.log(productId, offerId)
+                            fetch(`/admin/productOffer`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ productId, offerId })
+                            })
+                                .then(response => {
+                                    if (response.ok) {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Success',
+                                            text: 'Offer updated successfully',
+                                            confirmButtonText: 'OK'
+                                        });
+                                        setTimeout(() => {
+                                            location.reload()
+                                        }, 1000);
+                                    } else {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error',
+                                            text: 'Error updating offer',
+                                            confirmButtonText: 'Try Again'
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Oops...',
+                                        text: 'Something went wrong!',
+                                        confirmButtonText: 'Close'
+                                    });
+                                });
+
+                        }
+
+                        function removeOffer(productId, offerId) {
+                            fetch(`/admin/removeOffer`, {
+                                method: 'DELETE', // or 'POST' depending on your setup
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ productId, offerId }) // Send both IDs
+                            })
+                                .then(response => {
+                                    if (response.ok) {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Success',
+                                            text: 'Offer removed successfully',
+                                            confirmButtonText: 'OK'
+                                        });
+                                        setTimeout(() => {
+                                            location.reload();
+                                        }, 1000);
+                                    } else {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error',
+                                            text: 'Error removing offer',
+                                            confirmButtonText: 'Try Again'
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Oops...',
+                                        text: 'Something went wrong!',
+                                        confirmButtonText: 'Close'
+                                    });
+                                });
+                        }
+
+                        function updateCategoryOffer(categoryId, offerId) {
+                            fetch('/admin/applyOfferToCategory', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ categoryId, offerId })
+                            })
+                                .then(response => {
+                                    if (response.ok) {
+                                        Swal.fire({
+                                            title: 'Success!',
+                                            text: 'Offer applied to category successfully.',
+                                            icon: 'success',
+                                            confirmButtonText: 'OK'
+                                        });
+                                        setTimeout(() => {
+                                            window.location.reload()
+                                        }, 1000);
+                                    } else {
+                                        Swal.fire({
+                                            title: 'Error!',
+                                            text: 'Error applying offer to category.',
+                                            icon: 'error',
+                                            confirmButtonText: 'OK'
+                                        });
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                });
+                        }
+
+                        function removeCategoryOffer(categoryId, offerId) {
+                            fetch('/admin/removeOfferFromCategory', {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ categoryId: categoryId, offerId: offerId })
+                            })
+                                .then(response => {
+                                    if (response.ok) {
+                                        Swal.fire({
+                                            title: 'Success!',
+                                            text: 'Offer removed from category successfully.',
+                                            icon: 'success',
+                                            confirmButtonText: 'OK'
+                                        }).then(()=>{
+                                            window.location.reload()
+                                        })
+                                    } else {
+                                        Swal.fire({
+                                            title: 'Error!',
+                                            text: 'Error removing offer from category.',
+                                            icon: 'error',
+                                            confirmButtonText: 'OK'
+                                        });
+                                    }
+                                })
+                                .catch(error => console.error('Error:', error));
+                        }
+
+                    </script>

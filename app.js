@@ -8,6 +8,7 @@ const session = require("express-session");
 const connectMongo = require('./config/db');
 const passport = require('passport');
 const nocache = require('nocache')
+const cron = require('node-cron')
 require('./config/passport');
 require('dotenv').config();
 
@@ -17,7 +18,32 @@ connectMongo();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(nocache())
+app.use(nocache());
+
+
+cron.schedule('0 0 * * *', async () => {
+  try {
+    const expiredOffers = await Offer.find({ endDate: { $lt: new Date() } });
+
+    for (let offer of expiredOffers) {
+      await Product.updateMany(
+        { offerId: offer._id },
+        { $unset: { offerId: "" } }
+      );
+
+      await Variant.updateMany(
+        { offerId: offer._id },
+        { $unset: { offerId: "", offerPrice: "" } }
+      );
+    }
+
+    console.log('Expired offers cleaned up.');
+  } catch (error) {
+    console.error('Error during offer cleanup:', error);
+  }
+});
+
+
 
 app.use(session({
   secret: 'your-secret-key',

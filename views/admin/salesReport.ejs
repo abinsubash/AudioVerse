@@ -1,0 +1,297 @@
+<%- include('../layout/admin/adminHeader') -%>
+  <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+    <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+      <a class="navbar-brand brand-logo" href="">AudioVerse</a>
+      <a class="navbar-brand brand-logo-mini" href=""><img src="/assets/images/logo-mini.svg" alt="logo" /></a>
+    </div>
+    <div class="navbar-menu-wrapper d-flex align-items-stretch">
+      <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+        <span class="mdi mdi-menu"></span>
+      </button>
+
+      <div class="search-field d-none d-md-block">
+        <div class="d-flex align-items-center h-100">
+          <div class="input-group">
+            <div class="input-group-prepend bg-transparent">
+              <button class="btn-search border-0" id="searchButton">
+                <i class="input-group-text border-0 mdi mdi-magnify"></i>
+              </button>
+            </div>
+            <input type="text" class="input-search" id="searchInput" value="" placeholder="Type to Search...">
+          </div>
+        </div>
+      </div>
+      <%- include('../layout/admin/adminNavbar') -%>
+
+        <div class="container mt-4">
+          <!-- Top Section: Sales Summary and Date Filter -->
+          <section class="sales-summary mb-4">
+            <div class="row">
+              <!-- Left side: Sales Summary -->
+              <div class="col-md-6">
+                <h5>Total Sales: $<span id="totalSales">
+                    <%= totalSales %>
+                  </span></h5>
+                <h5>Delivered: <span id="deliveredCount">
+                    <%= deliveredCount %>
+                  </span></h5>
+
+                <form id="salesFilterForm" action="/admin/salesReport" method="GET">
+                  <hr>
+                  <div class="mt-3 d-flex align-items-center">
+                    <label for="filterBy">Filter by:</label>
+                    <select id="filterBy" name="filterBy" class="ml-2" onchange="applyDateFilter()">
+                      <option value="">Select Filter</option>
+                      <option value="day">Day</option>
+                      <option value="week">Week</option>
+                      <option value="month">Month</option>
+                      <option value="year">Year</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                    <button type="button" id="clearFilterBtn" onclick="clearFilter()" class="btn btn-secondary ml-2"
+                      style="display: none;">
+                      Clear Filter
+                    </button>
+                  </div>
+
+                  <div id="customDateFields" style="display: none;" class="mt-3">
+                    <label for="customStartDate">Custom Start Date:</label>
+                    <input type="date" id="customStartDate" name="startDate" class="mr-2">
+                    <label for="customEndDate">Custom End Date:</label>
+                    <input type="date" id="customEndDate" name="endDate">
+                  </div>
+
+                  <button type="submit" class="btn btn-primary mt-3">Apply</button>
+                </form>
+              </div>
+
+              <div class="col-md-6 text-right">
+                <div class="mb-2">
+                  <button class="btn btn-success" onclick="downloadReport()">Download PDF</button>
+                  <button class="btn btn-success ml-2" onclick="downloadExcelReport()">Download Excel</button>
+                </div>
+                <hr>
+
+              </div>
+
+
+          </section>
+
+          <section>
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Delivery Date</th>
+                  <th>Product Name</th>
+                  <th>Variant</th>
+                  <th>Quantity</th>
+                  <th>Total Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (salesData && salesData.length> 0) { %>
+                  <% salesData.forEach(function(item) { %>
+                    <tr>
+                      <td>
+                        <%= item.orderId %>
+                      </td>
+                      <td>
+                        <% if (item.deliveredDate && !isNaN(new Date(item.deliveredDate))) { %>
+                          <%= new Date(item.deliveredDate).toLocaleDateString() %>
+                            <% } else { %>
+                              Not available
+                              <% } %>
+                      </td>
+                      <td>
+                        <%= item.productName %>
+                      </td>
+                      <td>
+                        <%= item.variant %>
+                      </td>
+                      <td>
+                        <%= item.quantity %>
+                      </td>
+                      <td>$<%= item.totalPrice.toFixed(2) %>
+                      </td>
+                    </tr>
+                    <% }); %>
+                      <% } else { %>
+                        <tr>
+                          <td colspan="6" class="text-center">No delivered orders available for the selected period.
+                          </td>
+                        </tr>
+                        <% } %>
+              </tbody>
+            </table>
+          </section>
+        </div>
+
+        <%- include('../layout/admin/adminFooter') -%>
+
+          <script>
+            function downloadReport() {
+              const urlParams = new URLSearchParams(window.location.search);
+              const filterBy = urlParams.get('filterBy');
+              let startDate = urlParams.get('startDate');
+              let endDate = urlParams.get('endDate');
+
+              if (!startDate || !endDate) {
+                const customStartDate = document.getElementById('customStartDate');
+                const customEndDate = document.getElementById('customEndDate');
+
+                if (customStartDate && customEndDate &&
+                  customStartDate.value && customEndDate.value) {
+                  startDate = customStartDate.value;
+                  endDate = customEndDate.value;
+                } else if (filterBy) {
+                  const today = new Date();
+                  endDate = today.toISOString().split('T')[0];
+
+                  switch (filterBy) {
+                    case 'day':
+                      startDate = endDate;
+                      break;
+                    case 'week':
+                      const lastWeek = new Date(today.setDate(today.getDate() - 7));
+                      startDate = lastWeek.toISOString().split('T')[0];
+                      break;
+                    case 'month':
+                      const lastMonth = new Date(today.setMonth(today.getMonth() - 1));
+                      startDate = lastMonth.toISOString().split('T')[0];
+                      break;
+                    case 'year':
+                      const lastYear = new Date(today.setFullYear(today.getFullYear() - 1));
+                      startDate = lastYear.toISOString().split('T')[0];
+                      break;
+                  }
+                }
+              }
+
+              let downloadUrl = '/admin/downloadSalesReport';
+              if (startDate && endDate) {
+                downloadUrl += `?startDate=${startDate}&endDate=${endDate}`;
+              }
+
+              window.open(downloadUrl, '_blank');
+            }
+
+
+
+            function downloadExcelReport() {
+              const urlParams = new URLSearchParams(window.location.search);
+              const filterBy = urlParams.get('filterBy');
+              let startDate = urlParams.get('startDate');
+              let endDate = urlParams.get('endDate');
+
+              if (!startDate || !endDate) {
+                const customStartDate = document.getElementById('customStartDate');
+                const customEndDate = document.getElementById('customEndDate');
+
+                if (customStartDate && customEndDate && customStartDate.value && customEndDate.value) {
+                  startDate = customStartDate.value;
+                  endDate = customEndDate.value;
+                } else if (filterBy) {
+                  const today = new Date();
+                  endDate = today.toISOString().split('T')[0];
+
+                  switch (filterBy) {
+                    case 'day':
+                      startDate = endDate;
+                      break;
+                    case 'week':
+                      const lastWeek = new Date(today.setDate(today.getDate() - 7));
+                      startDate = lastWeek.toISOString().split('T')[0];
+                      break;
+                    case 'month':
+                      const lastMonth = new Date(today.setMonth(today.getMonth() - 1));
+                      startDate = lastMonth.toISOString().split('T')[0];
+                      break;
+                    case 'year':
+                      const lastYear = new Date(today.setFullYear(today.getFullYear() - 1));
+                      startDate = lastYear.toISOString().split('T')[0];
+                      break;
+                  }
+                }
+              }
+
+              let downloadUrl = '/admin/downloadSalesReportExcel';
+              if (startDate && endDate) {
+                downloadUrl += `?startDate=${startDate}&endDate=${endDate}`;
+              }
+
+              window.open(downloadUrl, '_blank');
+            }
+
+            function toggleCustomDateFields() {
+              const filterBy = document.getElementById('filterBy').value;
+              const customDateFields = document.getElementById('customDateFields');
+
+              if (filterBy === 'custom') {
+                customDateFields.style.display = 'block';
+              } else {
+                customDateFields.style.display = 'none';
+              }
+            }
+
+            function applyDateFilter() {
+              const filterBy = document.getElementById('filterBy').value;
+              const customDateFields = document.getElementById('customDateFields');
+              const startDateInput = document.getElementById('customStartDate');
+              const endDateInput = document.getElementById('customEndDate');
+
+              customDateFields.style.display = 'none';
+
+              const today = new Date();
+              let startDate, endDate;
+
+              switch (filterBy) {
+                case 'day':
+                  // Today's date
+                  startDate = today.toISOString().split('T')[0];
+                  endDate = startDate;
+                  break;
+
+                case 'week':
+                  // Start of current week (Sunday) to today
+                  startDate = new Date(today.setDate(today.getDate() - today.getDay())).toISOString().split('T')[0];
+                  endDate = new Date().toISOString().split('T')[0];
+                  break;
+
+                case 'month':
+                  // Start of current month to today
+                  startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+                  endDate = new Date().toISOString().split('T')[0];
+                  break;
+
+                case 'year':
+                  // Start of current year to today
+                  startDate = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
+                  endDate = new Date().toISOString().split('T')[0];
+                  break;
+
+                case 'custom':
+                  // Show custom date fields
+                  customDateFields.style.display = 'block';
+                  return;
+
+                default:
+                  // Clear dates if no filter is selected
+                  startDateInput.value = '';
+                  endDateInput.value = '';
+                  return;
+              }
+
+              startDateInput.value = startDate;
+              endDateInput.value = endDate;
+
+              if (filterBy && filterBy !== 'custom') {
+                document.getElementById('salesFilterForm').submit();
+              }
+            }
+
+            function clearFilter() {
+              window.location.href = '/admin/salesReport';
+            }
+
+          </script>

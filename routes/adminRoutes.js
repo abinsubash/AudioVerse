@@ -8,12 +8,19 @@ const brandController = require('../controller/admin/brandController');
 const productController = require('../controller/admin/productController')
 const adminAuth = require('../middleware/adminAuth');
 const  orderController = require('../controller/admin/orderController');
+const offerController = require('../controller/admin/offerController');
+const couponController = require('../controller/admin/couponController');
+const salesController = require('../controller/admin/salesController');
+
 
 
 adminRoutes.get('/',adminController.login);
 adminRoutes.post('/',adminController.adminLogin);
-adminRoutes.get('/home',adminAuth.isLogged,adminAuth.isLogged,adminController.home);
 adminRoutes.get('/logout',adminAuth.isLogged,adminController.logout)
+
+//Todo:Home 
+adminRoutes.get('/home',adminAuth.isLogged,adminAuth.isLogged,adminController.home);
+
 
 adminRoutes.get('/brands',adminAuth.isLogged,adminController.brands);
 adminRoutes.post('/addbrand',adminAuth.isLogged,brandController.addBrand);
@@ -21,8 +28,8 @@ adminRoutes.delete('/deleteBrand/:id',adminAuth.isLogged, brandController.delete
 adminRoutes.put('/restoreBrand/:id',adminAuth.isLogged, brandController.restoreBrand);
 adminRoutes.get('/getBrand/:id', adminAuth.isLogged,brandController.getBrand);
 adminRoutes.put('/updateBrand/:id',adminAuth.isLogged, brandController.updateBrand);
-// Todo: 
 
+// Todo: User
 adminRoutes.post('/block/:id',adminAuth.isLogged, adminController.block);
 adminRoutes.get('/userlist',adminAuth.isLogged, adminController.usersList);
 
@@ -49,11 +56,33 @@ adminRoutes.post('/addNewVariant/:productId',upload.any(),productController.addN
 adminRoutes.get('/orders',adminAuth.isLogged,orderController.orderDetails);
 adminRoutes.patch("/orderStatusEdit",adminAuth.isLogged,orderController.orderStatusEdit);
 adminRoutes.get('/orders/:id', adminAuth.isLogged,orderController.getOrderDetails);
-adminRoutes.post('/return/:orderId/:orderItemId', orderController.returnConfirm);
+adminRoutes.post('/return/:orderId/:orderItemId', adminAuth.isLogged, orderController.returnConfirm);
+
+// -------------- Todo: offer ----------------
+
+adminRoutes.get('/offer', adminAuth.isLogged,offerController.offer);
+adminRoutes.post('/addOffer', adminAuth.isLogged,offerController.addOffer);
+adminRoutes.patch('/updateOffer', adminAuth.isLogged,offerController.editOffer)
+adminRoutes.delete('/deleteOffer/:offerId', adminAuth.isLogged,offerController.deleteOffer)
+adminRoutes.post('/productOffer', adminAuth.isLogged,offerController.productOffer)
+adminRoutes.delete('/removeOffer', adminAuth.isLogged,offerController.removeOffer)
+adminRoutes.post('/applyOfferToCategory', adminAuth.isLogged,offerController.categoryOffer);
+adminRoutes.delete('/removeOfferFromCategory', adminAuth.isLogged,offerController.removeCategoryOffer);
 
 
-// -------------- search----------------
+// Todo: Coupon
+adminRoutes.get('/coupon', adminAuth.isLogged,couponController.couponPage)
+adminRoutes.post('/addCoupon', adminAuth.isLogged,couponController.addCoupon)
+adminRoutes.patch('/editCoupon', adminAuth.isLogged,couponController.editCoupon)
+adminRoutes.delete('/deleteCoupon', adminAuth.isLogged,couponController.deleteCoupon)
 
+
+
+//Todo:Sales Report
+adminRoutes.get('/salesReport', adminAuth.isLogged,salesController.salesPage)
+adminRoutes.get('/downloadSalesReport',  adminAuth.isLogged,salesController.downloadSalesReport);
+adminRoutes.get('/downloadSalesReportExcel', adminAuth.isLogged, salesController.downloadSalesReportExcel);
 
 
 module.exports = adminRoutes;
+

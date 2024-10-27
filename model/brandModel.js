@@ -9,6 +9,10 @@ const brandSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
         required: true
+    },
+    boughtCount:{
+        type: Number,
+        default: 0 
     }
 });
 

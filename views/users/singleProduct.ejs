@@ -68,7 +68,7 @@
                                         </a>
                                     </div>
                                     <% }); %>
-                                        <% } %>
+                                        <% } %> 
                         </div>
 
                     </div>
@@ -79,19 +79,34 @@
                                 <%= product.productName %>
                             </h2>
 
-                            <p class="price"><span>
-                                    $<%= newvarinats[0].price %>
-                                        <i onclick="wishlist('<%= newvarinats[0]._id %>', this)" class="fa fa-heart"
-                                            style="color: <%= wishlist.items.some(item => item.variantId.equals(newvarinats[0]._id)) ? 'red' : 'white' %>; 
-                                           font-size: 28px; 
-                                           cursor: pointer; 
+                            <p class="price">
+                                <!-- Conditional logic for offerPrice -->
+                                <% if (newvarinats[0].offerPrice) { %>
+                                    <span style="text-decoration: line-through; color: grey;">
+                                        $<%= newvarinats[0].price %> <!-- Original price with line-through -->
+                                    </span>
+                                    <br>
+                                    <span style="color: red;">
+                                        $<%= newvarinats[0].offerPrice %> <!-- Discounted price in red -->
+                                    </span>
+                                <% } else { %>
+                                    <span>
+                                        $<%= newvarinats[0].price %> <!-- Regular price if no offerPrice -->
+                                    </span>
+                                <% } %>
+                            
+                                <!-- Wishlist icon -->
+                                <i onclick="wishlist('<%= newvarinats[0]._id %>', this)" class="fa fa-heart"
+                                    style="color: <%= wishlist.items.some(item => item.variantId.equals(newvarinats[0]._id)) ? 'red' : 'white' %>;
+                                           font-size: 28px;
+                                           cursor: pointer;
                                            text-shadow: 0 0 2px black;">
-                                        </i>
-
-                                </span></p>
-
-                            <%= product.description %>
-                                </p>
+                                </i>
+                            </p>
+                            
+                            <!-- Product description remains unaffected -->
+                            <p><%= product.description %></p>
+                            
 
                                 <!-- Rating Section -->
                                 <div class="rating d-flex">

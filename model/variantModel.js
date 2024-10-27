@@ -25,7 +25,14 @@ const variantSchema = mongoose.Schema({
         type:Boolean,
         default:false,
         required:true
-    }
+    },
+    offerId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Offer"
+    },
+    offerPrice:{
+        type:Number,
+    },
 });
 
 const Variant = mongoose.model('Variant', variantSchema);

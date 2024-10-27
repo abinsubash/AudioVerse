@@ -34,8 +34,8 @@ userRoutes.get('/reset-password',userAuth.isBlocked,userController.resetPassword
 userRoutes.post('/confirmPassword',userController.confirmPassword)
 
 // Todo :product page 
-userRoutes.get("/shop",userAuth.isBlocked, userAuth.isBlocked, shopController.newShop);
-userRoutes.get("/api/shop", userAuth.isBlocked, shopController.shopNewPage);
+userRoutes.get("/shop",userAuth.offerCleanupMiddleware,userAuth.isBlocked, userAuth.isBlocked, shopController.newShop);
+userRoutes.get("/api/shop",userAuth.offerCleanupMiddleware, userAuth.isBlocked, shopController.shopNewPage);
 
 
 
@@ -54,9 +54,9 @@ userRoutes.post("/changePassword",userAuth.isBlocked,userAuth.isLogin,userContro
 userRoutes.get('/404',userController.error404)
 
 //Tod : cart 
-userRoutes.get("/cart",userAuth.isBlocked,userAuth.isBlocked,userAuth.isLogin,cartController.cart);
-userRoutes.post("/updateCart/:Id",userAuth.isBlocked,userAuth.isLogin,cartController.updateCart);
-userRoutes.post("/addtoCart",userAuth.isLogin,cartController.addToCart);
+userRoutes.get("/cart",userAuth.offerCleanupMiddleware,userAuth.isBlocked,userAuth.isLogin,cartController.cart);
+userRoutes.post("/updateCart/:Id",userAuth.offerCleanupMiddleware,userAuth.isBlocked,userAuth.isLogin,cartController.updateCart);
+userRoutes.post("/addtoCart",userAuth.offerCleanupMiddleware,userAuth.isLogin,cartController.addToCart);
 userRoutes.delete('/cartDelete/:Id',userAuth.isLogin,cartController.cartDelete);
 
 
@@ -76,8 +76,9 @@ userRoutes.post("/orderCancellation", userAuth.isLogin, checkoutController.order
 userRoutes.post('/Razorpay',userAuth.isBlocked,checkoutController.RazorpaySet)
 userRoutes.post('/verifyRazorpay', userAuth.isBlocked,checkoutController.verifyRazorpay);
 userRoutes.post('/return',userAuth.isBlocked,checkoutController.orderReturn);
-
-
+userRoutes.get('/downloadInvoice/:orderId',userAuth.isBlocked,checkoutController.invoiceDownload)
+userRoutes.post('/retryPayment',userAuth.isBlocked,checkoutController.retryPayment)
+userRoutes.post('/verifyRetryPayment',userAuth.isBlocked,checkoutController.verifyRetryPayment)
 
 //Todo:Wishlist
 userRoutes.post('/deleteFromWishlist',userAuth.isBlocked,userAuth.isLogin,shopController.deleteFromWishlist)
@@ -88,7 +89,8 @@ userRoutes.post('/addAndRemoveWishlist',userAuth.isBlocked,userAuth.isLogin,shop
 
 //Todo:Wallet
 userRoutes.get('/wallet',userAuth.isBlocked,userAuth.isLogin,walletController.wallet)
-
+userRoutes.post('/api/create-wallet-order',userAuth.isLogin,walletController.walletorder);
+userRoutes.post('/api/verify-wallet-payment',userAuth.isLogin,walletController.walletVerify)
 
 userRoutes.get("/contact", userAuth.isBlocked, (req, res) => {
   res.render("users/contact", { user: req.session.userExist });

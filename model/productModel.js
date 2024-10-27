@@ -32,6 +32,14 @@ const productSchema = mongoose.Schema({
         type: Boolean,
         default: false,
         required: true
+    },
+    offerId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Offer",
+    },
+    boughtCount:{
+        type: Number,
+        default: 0 
     }
 });
 

@@ -37,12 +37,21 @@
                                         <p><strong>Total Price:</strong> $<%= items.totalPrice %>
                                         </p>
                                         <p><strong>Description:</strong></p>
-                                        <p style="white-space: pre-wrap;">
-                                            <%= items.description %>
+                                        <p style="white-space: pre-wrap;"><%= items.description %>
                                         </p>
                                         <p><strong>Status:</strong>
                                             <%= items.orderStatus %>
                                         </p>
+                                        <%if(items.returnReson){%>
+                                            <p><strong>Returned Reason:</strong>
+                                                <%=items.returnReson %>
+                                            </p>
+                                        <%}%>
+                                        <%if(items.cancelReson){%>
+                                            <p><strong>Cancel Reason:</strong>
+                                                <%=items.cancelReson %>
+                                            </p>
+                                        <%}%>
                                         <p><strong>Order Date:</strong>
                                             <%= new Date(order.orderDate).toLocaleDateString() %>
                                         </p>

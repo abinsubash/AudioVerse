@@ -30,6 +30,9 @@
                         <div class="card">
                             <div class="card-body">
                                 <h4 class="card-title">Orders</h4>
+                                <button class="btn btn-primary" onclick="listReturnRequests()">Return Requests</button>
+                                <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+
                                 <p class="card-description">List of all orders</p>
                                 <div class="table-responsive">
                                     <table class="table table-striped table-sm" id="orderTable">
@@ -66,58 +69,67 @@
                                                     <td>$<%= order.totalAmount %>
                                                     </td>
                                                     <%if(order.orderStatus==="Delivered"){%>
-                                                    <td style="color: green;">
-                                                        <%= order.orderStatus %>
-                                                    </td>
-                                                    <% }else if(order.orderStatus==="Cancelled"){%>
-                                                        <td style="color: red;">
+                                                        <td style="color: green;">
                                                             <%= order.orderStatus %>
                                                         </td>
-                                                    <%}else{%>
-                                                        <td >
-                                                            <%= order.orderStatus %>
-                                                        </td>
-                                                    <%}%>
+                                                        <% }else if(order.orderStatus==="Cancelled" ){%>
+                                                            <td style="color: red;">
+                                                                <%= order.orderStatus %>
+                                                            </td>
+                                                            <%}else{%>
+                                                                <td>
+                                                                    <%= order.orderStatus %>
+                                                                </td>
+                                                                <%}%>
 
-                                                    <td>
-                                                        <%= new Date(order.orderDate).toLocaleDateString() %>
-                                                    </td>
-                                                    <% let hasReturnStatus=false; order.orderItem.forEach(item=> {
-                                                        if (item.returnStatus === 'Returned') {
-                                                        hasReturnStatus = true;
-                                                        }
-                                                        });
-                                                        %>
+                                                                    <td>
+                                                                        <%= new
+                                                                            Date(order.orderDate).toLocaleDateString()
+                                                                            %>
+                                                                    </td>
+                                                                    <% let hasReturnStatus=false;
+                                                                        order.orderItem.forEach(item=> {
+                                                                        if (item.returnStatus === 'Returned') {
+                                                                        hasReturnStatus = true;
+                                                                        }
+                                                                        });
+                                                                        %>
 
-                                                        <td>
-                                                            <button class="btn btn-sm
+                                                                        <td>
+                                                                            <button class="btn btn-sm
                                                         btn-<%= hasReturnStatus ? 'warning' : 'danger' %>"
-                                                                onclick="window.location.href='/admin/orders/<%= order._id %>'">
-                                                                View
-                                                            </button>
-                                                            
-                                                        </td>
-                                                        <% if(!order.isCancelled){ %>
-                                                            <% if (order.orderStatus==="Pending" ) { %>
-                                                                <td>
-                                                                    <button class="btn btn-primary btn-sm"
-                                                                        onclick='orderEdit(`<%= order._id %>`,"Shipped")'>Shipping</button>
-                                                                </td>
-                                                                <td>
-                                                                    <button class="btn btn-danger btn-sm"
-                                                                        onclick='orderEdit(`<%= order._id %>`,"Cancel")'>Cancel</button>
-                                                                </td>
-                                                                <% } else if (order.orderStatus==="Shipped" ) { %>
-                                                                    <td>
-                                                                        <button class="btn btn-success btn-sm"
-                                                                            onclick='orderEdit(`<%= order._id %>`,"Delivered")'>Delivered</button>
-                                                                    </td>
-                                                                    <td>
-                                                                        <button class="btn btn-danger btn-sm"
-                                                                            onclick='orderEdit(`<%= order._id %>`,"Cancel")'>Cancel</button>
-                                                                    </td>
-                                                                    <% } %>
-                                                                            <% }%>
+                                                                                onclick="window.location.href='/admin/orders/<%= order._id %>'">
+                                                                                View
+                                                                            </button>
+
+                                                                        </td>
+                                                                        <% if(!order.isCancelled){ %>
+                                                                            <% if (order.orderStatus==="Pending" ) { %>
+                                                                                <td>
+                                                                                    <button
+                                                                                        class="btn btn-primary btn-sm"
+                                                                                        onclick='orderEdit(`<%= order._id %>`,"Shipped")'>Shipping</button>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <button
+                                                                                        class="btn btn-danger btn-sm"
+                                                                                        onclick='orderEdit(`<%= order._id %>`,"Cancel")'>Cancel</button>
+                                                                                </td>
+                                                                                <% } else if
+                                                                                    (order.orderStatus==="Shipped" ) {
+                                                                                    %>
+                                                                                    <td>
+                                                                                        <button
+                                                                                            class="btn btn-success btn-sm"
+                                                                                            onclick='orderEdit(`<%= order._id %>`,"Delivered")'>Delivered</button>
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <button
+                                                                                            class="btn btn-danger btn-sm"
+                                                                                            onclick='orderEdit(`<%= order._id %>`,"Cancel")'>Cancel</button>
+                                                                                    </td>
+                                                                                    <% } %>
+                                                                                        <% }%>
                                                 </tr>
                                                 <% }) %>
                                         </tbody>
@@ -250,7 +262,7 @@
                                 } else {
                                     swal({
                                         title: "Error!",
-                                        text: data.message, // Message from the API response
+                                        text: data.message, 
                                         icon: "error",
                                         button: "Try Again",
                                     });
@@ -261,6 +273,13 @@
                                 console.error("Error:", error);
                                 alert("An error occurred while updating the order status.");
                             }
+                        }
+
+                        function listReturnRequests() {
+                            window.location.href = '/admin/orders?showReturns=true';
+                        }
+                        function clearFilters() {
+                            window.location.href = '/admin/orders'; 
                         }
 
                     </script>

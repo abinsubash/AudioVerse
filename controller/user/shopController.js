@@ -110,6 +110,8 @@ const newShop = async (req, res) => {
                     price: 1,
                     stock: 1,
                     images: 1,
+                    offerId:1,
+                    offerPrice:1,
                     "productDetails._id": 1,
                     "productDetails.productName": 1,
                     "productDetails.productBrand": 1,
@@ -193,6 +195,8 @@ const newShop = async (req, res) => {
                     price: 1,
                     stock: 1,
                     images: 1,
+                    offerId:1,
+                    offerPrice:1,
                     "productDetails._id": 1,
                     "productDetails.productName": 1,
                     "productDetails.productBrand": 1,
@@ -274,6 +278,8 @@ const newShop = async (req, res) => {
                   price: 1,
                   stock: 1,
                   images: 1,
+                  offerId:1,
+                  offerPrice:1,
                   "productDetails._id": 1,
                   "productDetails.productName": 1,
                   "productDetails.productBrand": 1,
@@ -336,6 +342,8 @@ const newShop = async (req, res) => {
             price: 1,
             stock: 1,
             images: 1,
+            offerId:1,
+            offerPrice:1,
             "productDetails._id": 1,
             "productDetails.productName": 1,
             "productDetails.productBrand": 1,
@@ -360,7 +368,6 @@ const newShop = async (req, res) => {
       const variants = variantsData[0].data;
       const totalVariantsCount = variantsData[0].totalCount.length > 0 ? variantsData[0].totalCount[0].count : 0;
       const totalPages = Math.ceil(totalVariantsCount / itemsPerPage);
-
       res.render("users/shop", {
         variants: variants,
         user: req.session.userExist,

@@ -1,38 +1,170 @@
 <%- include('../layout/profileHeader') -%> <%- include('../layout/navbar') -%>
-<%- include('../layout/profileNav') -%>
-<link rel="stylesheet" href="css/wallet.css" />
-<div class="col-lg-8">
-  <div class="sidebar-placeholder"></div>
-  <div class="wallet-content">
-    <div class="wallet-card">
-        <div class="wallet-label">Total Balance</div>
-        <div class="wallet-balance">$<%= wallet.balance %></div>
+    <%- include('../layout/profileNav') -%>
+      <link rel="stylesheet" href="css/wallet.css" />
+      <div class="col-lg-8">
+        <div class="sidebar-placeholder"></div>
+        <div class="wallet-content">
+          <div class="wallet-card">
+            <div class="wallet-label">Total Balance</div>
+            <div class="wallet-balance">$<%= wallet.balance %></div>
+            <button class="btn btn-primary mt-3" id="addAmountButton" data-toggle="modal" data-target="#addAmountModal">
+                Add Amount
+            </button>
+        </div>
+
+          <div class="transactions">
+            <h2>Recent Transactions</h2>
+            <ul class="transaction-list">
+              <% wallet.history.forEach(transaction=> { %>
+                <li class="transaction-item">
+                  <div class="transaction-icon">
+                    <% if (transaction.transactionType==='Deposit' ||transaction.transactionType==='Referral Bonus' ) {
+                      %>
+                      <i class="fas fa-arrow-down"></i>
+                      <% } else if (transaction.transactionType==='Purchase' ) { %>
+                        <i class="fas fa-shopping-cart"></i>
+                        <% } else if (transaction.transactionType==='Refund' ) { %>
+                          <i class="fas fa-undo"></i>
+                          <% } %>
+                  </div>
+                  <div class="transaction-details">
+                    <div>
+                      <%= transaction.transactionType %>
+                    </div>
+                    <small>
+                      <%= new Date(transaction.date).toLocaleDateString() %>
+                    </small>
+                  </div>
+                  <div class="transaction-amount <%= transaction.amount  > 0 ? 'positive' : 'negative' %>">
+                    <%= transaction.amount> 0 ? `+$${transaction.amount}` : `-$${Math.abs(transaction.amount)}` %>
+                  </div>
+                </li>
+                <% }) %>
+            </ul>
+          </div>
+        </div>
       </div>
-      
-      <div class="transactions">
-        <h2>Recent Transactions</h2>
-        <ul class="transaction-list">
-          <% wallet.history.forEach(transaction => { %>
-            <li class="transaction-item">
-              <div class="transaction-icon">
-                <% if (transaction.transactionType === 'Deposit'||transaction.transactionType === 'Referral Bonus') { %>
-                  <i class="fas fa-arrow-down"></i>
-                <% } else if (transaction.transactionType === 'Purchase') { %>
-                  <i class="fas fa-shopping-cart"></i>
-                <% } else if (transaction.transactionType === 'Refund') { %>
-                  <i class="fas fa-undo"></i>
-                <% } %>
-              </div>
-              <div class="transaction-details">
-                <div><%= transaction.transactionType %></div>
-                <small><%= new Date(transaction.date).toLocaleDateString() %></small>
-              </div>
-              <div class="transaction-amount <%= transaction.amount  > 0 ? 'positive' : 'negative' %>">
-                <%= transaction.amount > 0 ? `+$${transaction.amount}` : `-$${Math.abs(transaction.amount)}` %>
-              </div>
-            </li>
-          <% }) %>
-        </ul>
-      </div>      
+
+
+
+      <!-- Modal for Adding Amount -->
+<div class="modal fade" id="addAmountModal" tabindex="-1" role="dialog" aria-labelledby="addAmountModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="addAmountModalLabel">Add Amount to Wallet</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <form id="addAmountForm">
+                  <div class="form-group">
+                      <label for="amount">Amount to Add</label>
+                      <input type="number" class="form-control" id="amount" required min="1" placeholder="Enter amount">
+                  </div>
+              </form>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" id="submitAddAmount">Add Amount</button>
+          </div>
+      </div>
   </div>
 </div>
+
+
+<!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Include Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // Handling the button click instead of the form submission
+  document.getElementById('submitAddAmount').addEventListener('click', async function (e) {
+    e.preventDefault();
+
+    const amount = document.getElementById('amount').value; // Get the entered amount
+    const paymentMethod = { value: "Razorpay" }; // Assuming Razorpay is the payment method
+
+    if (amount && paymentMethod.value === "Razorpay") {
+      try {
+        // Sending the amount to the backend to create a Razorpay order
+        const response = await fetch('/api/create-wallet-order', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ amount }) // Send the amount to your server
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          const options = {
+            key: data.key_id, // Your Razorpay Key ID
+            amount: data.amount, // Amount in the smallest currency unit (paise for INR)
+            currency: data.currency,
+            name: "Your Company Name",
+            description: "Add Amount to Wallet",
+            order_id: data.order_id, // Order ID created by your server
+            handler: async function (response) {
+              // This function runs when payment is successful
+              const paymentData = {
+                order_id: data.order_id,
+                payment_id: response.razorpay_payment_id,
+                signature: response.razorpay_signature
+              };
+
+              const verificationResponse = await fetch('/api/verify-wallet-payment', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ paymentData }) 
+              });
+
+              const verificationData = await verificationResponse.json();
+
+              if (verificationData.success) {
+                Swal.fire({
+                  title: 'Success!',
+                  text: `Amount of ₹${amount} has been added to your wallet.`,
+                  icon: 'success',
+                  confirmButtonText: 'OK'
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    window.location.reload(); 
+                  }
+                });
+              } else {
+                alert('Payment verification failed: ' + verificationData.message);
+              }
+            },
+            prefill: {
+              name: "Customer Name", 
+              email: "customer@example.com",
+              contact: "9999999999"
+            },
+            theme: {
+              color: "#F37254"
+            }
+          };
+
+          const rzp = new Razorpay(options);
+          rzp.open(); // Open the Razorpay payment modal
+        } else {
+          console.error(data.message);
+          alert(data.message);
+        }
+      } catch (error) {
+        console.error('Error during payment process:', error);
+      }
+    } else {
+      alert('Please enter a valid amount.');
+    }
+  });
+</script>

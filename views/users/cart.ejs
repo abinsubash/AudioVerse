@@ -45,8 +45,9 @@
 													<%= item.variantId ? item.variantId.color : 'Color not available' %>
 												</td>
 												<td class="price">
-													$<%= item.variantId ? item.variantId.price.toFixed(2) : '0.00' %>
+													$<%= item.variantId ? (item.variantId.offerPrice ? item.variantId.offerPrice.toFixed(2) : item.variantId.price.toFixed(2)) : '0.00' %>
 												</td>
+												
 												<td class="quantity">
 													<div class="input-group mb-3 quantity-wrapper">
 														<button class="btn btn-outline-secondary btn-quantity" type="button" onclick="updateQuantity('<%= item._id %>', -1)">-</button>
@@ -55,8 +56,8 @@
 													</div>
 												</td>
 												<td class="total">
-													$<%= item.ProductId && item.variantId ? (item.variantId.price * item.quantity) : '0.00' %>
-												</td>
+													$<%= item.ProductId && item.variantId ? (item.variantId.offerPrice ? (item.variantId.offerPrice * item.quantity).toFixed(2) : (item.variantId.price * item.quantity).toFixed(2)) : '0.00' %>
+												</td>												
 												<td>
 													<button class="delete-btn" onclick="deleteItem('<%= item._id %>')" title="Delete">
 														<span class="delete-icon">&#10006;</span>
@@ -93,7 +94,7 @@
 							</p>
 							<p class="d-flex">
 								<span>Discount</span>
-								<span>$3.00</span>
+								<span>$<%= cartProducts ? cartProducts.totalDiscount.toFixed(2) : '0.00' %></span>
 							</p>
 							<hr>
 							<p class="d-flex total-price">

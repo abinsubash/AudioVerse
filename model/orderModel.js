@@ -43,7 +43,10 @@ const orderSchema = mongoose.Schema({
         required:true
       },
       discountAmount:{
-        type:String,
+        type:Number,
+      },
+      couponDiscount:{
+        type:Number
       },
       category:{
         type:mongoose.Schema.Types.ObjectId,
