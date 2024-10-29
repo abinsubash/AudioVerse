@@ -57,6 +57,28 @@ const orderStatusEdit = async (req, res) => {
     let updateFields = {};
 
     if (orderStatus === "Cancel") {
+      const paidAmount = order.totalAmount; 
+
+    // Find the user's wallet
+    const wallet = await Wallet.findOne({ userId: req.session.userExist._id });
+
+    if (wallet) {
+      await Wallet.findOneAndUpdate(
+        { userId: req.session.userExist._id },
+        {
+          $push: {
+            history: {
+              date: new Date(),
+              amount: paidAmount,
+              transactionType: "Refund",
+              newBalance: wallet.balance + paidAmount, 
+            },
+          },
+          $set: { balance: wallet.balance + paidAmount },
+        },
+        { new: true } 
+      );
+    } 
       for (let item of order.orderItem) {
         const variant = await Variant.findOne({ _id: item.variantId });
 
@@ -73,8 +95,8 @@ const orderStatusEdit = async (req, res) => {
             isCancelled: true,
             orderStatus: "Cancelled",
             cancelDate: Date.now(),
-            "orderItem.$[item].orderStatus": "Cancelled",
-            "orderItem.$[item].isCancelled": true,
+            "orderItem.$[].orderStatus": "Cancelled",
+            "orderItem.$[].isCancelled": true,
           },
         }
       );

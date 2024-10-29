@@ -87,6 +87,9 @@ const newShop = async (req, res) => {
           {
             $unwind: "$productDetails",
           },
+        {
+          $match: { "productDetails.isDeleted": false }, 
+        },
           {
             $match: {
               "productDetails.productName": { $regex: search?search:'a', $options: "i" },
@@ -173,6 +176,9 @@ const newShop = async (req, res) => {
           {
             $unwind: "$productDetails",
           },
+        {
+          $match: { "productDetails.isDeleted": false }, 
+        },
           {
             $match: {
               "productDetails.productName": { $regex: search, $options: "i" },
@@ -261,6 +267,9 @@ const newShop = async (req, res) => {
           $unwind: "$productDetails",
         },
         {
+          $match: { "productDetails.isDeleted": false }, 
+        },
+        {
           $match: {
             "productDetails.productName": { $regex: search, $options: "i" }, // Product name search
             ...(checkedCategory && { "productDetails.category": new mongoose.Types.ObjectId(checkedCategory) }), // Category filter
@@ -337,6 +346,9 @@ const newShop = async (req, res) => {
           $unwind: "$productDetails",
         },
         {
+          $match: { "productDetails.isDeleted": false }, 
+        },
+        {
           $project: {
             color: 1,
             price: 1,
@@ -364,7 +376,7 @@ const newShop = async (req, res) => {
           },
         },
       ]);
-
+    
       const variants = variantsData[0].data;
       const totalVariantsCount = variantsData[0].totalCount.length > 0 ? variantsData[0].totalCount[0].count : 0;
       const totalPages = Math.ceil(totalVariantsCount / itemsPerPage);

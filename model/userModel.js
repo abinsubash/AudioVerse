@@ -46,7 +46,8 @@ const userSchema = mongoose.Schema({
         ref:"Address"
     },
     walletId:{
-        type:mongoose.Schema.Types.ObjectId
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Wallet'
     }
 });
 const User = mongoose.model("User",userSchema);

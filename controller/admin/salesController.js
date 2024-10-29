@@ -9,7 +9,6 @@ const salesPage = async (req, res) => {
     let dateQuery = {};
 
     if (startDate && endDate) {
-      // Add time to dates for accurate filtering
       const startDateTime = new Date(startDate);
       startDateTime.setHours(0, 0, 0, 0);
 
@@ -24,7 +23,6 @@ const salesPage = async (req, res) => {
       };
     }
 
-    // Combine the delivery status and date queries
     query = { ...query, ...dateQuery };
 
     const deliveredOrders = await Order.find(query)

@@ -24,30 +24,37 @@
         <div class="main-panel">
           <div class="content-wrapper">
             <div class="btn-group" role="group" aria-label="Time Filters">
-              <a href="/admin/home?filter=day" class="btn btn-outline-primary <% if (filter === 'day') { %>active<% } %>">Day</a>
-              <a href="/admin/home?filter=week" class="btn btn-outline-primary <% if (filter === 'week') { %>active<% } %>">Week</a>
-              <a href="/admin/home?filter=month" class="btn btn-outline-primary <% if (filter === 'month') { %>active<% } %>">Month</a>
-              <a href="/admin/home?filter=year" class="btn btn-outline-primary <% if (filter === 'year') { %>active<% } %>">Year</a>
+              <a href="/admin/home?filter=day"
+                class="btn btn-outline-primary <% if (filter === 'day') { %>active<% } %>">Day</a>
+              <a href="/admin/home?filter=week"
+                class="btn btn-outline-primary <% if (filter === 'week') { %>active<% } %>">Week</a>
+              <a href="/admin/home?filter=month"
+                class="btn btn-outline-primary <% if (filter === 'month') { %>active<% } %>">Month</a>
+              <a href="/admin/home?filter=year"
+                class="btn btn-outline-primary <% if (filter === 'year') { %>active<% } %>">Year</a>
               <button type="button" class="btn btn-outline-danger ml-2" id="clearButton">Clear</button>
-          </div>
+            </div>
 
             <div class="row">
               <div class="col-md-4 stretch-card grid-margin">
                 <div class="card bg-gradient-danger card-img-holder text-white">
                   <div class="card-body">
-                    <h4 class="font-weight-normal mb-3">Total Sales</h4>
-                    <h2 class="mb-5">$<%= totalSales %>
+                    <h4 class="font-weight-normal mb-3"><%= filterLabel %> Sales</h4>
+                    <h2 class="mb-3">
+                      <%= formatCurrency(filterSales) %>
                     </h2>
+                    <small class="mb-2 d-block"><%= filter === 'all' ? 'All-time total revenue' : `${filterLabel} revenue` %></small>
                   </div>
                 </div>
               </div>
               <div class="col-md-4 stretch-card grid-margin">
                 <div class="card bg-gradient-info card-img-holder text-white">
                   <div class="card-body">
-                    <h4 class="font-weight-normal mb-3">Total Orders</h4>
-                    <h2 class="mb-5">
-                      <%= totalOrders %>
+                    <h4 class="font-weight-normal mb-3"><%= filterLabel %> Orders</h4>
+                    <h2 class="mb-3">
+                      <%= formatNumber(filterOrders) %>
                     </h2>
+                    <small class="mb-2 d-block"><%= filter === 'all' ? 'All-time completed orders' : `${filterLabel} orders` %></small>
                   </div>
                 </div>
               </div>
@@ -55,13 +62,15 @@
                 <div class="card bg-gradient-success card-img-holder text-white">
                   <div class="card-body">
                     <h4 class="font-weight-normal mb-3">Total Users</h4>
-                    <h2 class="mb-5">
-                      <%= totalUsers %>
+                    <h2 class="mb-3">
+                      <%= formatNumber(totalUsers) %>
                     </h2>
+                    <small class="mb-2 d-block">Registered users</small>
                   </div>
                 </div>
               </div>
             </div>
+            
           </div>
 
           <div class="row">
@@ -96,17 +105,21 @@
                       <tbody>
                         <% topProducts.forEach(function(product) { %>
                           <tr>
-                            <td><%= product.productName %></td>
-                            <td><%= product.boughtCount %></td>
+                            <td>
+                              <%= product.productName %>
+                            </td>
+                            <td>
+                              <%= product.boughtCount %>
+                            </td>
                           </tr>
-                        <% }); %>
+                          <% }); %>
                       </tbody>
                     </table>
                   </div>
                 </div>
               </div>
             </div>
-          
+
             <!-- Top 10 Categories Table -->
             <div class="col-12 grid-margin">
               <div class="card">
@@ -123,17 +136,21 @@
                       <tbody>
                         <% topCategories.forEach(function(category) { %>
                           <tr>
-                            <td><%= category.categoryName %></td>
-                            <td><%= category.boughtCount %></td>
+                            <td>
+                              <%= category.categoryName %>
+                            </td>
+                            <td>
+                              <%= category.boughtCount %>
+                            </td>
                           </tr>
-                        <% }); %>
+                          <% }); %>
                       </tbody>
                     </table>
                   </div>
                 </div>
               </div>
             </div>
-          
+
             <!-- Top 10 Brands Table -->
             <div class="col-12 grid-margin">
               <div class="card">
@@ -150,10 +167,14 @@
                       <tbody>
                         <% topBrands.forEach(function(brand) { %>
                           <tr>
-                            <td><%= brand.brandName %></td>
-                            <td><%= brand.boughtCount %></td>
+                            <td>
+                              <%= brand.brandName %>
+                            </td>
+                            <td>
+                              <%= brand.boughtCount %>
+                            </td>
                           </tr>
-                        <% }); %>
+                          <% }); %>
                       </tbody>
                     </table>
                   </div>
@@ -161,7 +182,7 @@
               </div>
             </div>
           </div>
-          
+
         </div>
     </div>
     <%- include('../layout/admin/adminFooter') -%>
@@ -173,42 +194,40 @@
           window.location.href = '/admin/home';
         });
         const labels = JSON.parse('<%- labels %>');
-const salesData = JSON.parse('<%- salesData %>');
-const filterLabel = '<%= filterLabel %>';
+        const salesData = JSON.parse('<%- salesData %>');
+        const filterLabel = '<%= filterLabel %>';
 
-// Initialize the chart
-const ctx = document.getElementById('visit-sale-chart').getContext('2d');
-const visitSaleChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: labels,
-        datasets: [{
-            label: 'Order Delivery Count',
-            data: salesData,
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: {
+        // Initialize the chart
+        const ctx = document.getElementById('visit-sale-chart').getContext('2d');
+        const visitSaleChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Order Delivery Count',
+              data: salesData,
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
                 beginAtZero: true,
                 title: {
-                    display: true,
-                    text: 'Order Delivery Count'
+                  display: true,
+                  text: 'Order Delivery Count'
                 }
-            },
-            x: {
+              },
+              x: {
                 title: {
-                    display: true,
-                    text: filterLabel
+                  display: true,
+                  text: filterLabel
                 }
+              }
             }
-        }
-    }
-});
-
-
+          }
+        });
       </script>

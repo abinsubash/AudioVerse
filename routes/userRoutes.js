@@ -40,7 +40,7 @@ userRoutes.get("/api/shop",userAuth.offerCleanupMiddleware, userAuth.isBlocked, 
 
 
 userRoutes.get("/search", userAuth.isBlocked, userController.searchAndsort);
-userRoutes.get("/filter", userAuth.isBlocked, userController.filter);
+userRoutes.get("/filter", userAuth.isBlocked,  userController.filter);
 
 userRoutes.get("/singleProduct", userController.singleProduct);
 
@@ -50,8 +50,6 @@ userRoutes.post("/updateprofile",userAuth.isBlocked,userAuth.isLogin,userControl
 userRoutes.post("/changePassword",userAuth.isBlocked,userAuth.isLogin,userController.changePassword);
 
 
-//Todo :404 
-userRoutes.get('/404',userController.error404)
 
 //Tod : cart 
 userRoutes.get("/cart",userAuth.offerCleanupMiddleware,userAuth.isBlocked,userAuth.isLogin,cartController.cart);

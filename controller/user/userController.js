@@ -63,7 +63,7 @@ const signupValidation = async (req, res) => {
     const otp = generateOTP();
     const user = await User.findOne({ referalID: referral });
     if (!user) {
-      conosle.log("refferd user not found");
+      console.log("refferd user not found");
     } else {
       req.session.refferdUser = user._id;
     }
@@ -146,6 +146,15 @@ const otpVerification = async (req, res) => {
         }
       }
     }
+    const userId = newuser._id;
+
+  const newWallet = new Wallet({
+    userId: userId,
+    balance: 0,
+    history: []
+  });
+    await newWallet.save();
+  await User.findByIdAndUpdate(userId, { walletId: newWallet._id });
     res.json({ success: true });
   } catch (error) {
     console.log(error);
@@ -428,6 +437,9 @@ const updateProfile = async (req, res) => {
 const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
+    if(currentPassword==newPassword){
+      return res.json({success:false,message:"current password and new password are same"})
+    }
     const user = await User.findOne({ _id: req.session.userExist._id });
 
     if (!user) {
@@ -537,9 +549,7 @@ const confirmPassword = async (req, res) => {
   res.json({ success: true, message: "password updated" });
 };
 
-const error404 = (req, res) => {
-  res.render("layout/404");
-};
+
 
 // address
 
@@ -678,7 +688,6 @@ module.exports = {
   resetPassword,
   address,
   addAddress,
-  error404,
   editAddress,
   deleteAddress,
   searchAndsort,

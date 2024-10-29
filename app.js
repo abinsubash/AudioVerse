@@ -65,6 +65,11 @@ app.use(express.static(path.join(__dirname,'public')));
 app.use('/',userRoutes);
 app.use('/admin',adminRoutes);
 
+app.get('*',(req,res)=>{
+  res.render("layout/404");
+})
+
+
 
 //----------port--------------------
 

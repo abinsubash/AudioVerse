@@ -128,7 +128,6 @@ const orderTest = async (req, res) => {
             discountAmount: discountAmount
           };
 
-          // Update coupon usage for this user
           if (userCouponUsage) {
             userCouponUsage.isBought = true;
           } else {
@@ -139,11 +138,19 @@ const orderTest = async (req, res) => {
       }
     }
 
-    // Fetch item details
+    // Fetch item details with proportional discount distribution
     const itemsDetails = await Promise.all(
       cart.items.map(async (item) => {
         const product = await Product.findById(item.ProductId);
         const variant = await Variant.findById(item.variantId);
+
+        // Calculate this item's proportional discount if a coupon was applied
+        let itemDiscountAmount = 0;
+        if (discountAmount > 0) {
+          // Calculate ratio based on item's contribution to total cart value
+          const itemRatio = item.total / cart.totalPrice;
+          itemDiscountAmount = Math.round(discountAmount * itemRatio);
+        }
 
         return {
           productId: product._id,
@@ -154,8 +161,8 @@ const orderTest = async (req, res) => {
           variantColor: variant.color,
           quantity: item.quantity,
           price: variant.price,
-          totalPrice: item.total,
-          discountAmount: 0, // You might want to distribute the discount across items if needed
+          totalPrice: item.total - itemDiscountAmount, // Original total minus item's share of discount
+          discountAmount: itemDiscountAmount, // Store the item's share of the discount
           brand: product.brand,
           image: variant.images[0],
           color: variant.color,
@@ -163,6 +170,8 @@ const orderTest = async (req, res) => {
         };
       })
     );
+    
+    console.log("Items with distributed discounts:", itemsDetails);
 
     const newOrder = new Order({
       userId: req.session.userExist._id,
@@ -235,6 +244,24 @@ const orderCancellation = async (req, res) => {
         const canceledItem = order.orderItem[itemIndex];
         if (canceledItem.paymentStatus === "Paid") {
           paidPrice = canceledItem.totalPrice;
+          const wallet = await Wallet.findOne({ userId: req.session.userExist._id })
+          if (wallet) {
+            await Wallet.findOneAndUpdate(
+              { userId: req.session.userExist._id },
+              {
+                $push: {
+                  history: {
+                    date: new Date(),
+                    amount: paidPrice,
+                    transactionType: "Refund",
+                    newBalance: wallet.balance + paidPrice,
+                  },
+                },
+                $set: { balance: wallet.balance + paidPrice },
+              },
+              { new: true } 
+            );
+          } 
         }
         canceledItem.isCancelled = true;
         canceledItem.orderStatus = "Cancelled";
@@ -389,8 +416,8 @@ const verifyRazorpay = async (req, res) => {
     }
 
     let totalAmount = cart.totalPrice;
+    let couponDiscountAmount = 0;
 
-    // If a coupon is applied - handle it same for both success and failure
     if (couponId) {
       const coupon = await Coupon.findById(couponId);
 
@@ -414,10 +441,10 @@ const verifyRazorpay = async (req, res) => {
         });
       }
 
-      const discountAmount = (totalAmount * coupon.couponPercentage) / 100;
-      totalAmount -= discountAmount;
+      // Calculate total coupon discount
+      couponDiscountAmount = (totalAmount * coupon.couponPercentage) / 100;
+      totalAmount -= couponDiscountAmount;
 
-      // Update coupon usage for both success and failure cases
       coupon.user.push({
         userId: req.session.userExist._id,
         isBought: true,
@@ -431,6 +458,14 @@ const verifyRazorpay = async (req, res) => {
         const product = await Product.findById(item.ProductId);
         const variant = await Variant.findById(item.variantId);
 
+        // Calculate individual item's discount proportionally
+        let itemDiscountAmount = 0;
+        if (couponDiscountAmount > 0) {
+          // Calculate this item's share of the discount based on its proportion of total cart value
+          const itemRatio = item.total / cart.totalPrice;
+          itemDiscountAmount = Math.round(couponDiscountAmount * itemRatio);
+        }
+
         return {
           productId: product._id,
           productName: product.productName,
@@ -441,8 +476,8 @@ const verifyRazorpay = async (req, res) => {
           variantColor: variant.color,
           quantity: item.quantity,
           price: variant.price,
-          totalPrice: item.total,
-          discountAmount: 0,
+          totalPrice: item.total - itemDiscountAmount, // Original total minus coupon discount
+          discountAmount: itemDiscountAmount, // Coupon discount amount for this item
           brand: product.brand,
           image: variant.images[0],
           color: variant.color,
@@ -474,7 +509,7 @@ const verifyRazorpay = async (req, res) => {
 
     await newOrder.save();
 
-    // Decrease stock for both success and failure cases
+    // Rest of the code remains the same...
     cart.items.forEach(async (item) => {
       const variantId = item.variantId._id
         ? item.variantId._id.toString()
@@ -485,7 +520,6 @@ const verifyRazorpay = async (req, res) => {
       );
     });
 
-    // Clear cart for both success and failure cases
     const deletedCart = await Cart.findOneAndDelete({
       userId: req.session.userExist._id,
     });
@@ -494,7 +528,6 @@ const verifyRazorpay = async (req, res) => {
       return res.json({ success: false, message: "Cart not found" });
     }
 
-    // Return success for both cases, frontend will handle the redirect
     res.json({ 
       success: true, 
       message: paymentData.paymentStatus === 'failed' ? "Order recorded as failed" : "Order created successfully",
@@ -668,7 +701,7 @@ const invoiceDownload = async (req, res) => {
                 { width: columnWidth.color - 10 });
 
             // Price
-            doc.text(`₹${item.price.toFixed(2)}`,
+            doc.text(`${item.price.toFixed(2)}`,
                 currentX + columnWidth.product + columnWidth.color + 5,
                 currentY + 5,
                 { width: columnWidth.price - 10 });
@@ -680,7 +713,7 @@ const invoiceDownload = async (req, res) => {
                 { width: columnWidth.quantity - 10, align: 'center' });
 
             // Total Price
-            doc.text(`₹${item.totalPrice.toFixed(2)}`,
+            doc.text(`${item.totalPrice.toFixed(2)}`,
                 currentX + columnWidth.product + columnWidth.color + columnWidth.price + columnWidth.quantity + 5,
                 currentY + 5,
                 { width: columnWidth.total - 10, align: 'right' });
@@ -716,7 +749,7 @@ const invoiceDownload = async (req, res) => {
 
     // Subtotal
     doc.text('Subtotal:', summaryX + 10, summaryY);
-    doc.text(`₹${subtotal.toFixed(2)}`, summaryX + 10, summaryY, {
+    doc.text(`${subtotal.toFixed(2)}`, summaryX + 10, summaryY, {
         width: summaryWidth - 20,
         align: 'right'
     });
@@ -725,7 +758,7 @@ const invoiceDownload = async (req, res) => {
     if (discount > 0) {
         summaryY += 20;
         doc.text('Discount:', summaryX + 10, summaryY);
-        doc.text(`₹${discount.toFixed(2)}`, summaryX + 10, summaryY, {
+        doc.text(`${discount.toFixed(2)}`, summaryX + 10, summaryY, {
             width: summaryWidth - 20,
             align: 'right'
         });
@@ -735,7 +768,7 @@ const invoiceDownload = async (req, res) => {
     summaryY += 20;
     doc.font('Helvetica-Bold')
        .text('Total Amount:', summaryX + 10, summaryY);
-    doc.text(`₹${total.toFixed(2)}`, summaryX + 10, summaryY, {
+    doc.text(`${total.toFixed(2)}`, summaryX + 10, summaryY, {
         width: summaryWidth - 20,
         align: 'right'
     });

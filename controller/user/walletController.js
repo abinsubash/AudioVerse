@@ -5,6 +5,7 @@ const Razorpay = require('razorpay');
 const Wallet=require('../../model/walletModel')
 const crypto = require('crypto')
 const wallet = async (req, res) => {
+  console.log(req.session.userExist._id)
     try {
       const user = await User.aggregate([
         {

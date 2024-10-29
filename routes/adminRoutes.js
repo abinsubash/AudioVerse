@@ -85,4 +85,3 @@ adminRoutes.get('/downloadSalesReportExcel', adminAuth.isLogged, salesController
 
 
 module.exports = adminRoutes;
-
