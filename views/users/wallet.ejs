@@ -18,33 +18,33 @@
           <div class="transactions">
             <h2>Recent Transactions</h2>
             <ul class="transaction-list">
-              <% wallet.history.forEach(transaction=> { %>
-                <li class="transaction-item">
-                  <div class="transaction-icon">
-                    <% if (transaction.transactionType==='Deposit' ||transaction.transactionType==='Referral Bonus' ) {
-                      %>
-                      <i class="fas fa-arrow-down"></i>
-                      <% } else if (transaction.transactionType==='Purchase' ) { %>
+              <% if (wallet && wallet.history && wallet.history.length > 0) { %>
+                <% wallet.history.forEach(transaction => { %>
+                  <li class="transaction-item">
+                    <div class="transaction-icon">
+                      <% if (transaction.transactionType === 'Deposit' || transaction.transactionType === 'Referral Bonus') { %>
+                        <i class="fas fa-arrow-down"></i>
+                      <% } else if (transaction.transactionType === 'Purchase') { %>
                         <i class="fas fa-shopping-cart"></i>
-                        <% } else if (transaction.transactionType==='Refund' ) { %>
-                          <i class="fas fa-undo"></i>
-                          <% } %>
-                  </div>
-                  <div class="transaction-details">
-                    <div>
-                      <%= transaction.transactionType %>
+                      <% } else if (transaction.transactionType === 'Refund') { %>
+                        <i class="fas fa-undo"></i>
+                      <% } %>
                     </div>
-                    <small>
-                      <%= new Date(transaction.date).toLocaleDateString() %>
-                    </small>
-                  </div>
-                  <div class="transaction-amount <%= transaction.amount  > 0 ? 'positive' : 'negative' %>">
-                    <%= transaction.amount> 0 ? `+$${transaction.amount}` : `-$${Math.abs(transaction.amount)}` %>
-                  </div>
-                </li>
+                    <div class="transaction-details">
+                      <div><%= transaction.transactionType %></div>
+                      <small><%= new Date(transaction.date).toLocaleDateString() %></small>
+                    </div>
+                    <div class="transaction-amount <%= transaction.amount > 0 ? 'positive' : 'negative' %>">
+                      <%= transaction.amount > 0 ? `+$${transaction.amount}` : `-$${Math.abs(transaction.amount)}` %>
+                    </div>
+                  </li>
                 <% }) %>
+              <% } else { %>
+                <li class="transaction-item">No recent transactions found.</li>
+              <% } %>
             </ul>
           </div>
+          
         </div>
       </div>
 
