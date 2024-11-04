@@ -22,7 +22,7 @@ const orderDetails = async (req, res) => {
     const totalOrders = await Order.countDocuments(query);
     const totalPages = Math.ceil(totalOrders / perPage);
     const orders = await Order.find(query)
-      .sort({ _id: -1 }) // Sort by _id in descending order (last added first)
+      .sort({ _id: -1 }) 
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
 
@@ -31,7 +31,7 @@ const orderDetails = async (req, res) => {
       totalPages,
       currentPage,
       searchOrder,
-      showReturns, // Pass the flag to the template
+      showReturns, 
     });
   } catch (error) {
     console.error("Error fetching orders:", error);

@@ -6,11 +6,14 @@
         <div class="wallet-content">
           <div class="wallet-card">
             <div class="wallet-label">Total Balance</div>
-            <div class="wallet-balance">$<%= wallet.balance %></div>
+            <div class="wallet-balance">
+              $<%= wallet && wallet.balance != null ? wallet.balance : '0.00' %>
+            </div>
             <button class="btn btn-primary mt-3" id="addAmountButton" data-toggle="modal" data-target="#addAmountModal">
-                Add Amount
+              Add Amount
             </button>
-        </div>
+          </div>
+          
 
           <div class="transactions">
             <h2>Recent Transactions</h2>
