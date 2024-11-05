@@ -156,6 +156,93 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const addProductForm = document.getElementById('addProductForm');
+            const variantContainer = document.getElementById('variantContainer');
+            const errorMessageContainer = document.createElement('div');
+            errorMessageContainer.classList.add('alert', 'alert-danger', 'mt-3', 'd-none');
+            errorMessageContainer.setAttribute('role', 'alert');
+            addProductForm.insertAdjacentElement('beforebegin', errorMessageContainer);
+
+            addProductForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const formData = new FormData(addProductForm);
+
+                try {
+                    const response = await fetch('/admin/addProduct', {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (response.ok) {
+                        // Redirect to the product list page
+                        window.location.href = '/admin/product';
+                    } else {
+                        const errorData = await response.json();
+                        errorMessageContainer.textContent = errorData.message;
+                        errorMessageContainer.classList.remove('d-none');
+                    }
+                } catch (error) {
+                    errorMessageContainer.textContent = 'An error occurred. Please try again later.';
+                    errorMessageContainer.classList.remove('d-none');
+                }
+            });
+
+            let variantIndex = 0;
+            document.getElementById('addVariant').addEventListener('click', () => {
+                variantIndex++;
+                const variantForm = `
+                    <div class="variant-form mt-4" id="variantForm${variantIndex}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5>Variant ${variantIndex}</h5>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeVariant(${variantIndex})">Remove Variant</button>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="variantColor${variantIndex}">Color</label>
+                                    <input type="text" class="form-control" id="variantColor${variantIndex}" name="variants[${variantIndex}][color]" placeholder="Enter variant color" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="variantPrice${variantIndex}">Price</label>
+                                    <input type="number" class="form-control" id="variantPrice${variantIndex}" name="variants[${variantIndex}][price]" placeholder="Enter variant price" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="variantStock${variantIndex}">Stock</label>
+                                    <input type="number" class="form-control" id="variantStock${variantIndex}" name="variants[${variantIndex}][stock]" placeholder="Enter stock quantity" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="imageFieldsContainer${variantIndex}">
+                            <div class="form-group image-field">
+                                <label>Variant Images</label>
+                                <input type="file" id="variantImage${variantIndex}_0" name="variants[${variantIndex}][images][]" onchange="previewImages(${variantIndex}, 0)" accept="image/*" required>
+                                <div id="imagePreviewContainer${variantIndex}_0" class="mt-2"></div>
+                            </div>
+                            <div class="form-group image-field">
+                                <input type="file" id="variantImage${variantIndex}_1" name="variants[${variantIndex}][images][]" onchange="previewImages(${variantIndex}, 1)" accept="image/*">
+                                <div id="imagePreviewContainer${variantIndex}_1" class="mt-2"></div>
+                            </div>
+                            <div class="form-group image-field">
+                                <input type="file" id="variantImage${variantIndex}_2" name="variants[${variantIndex}][images][]" onchange="previewImages(${variantIndex}, 2)" accept="image/*">
+                                <div id="imagePreviewContainer${variantIndex}_2" class="mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                variantContainer.insertAdjacentHTML('beforeend', variantForm);
+            });
+
+            window.removeVariant = (index) => {
+                const variantForm = document.getElementById(`variantForm${index}`);
+                variantForm.remove();
+            };
+
             let cropper;
             let currentVariantIndex;
             let currentFieldIndex;
@@ -224,65 +311,6 @@
                 });
 
                 $('#cropperModal').modal('hide');
-            });
-
-            window.addImageField = (variantIndex) => {
-                const fieldIndex = document.querySelectorAll(`#imagePreviewContainer${variantIndex} .image-preview`).length;
-                const imageField = `
-                    <div class="form-group image-field mt-2">
-                        <input type="file" id="variantImage${variantIndex}_${fieldIndex}" name="variants[${variantIndex}][images][]" onchange="previewImages(${variantIndex}, ${fieldIndex})" accept="image/*">
-                        <div id="imagePreviewContainer${variantIndex}_${fieldIndex}" class="mt-2"></div>
-                    </div>
-                `;
-                document.getElementById(`imageFieldsContainer${variantIndex}`).insertAdjacentHTML('beforeend', imageField);
-            };
-
-            let variantIndex = 0;
-            document.getElementById('addVariant').addEventListener('click', () => {
-                variantIndex++;
-                const variantForm = `
-                    <div class="variant-form mt-4" id="variantForm${variantIndex}">
-                        <h5>Variant ${variantIndex}</h5>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="variantColor${variantIndex}">Color</label>
-                                    <input type="text" class="form-control" id="variantColor${variantIndex}" name="variants[${variantIndex}][color]" placeholder="Enter variant color" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="variantPrice${variantIndex}">Price</label>
-                                    <input type="number" class="form-control" id="variantPrice${variantIndex}" name="variants[${variantIndex}][price]" placeholder="Enter variant price" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="variantStock${variantIndex}">Stock</label>
-                                    <input type="number" class="form-control" id="variantStock${variantIndex}" name="variants[${variantIndex}][stock]" placeholder="Enter stock quantity" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="imageFieldsContainer${variantIndex}">
-                            <div class="form-group image-field">
-                                <label>Variant Images</label>
-                                <input type="file" id="variantImage${variantIndex}_0" name="variants[${variantIndex}][images][]" onchange="previewImages(${variantIndex}, 0)" accept="image/*" required>
-                                <div id="imagePreviewContainer${variantIndex}_0" class="mt-2"></div>
-                            </div>
-                            <!-- Add two more image fields -->
-                            <div class="form-group image-field">
-                                <input type="file" id="variantImage${variantIndex}_1" name="variants[${variantIndex}][images][]" onchange="previewImages(${variantIndex}, 1)" accept="image/*">
-                                <div id="imagePreviewContainer${variantIndex}_1" class="mt-2"></div>
-                            </div>
-                            <div class="form-group image-field">
-                                <input type="file" id="variantImage${variantIndex}_2" name="variants[${variantIndex}][images][]" onchange="previewImages(${variantIndex}, 2)" accept="image/*">
-                                <div id="imagePreviewContainer${variantIndex}_2" class="mt-2"></div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                document.getElementById('variantContainer').insertAdjacentHTML('beforeend', variantForm);
             });
 
             window.removeImage = (variantIndex, fieldIndex, imageIndex) => {

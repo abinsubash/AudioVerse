@@ -54,26 +54,30 @@ const addProductPage = async (req, res) => {
 
 const addProduct = async (req, res) => {
   try {
-    const { productName, brandName, categoryName, description, variants } =req.body;
-    if(!variants){
-      return console.log('no variant ');
-    }
+    const { productName, brandName, categoryName, description, variants } = req.body;
     const images = req.files;
+
+    // Validate input data
+    if (!productName || !brandName || !categoryName || !description || !variants) {
+      return res.status(400).json({ message: 'Please fill in all required fields' });
+    }
+
     const productExist = await Product.findOne({ productName: productName });
     if (productExist) {
-      return console.log("product is exist ");
+      return res.status(400).json({ message: 'Product already exists' });
     }
+
     const variantImagesMap = {};
     const newProduct = new Product({
-      productName: productName,
+      productName,
       productBrand: brandName,
-      description: description,
+      description,
       category: categoryName,
       variants: [],
     });
 
     await newProduct.save();
-    const product = await Product.findOne({ productName: productName });
+    const product = await Product.findOne({ productName });
 
     images.forEach((image) => {
       const match = image.fieldname.match(/variants\[(\d+)\]\[images\]\[\]/);
@@ -94,15 +98,15 @@ const addProduct = async (req, res) => {
     });
 
     for (const [index, variant] of (variants || []).entries()) {
-      if (!variant) {
-        console.warn(`Variant at index ${index} is undefined or null`);
+      if (!variant || !variant.color || !variant.price || !variant.stock) {
+        console.warn(`Variant at index ${index} is missing required fields`);
         continue;
       }
 
       const variantData = {
-        color: (variant.color || "").trim(),
-        price: Number((variant.price || "").replace(/,/g, "")),
-        stock: Number(variant.stock || 0),
+        color: variant.color.trim(),
+        price: Number(variant.price.replace(/,/g, "")),
+        stock: Number(variant.stock),
         images: variantImagesMap[index] || [],
       };
 
@@ -122,7 +126,7 @@ const addProduct = async (req, res) => {
     res.redirect("/admin/product");
   } catch (error) {
     console.error("Error occurred:", error);
-    res.status(500).send("Something went wrong");
+    res.status(500).json({ message: 'Something went wrong. Please try again later.' });
   }
 };
 

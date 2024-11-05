@@ -103,16 +103,36 @@ const otpVerification = async (req, res) => {
   const { otp } = req.body;
   const tempUser = req.session.tempUser;
   const email = req.session.email;
+  
   try {
     const otpUse = await OTP.findOne({ email: email });
     if (!otpUse) {
       return res.json({ success: false, message: "OTP not found" });
     }
+    
     if (otpUse.otp != otp) {
       return res.json({ success: false, message: "OTP is Invalid" });
     }
+    
     const newuser = new User(tempUser);
     await newuser.save();
+
+    // Create a wallet for the new user and add ₹50 to it
+    const newWallet = new Wallet({
+      userId: newuser._id,
+      balance: 50, // Add ₹50 to the signup user's wallet
+      history: [{
+        date: Date.now(),
+        amount: 50,
+        transactionType: "Signup Bonus",
+        newBalance: 50,
+      }],
+    });
+    await newWallet.save();
+    
+    // Update the new user with the walletId
+    await User.findByIdAndUpdate(newuser._id, { walletId: newWallet._id });
+
     if (req.session.refferdUser) {
       const referredUser = await User.findById(req.session.refferdUser);
       if (referredUser) {
@@ -142,22 +162,14 @@ const otpVerification = async (req, res) => {
             newBalance: wallet.balance,
           });
           await wallet.save();
-
         }
       }
     }
-    const userId = newuser._id;
 
-  const newWallet = new Wallet({
-    userId: userId,
-    balance: 0,
-    history: []
-  });
-    await newWallet.save();
-  await User.findByIdAndUpdate(userId, { walletId: newWallet._id });
     res.json({ success: true });
   } catch (error) {
     console.log(error);
+    res.json({ success: false, message: "An error occurred" });
   }
 };
 
