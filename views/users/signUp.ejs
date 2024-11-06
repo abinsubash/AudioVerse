@@ -15,25 +15,25 @@
         </div>
         <div class="form-section">
             <h2>Create Your Account</h2>
-            <form action="/signup" method="POST" id="signup">
+            <form id="signup">
                 <input type="text" name="name" id="name" placeholder="Full Name">
                 <small id="nameError"></small>
-
+            
                 <input type="email" name="email" id="email" placeholder="Email">
                 <small id="emailError"></small>
-
+            
                 <input type="tel" name="phonenumber" id="phonenumber" placeholder="Phone Number">
                 <small id="phonenumberError"></small>
-
+            
                 <input type="password" name="password" id="password" placeholder="Password">
                 <small id="passwordError"></small>
-
+            
                 <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password">
                 <small id="confirmPasswordError"></small>
-
+            
                 <input type="text" name="referral" id="referral" placeholder="Enter Referral ID">
-                <small id="userNameDisplay" style="margin-top: 5px;"></small>
-
+                <small id="referralError"></small>
+            
                 <button type="submit" id="registerBtn">Sign Up</button>
             </form>
 
@@ -50,63 +50,88 @@
     </div>
 
     <script>
-        document.getElementById("signup").addEventListener("submit", (event) => {
-            const name = document.getElementById("name").value.trim();
-            const email = document.getElementById("email").value.trim();
-            const phonenumber = document.getElementById("phonenumber").value.trim();
-            const password = document.getElementById("password").value.trim();
-            const confirmPassword = document.getElementById("confirmPassword").value.trim();
+        document.getElementById("signup").addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-            const nameError = document.getElementById("nameError");
-            const emailError = document.getElementById("emailError");
-            const phonenumberError = document.getElementById("phonenumberError");
-            const passwordError = document.getElementById("passwordError");
-            const confirmPasswordError = document.getElementById("confirmPasswordError");
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const phonenumber = document.getElementById("phonenumber").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const confirmPassword = document.getElementById("confirmPassword").value.trim();
+    const referral = document.getElementById("referral").value.trim();
 
+    const nameError = document.getElementById("nameError");
+    const emailError = document.getElementById("emailError");
+    const phonenumberError = document.getElementById("phonenumberError");
+    const passwordError = document.getElementById("passwordError");
+    const confirmPasswordError = document.getElementById("confirmPasswordError");
+    const referralError = document.getElementById("referralError");
 
-            const nameRegex = /^[A-Za-z\s]+$/;
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            const phonenumberRegex = /^[1-9][0-9]{9}$/;
-            const passwordRegex = /^[^\W_][\w\W]{5,}$/;
+    // Clear previous errors
+    nameError.innerHTML = "";
+    emailError.innerHTML = "";
+    phonenumberError.innerHTML = "";
+    passwordError.innerHTML = "";
+    confirmPasswordError.innerHTML = "";
+    referralError.innerHTML = "";
 
-            nameError.innerHTML = "";
-            emailError.innerHTML = "";
-            phonenumberError.innerHTML = "";
-            passwordError.innerHTML = "";
-            confirmPasswordError.innerHTML = "";
+    // Validate fields
+    const nameRegex = /^[A-Za-z\s]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phonenumberRegex = /^[1-9][0-9]{9}$/;
+    const passwordRegex = /^[^\W_][\w\W]{5,}$/;
 
-            let isValid = true;
+    let isValid = true;
 
-            if (!nameRegex.test(name)) {
-                nameError.innerHTML = "Enter a valid name";
-                isValid = false;
-            }
+    if (!nameRegex.test(name)) {
+        nameError.innerHTML = "Enter a valid name";
+        isValid = false;
+    }
+    if (!emailRegex.test(email)) {
+        emailError.innerHTML = "Enter a valid email";
+        isValid = false;
+    }
+    if (!phonenumberRegex.test(phonenumber)) {
+        phonenumberError.innerHTML = "Enter a valid phone number";
+        isValid = false;
+    }
+    if (!passwordRegex.test(password)) {
+        passwordError.innerHTML = "Enter a valid password";
+        isValid = false;
+    }
+    if (password !== confirmPassword) {
+        confirmPasswordError.innerHTML = "Passwords do not match";
+        isValid = false;
+    }
 
-            if (!emailRegex.test(email)) {
-                emailError.innerHTML = "Enter a valid email";
-                isValid = false;
-            }
+    if (!isValid) return;
 
-            if (!phonenumberRegex.test(phonenumber)) {
-                phonenumberError.innerHTML = "Enter a valid phone number";
-                isValid = false;
-            }
-
-            if (!passwordRegex.test(password)) {
-                passwordError.innerHTML = "Enter a valid password";
-                isValid = false;
-            }
-
-            if (password !== confirmPassword) {
-                confirmPasswordError.innerHTML = "Passwords do not match";
-                isValid = false;
-            }
-
-            if (!isValid) {
-                event.preventDefault();
-            }
-
+    // Send data to the server if valid
+    try {
+        const response = await fetch('/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, email, phonenumber, password, referral })
         });
+
+        const result = await response.json();
+
+        if (result.error) {
+            if (result.error === 'User Already Exists') {
+                emailError.innerHTML = result.error;
+            } else if (result.error === 'Referral Not Found') {
+                referralError.innerHTML = result.error;
+            }
+        } else {
+            // Redirect to OTP page if successful
+            window.location.href = '/otp';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+});
         let timeoutId;
 
         document.getElementById('referral').addEventListener('input', function () {

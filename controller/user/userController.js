@@ -59,43 +59,45 @@ const signup = (req, res) => {
 
 const signupValidation = async (req, res) => {
   try {
-    const { name, email, phonenumber, password, referral } = req.body;
-    const otp = generateOTP();
-    const user = await User.findOne({ referalID: referral });
-    if (!user) {
-      console.log("refferd user not found");
-    } else {
-      req.session.refferdUser = user._id;
-    }
-    const existUser = await User.findOne({ email: email});
+      const { name, email, phonenumber, password, referral } = req.body;
+      const otp = generateOTP();
+    if(referral){
 
-    if (existUser) {
-      //-------------Pass error Message------------
-      return console.log("User Already exist");
+      const user = await User.findOne({ referalID: referral });
+      if (!user) {
+          return res.json({ error: "Referral Not Found" });
+      }
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const tempUser = new User({
-      name,
-      email,
-      phone: phonenumber,
-      password: hashedPassword,
-      referalID: generateRefferalID(),
-      isValid: false,
-    });
+      const existUser = await User.findOne({ email: email });
+      if (existUser) {
+          return res.json({ error: "User Already Exists" });
+      }
 
-    const otpModel = new OTP({
-      email,
-      otp,
-    });
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const tempUser = new User({
+          name,
+          email,
+          phone: phonenumber,
+          password: hashedPassword,
+          referalID: generateRefferalID(),
+          isValid: false,
+      });
 
-    req.session.email = email;
-    req.session.tempUser = tempUser;
-    await sendOtp(email, otp);
-    await otpModel.save();
-    res.redirect("/otp");
+      const otpModel = new OTP({
+          email,
+          otp,
+      });
+
+      req.session.email = email;
+      req.session.tempUser = tempUser;
+      await sendOtp(email, otp);
+      await otpModel.save();
+
+      res.json({ success: true });
   } catch (error) {
-    console.error(error);
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
