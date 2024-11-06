@@ -141,7 +141,7 @@ const viewProduct = async (req, res) => {
       .exec();
 
     if (!product) {
-      return res.status(404).send("Product not found");
+      return res.send("Product not found");
     }
 
     res.render("admin/VariantView", { product });
