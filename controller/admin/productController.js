@@ -144,7 +144,7 @@ const viewProduct = async (req, res) => {
       return res.send("Product not found");
     }
 
-    res.render("admin/VariantView", { product });
+    res.render("admin/variantView", { product });
   } catch (error) {
     console.error("Error fetching product:", error);
     res.status(500).send("Internal Server Error");
