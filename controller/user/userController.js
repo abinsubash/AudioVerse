@@ -67,7 +67,7 @@ const signupValidation = async (req, res) => {
     } else {
       req.session.refferdUser = user._id;
     }
-    const existUser = await User.findOne({ email: email, phone: phonenumber });
+    const existUser = await User.findOne({ email: email});
 
     if (existUser) {
       //-------------Pass error Message------------
