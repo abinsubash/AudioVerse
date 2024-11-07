@@ -1,6 +1,7 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../model/userModel'); 
+const crypto = require('crypto')
 const generateRefferalID = () => {
   return crypto.randomBytes(6).toString("hex");
 };
