@@ -294,13 +294,10 @@ const downloadSalesReport = async (req, res) => {
 
 const downloadSalesReportExcel = async (req, res) => {
   try {
-    // Extract startDate and endDate from the query parameters
     const { startDate, endDate } = req.query;
 
-    // Define the base query: finding only delivered orders
     let query = { isDelivered: true };
 
-    // If startDate and endDate are provided, filter by delivery date range
     if (startDate && endDate) {
       const startDateTime = new Date(startDate);
       startDateTime.setHours(0, 0, 0, 0);
@@ -313,18 +310,15 @@ const downloadSalesReportExcel = async (req, res) => {
       };
     }
 
-    // Fetch delivered orders with population of necessary fields (userId, productId, variantId)
     const deliveredOrders = await Order.find(query)
       .populate("userId")
       .populate("orderItem.productId")
       .populate("orderItem.variantId")
       .sort({ deliveredDate: -1 });
 
-    // Create Excel Sheet or handle data here (ExcelJS or other library)
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Sales Report");
 
-    // Define columns for Excel file
     sheet.columns = [
       { header: "Order ID", key: "orderId", width: 20 },
       { header: "Delivery Date", key: "deliveredDate", width: 20 },
@@ -334,7 +328,6 @@ const downloadSalesReportExcel = async (req, res) => {
       { header: "Price", key: "price", width: 15 },
     ];
 
-    // Loop through orders and items to populate rows in the Excel file
     deliveredOrders.forEach((order) => {
       order.orderItem.forEach((item) => {
         sheet.addRow({

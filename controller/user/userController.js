@@ -137,6 +137,7 @@ const otpVerification = async (req, res) => {
 
     if (req.session.refferdUser) {
       const referredUser = await User.findById(req.session.refferdUser);
+      console.log("Pooda",referredUser)
       if (referredUser) {
         await User.findOneAndUpdate(
           { _id: req.session.refferdUser },

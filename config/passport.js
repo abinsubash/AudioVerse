@@ -1,6 +1,9 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../model/userModel'); 
+const generateRefferalID = () => {
+  return crypto.randomBytes(6).toString("hex");
+};
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,  
@@ -15,7 +18,8 @@ passport.use(new GoogleStrategy({
         user = new User({
           email: email,
           name: profile.displayName,
-          isGoogleAuth:true
+          isGoogleAuth:true,
+          referalID:generateRefferalID()
         });
         await user.save();
       }
