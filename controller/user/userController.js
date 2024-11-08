@@ -65,7 +65,9 @@ const signupValidation = async (req, res) => {
 
       const user = await User.findOne({ referalID: referral });
       if (!user) {
-          return res.json({ error: "Referral Not Found" });
+        return res.json({ error: "Referral Not Found" });
+      }else{
+        req.session.refferdUser=user
       }
     }
 
@@ -119,10 +121,9 @@ const otpVerification = async (req, res) => {
     const newuser = new User(tempUser);
     await newuser.save();
 
-    // Create a wallet for the new user and add ₹50 to it
     const newWallet = new Wallet({
       userId: newuser._id,
-      balance: 50, // Add ₹50 to the signup user's wallet
+      balance: 50, 
       history: [{
         date: Date.now(),
         amount: 50,
@@ -132,7 +133,6 @@ const otpVerification = async (req, res) => {
     });
     await newWallet.save();
     
-    // Update the new user with the walletId
     await User.findByIdAndUpdate(newuser._id, { walletId: newWallet._id });
 
     if (req.session.refferdUser) {

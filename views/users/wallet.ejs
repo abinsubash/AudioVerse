@@ -32,7 +32,7 @@
                     </div>
                     <div class="transaction-details">
                       <div><%= transaction.transactionType %></div>
-                      <small><%= new Date(transaction.date).toLocaleDateString() %></small>
+                      <small><%= new Date(transaction.date).toLocaleDateString('en-IN') %></small>
                     </div>
                     <div class="transaction-amount <%= transaction.amount > 0 ? 'positive' : 'negative' %>">
                       <%= transaction.amount > 0 ? `+$${transaction.amount}` : `-$${Math.abs(transaction.amount)}` %>

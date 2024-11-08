@@ -48,6 +48,10 @@ const userSchema = mongoose.Schema({
     walletId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Wallet'
+    },
+    isReffered:{
+        type:Boolean,
+        default:false
     }
 });
 const User = mongoose.model("User",userSchema);

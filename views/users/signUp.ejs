@@ -79,7 +79,7 @@
     const nameRegex = /^[A-Za-z\s]+$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phonenumberRegex = /^[1-9][0-9]{9}$/;
-    const passwordRegex = /^[^\W_][\w\W]{5,}$/;
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
     let isValid = true;
 
@@ -96,7 +96,7 @@
         isValid = false;
     }
     if (!passwordRegex.test(password)) {
-        passwordError.innerHTML = "Enter a valid password";
+        passwordError.innerHTML = " at least 8 characters, at least one uppercase letter,one lowercase letter, and one digit";
         isValid = false;
     }
     if (password !== confirmPassword) {
