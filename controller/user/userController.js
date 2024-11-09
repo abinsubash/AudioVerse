@@ -681,7 +681,15 @@ const refferal = async (req, res) => {
     res.json({ success: false, message: "Server error" });
   }
 };
-
+const claimReferral = (req,res)=>{
+  console.log(req.body)
+  const {referralCode}=req.body
+  const user = User.findOne({referalID:referralCode})
+  if(!user){
+    return res.json({success:false,message:"User not find"})
+  }
+  console.log(user)
+}
 module.exports = {
   login,
   signup,
@@ -708,4 +716,5 @@ module.exports = {
   searchAndsort,
   filter,
   refferal,
+  claimReferral
 };

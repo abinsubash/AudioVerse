@@ -48,7 +48,7 @@ userRoutes.get("/singleProduct", userController.singleProduct);
 userRoutes.get("/profile",userAuth.isBlocked, userAuth.isLogin,userController.profile);
 userRoutes.post("/updateprofile",userAuth.isBlocked,userAuth.isLogin,userController.updateProfile);
 userRoutes.post("/changePassword",userAuth.isBlocked,userAuth.isLogin,userController.changePassword);
-
+userRoutes.post('/claimReferral',userAuth.isBlocked,userAuth.isLogin,userController.claimReferral)
 
 
 //Tod : cart 

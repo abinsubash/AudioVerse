@@ -57,12 +57,14 @@
                                 <div class="form-group">
                                     <label for="variantPrice">Price</label>
                                     <input type="number" class="form-control" id="variantPrice" name="price" value="<%= variants.price %>" required>
+                                    <small id="price error"></small>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="variantStock">Stock</label>
                                     <input type="number" class="form-control" id="variantStock" name="stock" value="<%= variants.stock %>" required>
+                                    <small id="stockError"></small>
                                 </div>
                             </div>
                         </div>
@@ -98,6 +100,45 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', () => {
+               // Add form validation
+document.getElementById('editVariantForm').addEventListener('submit', function(event) {
+    const price = parseFloat(document.getElementById('variantPrice').value);
+    const stock = parseInt(document.getElementById('variantStock').value);
+    let isValid = true;
+
+    // Get error elements
+    const priceError = document.getElementById('price error');
+    const stockError = document.getElementById('stockError');
+
+    // Reset previous error styling and messages
+    document.getElementById('variantPrice').style.borderColor = '';
+    document.getElementById('variantStock').style.borderColor = '';
+    priceError.textContent = '';
+    stockError.textContent = '';
+    priceError.style.color = '';
+    stockError.style.color = '';
+
+    // Validate price
+    if (price < 1) {
+        document.getElementById('variantPrice').style.borderColor = 'red';
+        priceError.textContent = 'Price must be at least 1';
+        priceError.style.color = 'red';
+        isValid = false;
+    }
+
+    // Validate stock
+    if (stock < 0) {
+        document.getElementById('variantStock').style.borderColor = 'red';
+        stockError.textContent = 'Stock cannot be negative';
+        stockError.style.color = 'red';
+        isValid = false;
+    }
+
+    // If validation fails, prevent form submission
+    if (!isValid) {
+        event.preventDefault();
+    }
+});
                 let cropper;
                 let currentFieldIndex;
 

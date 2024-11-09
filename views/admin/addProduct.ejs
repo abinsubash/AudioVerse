@@ -110,7 +110,7 @@
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <div class="cropper-body">
+                        <div class="modal-body">
                             <img id="imageToCrop" style="max-width: 100%;" />
                         </div>
                         <div class="modal-footer">
@@ -132,11 +132,19 @@
                 width: 100%;
                 max-height: 400px;
                 margin-bottom: 10px;
-            }</style>
+                
+            }.is-invalid {
+    border-color: #dc3545 !important;
+}
 
-            <!-- Variant Section -->
+.text-danger {
+    color: #dc3545;
+    margin-top: 0.25rem;
+}
+            
+            </style>
+
             <div id="variantContainer">
-                <!-- Variant form will be added here dynamically -->
             </div>
             <button type="button" id="addVariant" class="btn btn-primary">Add Variant</button>
 
@@ -155,171 +163,341 @@
     
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const addProductForm = document.getElementById('addProductForm');
-            const variantContainer = document.getElementById('variantContainer');
-            const errorMessageContainer = document.createElement('div');
-            errorMessageContainer.classList.add('alert', 'alert-danger', 'mt-3', 'd-none');
-            errorMessageContainer.setAttribute('role', 'alert');
-            addProductForm.insertAdjacentElement('beforebegin', errorMessageContainer);
+       document.addEventListener('DOMContentLoaded', () => {
+    // Form elements
+    const addProductForm = document.getElementById('addProductForm');
+    const variantContainer = document.getElementById('variantContainer');
+    const errorMessageContainer = document.createElement('div');
+    errorMessageContainer.classList.add('alert', 'alert-danger', 'mt-3', 'd-none');
+    errorMessageContainer.setAttribute('role', 'alert');
+    addProductForm.insertAdjacentElement('beforebegin', errorMessageContainer);
 
-            addProductForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
+    // Validation utility functions
+    const Validators = {
+        isValidProductName: (name) => /^[a-zA-Z0-9\s]{3,50}$/.test(name),
+        isValidDescription: (description) => /^[a-zA-Z0-9\s.,!?-]{10,500}$/.test(description),
+        isValidColor: (color) => /^[a-zA-Z\s]{2,20}$/.test(color),
+        isPositiveNumber: (num) => Number(num) > 0,
+        isValidStock: (stock) => Number.isInteger(Number(stock)) && Number(stock) >= 0
+    };
 
-                const formData = new FormData(addProductForm);
+    // Create error display for fields
+    const createErrorSpan = (inputElement) => {
+        const errorSpan = document.createElement('span');
+        errorSpan.className = 'text-danger d-none';
+        errorSpan.style.fontSize = '0.875rem';
+        inputElement.parentNode.appendChild(errorSpan);
+        return errorSpan;
+    };
 
-                try {
-                    const response = await fetch('/admin/addProduct', {
-                        method: 'POST',
-                        body: formData,
-                    });
+    // Add validation to main fields
+    const productNameError = createErrorSpan(document.getElementById('productName'));
+    const descriptionError = createErrorSpan(document.getElementById('description'));
+    const brandNameError = createErrorSpan(document.getElementById('brandName'));
+    const categoryNameError = createErrorSpan(document.getElementById('categoryName'));
 
-                    if (response.ok) {
-                        // Redirect to the product list page
-                        window.location.href = '/admin/product';
-                    } else {
-                        const errorData = await response.json();
-                        errorMessageContainer.textContent = errorData.message;
-                        errorMessageContainer.classList.remove('d-none');
-                    }
-                } catch (error) {
-                    errorMessageContainer.textContent = 'An error occurred. Please try again later.';
-                    errorMessageContainer.classList.remove('d-none');
-                }
-            });
+    // Field validation function
+    const validateField = (input, errorSpan, validationFn, errorMessage) => {
+        const isValid = validationFn(input.value);
+        errorSpan.textContent = isValid ? '' : errorMessage;
+        errorSpan.classList.toggle('d-none', isValid);
+        input.classList.toggle('is-invalid', !isValid);
+        return isValid;
+    };
 
-            let variantIndex = 0;
-            document.getElementById('addVariant').addEventListener('click', () => {
-                variantIndex++;
-                const variantForm = `
-                    <div class="variant-form mt-4" id="variantForm${variantIndex}">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5>Variant ${variantIndex}</h5>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="removeVariant(${variantIndex})">Remove Variant</button>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="variantColor${variantIndex}">Color</label>
-                                    <input type="text" class="form-control" id="variantColor${variantIndex}" name="variants[${variantIndex}][color]" placeholder="Enter variant color" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="variantPrice${variantIndex}">Price</label>
-                                    <input type="number" class="form-control" id="variantPrice${variantIndex}" name="variants[${variantIndex}][price]" placeholder="Enter variant price" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="variantStock${variantIndex}">Stock</label>
-                                    <input type="number" class="form-control" id="variantStock${variantIndex}" name="variants[${variantIndex}][stock]" placeholder="Enter stock quantity" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="imageFieldsContainer${variantIndex}">
-                            <div class="form-group image-field">
-                                <label>Variant Images</label>
-                                <input type="file" id="variantImage${variantIndex}_0" name="variants[${variantIndex}][images][]" onchange="previewImages(${variantIndex}, 0)" accept="image/*" required>
-                                <div id="imagePreviewContainer${variantIndex}_0" class="mt-2"></div>
-                            </div>
-                            <div class="form-group image-field">
-                                <input type="file" id="variantImage${variantIndex}_1" name="variants[${variantIndex}][images][]" onchange="previewImages(${variantIndex}, 1)" accept="image/*">
-                                <div id="imagePreviewContainer${variantIndex}_1" class="mt-2"></div>
-                            </div>
-                            <div class="form-group image-field">
-                                <input type="file" id="variantImage${variantIndex}_2" name="variants[${variantIndex}][images][]" onchange="previewImages(${variantIndex}, 2)" accept="image/*">
-                                <div id="imagePreviewContainer${variantIndex}_2" class="mt-2"></div>
-                            </div>
+    // Add real-time validation to main fields
+    document.getElementById('productName').addEventListener('input', (e) => {
+        validateField(
+            e.target,
+            productNameError,
+            Validators.isValidProductName,
+            'Product name should only contain letters, numbers, and spaces (3-50 characters)'
+        );
+    });
+
+    document.getElementById('description').addEventListener('input', (e) => {
+        validateField(
+            e.target,
+            descriptionError,
+            Validators.isValidDescription,
+            'Description should be 10-500 characters and contain only letters, numbers, spaces, and basic punctuation'
+        );
+    });
+
+    // Variant handling
+    let variantIndex = 0;
+    document.getElementById('addVariant').addEventListener('click', () => {
+        variantIndex++;
+        const variantForm = `
+            <div class="variant-form mt-4" id="variantForm${variantIndex}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>Variant ${variantIndex}</h5>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeVariant(${variantIndex})">Remove Variant</button>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="variantColor${variantIndex}">Color</label>
+                            <input type="text" class="form-control" id="variantColor${variantIndex}" 
+                                name="variants[${variantIndex}][color]" placeholder="Enter variant color" required>
+                            <span class="text-danger d-none"></span>
                         </div>
                     </div>
-                `;
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="variantPrice${variantIndex}">Price</label>
+                            <input type="number" class="form-control" id="variantPrice${variantIndex}" 
+                                name="variants[${variantIndex}][price]" placeholder="Enter variant price" required>
+                            <span class="text-danger d-none"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="variantStock${variantIndex}">Stock</label>
+                            <input type="number" class="form-control" id="variantStock${variantIndex}" 
+                                name="variants[${variantIndex}][stock]" placeholder="Enter stock quantity" required>
+                            <span class="text-danger d-none"></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="imageFieldsContainer${variantIndex}">
+                    <div class="form-group image-field">
+                        <label>Variant Images</label>
+                        <input type="file" class="form-control" id="variantImage${variantIndex}_0" 
+                            name="variants[${variantIndex}][images][]" onchange="previewImages(${variantIndex}, 0)" 
+                            accept="image/*" required>
+                        <div id="imagePreviewContainer${variantIndex}_0" class="mt-2"></div>
+                    </div>
+                    <div class="form-group image-field">
+                        <input type="file" class="form-control" id="variantImage${variantIndex}_1" 
+                            name="variants[${variantIndex}][images][]" onchange="previewImages(${variantIndex}, 1)" 
+                            accept="image/*">
+                        <div id="imagePreviewContainer${variantIndex}_1" class="mt-2"></div>
+                    </div>
+                    <div class="form-group image-field">
+                        <input type="file" class="form-control" id="variantImage${variantIndex}_2" 
+                            name="variants[${variantIndex}][images][]" onchange="previewImages(${variantIndex}, 2)" 
+                            accept="image/*">
+                        <div id="imagePreviewContainer${variantIndex}_2" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+        `;
 
-                variantContainer.insertAdjacentHTML('beforeend', variantForm);
-            });
+        variantContainer.insertAdjacentHTML('beforeend', variantForm);
+        
+        // Add validation to new variant fields
+        const colorInput = document.getElementById(`variantColor${variantIndex}`);
+        const priceInput = document.getElementById(`variantPrice${variantIndex}`);
+        const stockInput = document.getElementById(`variantStock${variantIndex}`);
 
-            window.removeVariant = (index) => {
-                const variantForm = document.getElementById(`variantForm${index}`);
-                variantForm.remove();
-            };
-
-            let cropper;
-            let currentVariantIndex;
-            let currentFieldIndex;
-
-            window.previewImages = (variantIndex, fieldIndex) => {
-                const fileInput = document.getElementById(`variantImage${variantIndex}_${fieldIndex}`);
-                
-                if (fileInput.files && fileInput.files.length > 0) {
-                    const file = fileInput.files[0];
-                    const reader = new FileReader();
-
-                    reader.onload = function (e) {
-                        const imageToCrop = document.getElementById('imageToCrop');
-                        imageToCrop.src = e.target.result;
-                        currentVariantIndex = variantIndex;
-                        currentFieldIndex = fieldIndex;
-
-                        $('#cropperModal').modal('show');
-
-                        $('#cropperModal').on('shown.bs.modal', function () {
-                            if (cropper) {
-                                cropper.destroy();
-                            }
-
-                            cropper = new Cropper(imageToCrop, {
-                                aspectRatio: 1.2 / 1.2,
-                                viewMode: 1,
-                            });
-
-                        });
-
-                        $('#cropperModal').on('hidden.bs.modal', function () {
-                            if (cropper) {
-                                cropper.destroy();
-                                cropper = null;
-                            }
-                        });
-                    };
-
-                    reader.readAsDataURL(file);
-                }
-            };
-
-            document.getElementById('cropButton').addEventListener('click', () => {
-                const canvas = cropper.getCroppedCanvas({
-                    width: 300,
-                    height: 300,
-                });
-
-                canvas.toBlob(blob => {
-                    const url = URL.createObjectURL(blob);
-                    const previewContainer = document.getElementById(`imagePreviewContainer${currentVariantIndex}_${currentFieldIndex}`);
-                    const imageElement = document.createElement('div');
-                    imageElement.className = 'image-preview';
-                    imageElement.innerHTML = `
-                        <img src="${url}" alt="Cropped Image" style="max-width: 100px; max-height: 100px;" />
-                        <span class="remove-image" onclick="removeImage(${currentVariantIndex}, ${currentFieldIndex}, 0)">✖</span>
-                    `;
-                    previewContainer.appendChild(imageElement);
-
-                    const fileInput = document.getElementById(`variantImage${currentVariantIndex}_${currentFieldIndex}`);
-                    const dataTransfer = new DataTransfer();
-                    const croppedFile = new File([blob], `croppedImage_${currentVariantIndex}_${currentFieldIndex}.png`, { type: 'image/png' });
-                    dataTransfer.items.add(croppedFile);
-                    fileInput.files = dataTransfer.files;
-                });
-
-                $('#cropperModal').modal('hide');
-            });
-
-            window.removeImage = (variantIndex, fieldIndex, imageIndex) => {
-                const previewContainer = document.getElementById(`imagePreviewContainer${variantIndex}_${fieldIndex}`);
-                previewContainer.innerHTML = ''; 
-                const fileInput = document.getElementById(`variantImage${variantIndex}_${fieldIndex}`);
-                fileInput.value = ''; 
-            };
+        colorInput.addEventListener('input', (e) => {
+            validateField(
+                e.target,
+                e.target.nextElementSibling,
+                Validators.isValidColor,
+                'Color should only contain letters and spaces'
+            );
         });
+
+        priceInput.addEventListener('input', (e) => {
+            validateField(
+                e.target,
+                e.target.nextElementSibling,
+                Validators.isPositiveNumber,
+                'Price must be greater than 0'
+            );
+        });
+
+        stockInput.addEventListener('input', (e) => {
+            validateField(
+                e.target,
+                e.target.nextElementSibling,
+                Validators.isValidStock,
+                'Stock must be a non-negative integer'
+            );
+        });
+    });
+
+    // Image cropping handling
+    let cropper;
+    let currentVariantIndex;
+    let currentFieldIndex;
+
+    window.previewImages = (variantIndex, fieldIndex) => {
+        const fileInput = document.getElementById(`variantImage${variantIndex}_${fieldIndex}`);
+        
+        if (fileInput.files && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const imageToCrop = document.getElementById('imageToCrop');
+                imageToCrop.src = e.target.result;
+                currentVariantIndex = variantIndex;
+                currentFieldIndex = fieldIndex;
+
+                // Remove any existing event listeners before showing modal
+                $('#cropperModal').off('shown.bs.modal').off('hidden.bs.modal');
+
+                // Show modal and initialize cropper
+                $('#cropperModal').modal('show');
+
+                $('#cropperModal').on('shown.bs.modal', function() {
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+                    cropper = new Cropper(imageToCrop, {
+                        aspectRatio: 1.2 / 1.2,
+                        viewMode: 1,
+                    });
+                });
+
+                $('#cropperModal').on('hidden.bs.modal', function() {
+                    if (cropper) {
+                        cropper.destroy();
+                        cropper = null;
+                    }
+                });
+            };
+
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Handle crop button click
+    document.getElementById('cropButton').addEventListener('click', () => {
+        if (!cropper) return;
+
+        const canvas = cropper.getCroppedCanvas({
+            width: 300,
+            height: 300,
+        });
+
+        canvas.toBlob(blob => {
+            const url = URL.createObjectURL(blob);
+            const previewContainer = document.getElementById(`imagePreviewContainer${currentVariantIndex}_${currentFieldIndex}`);
+            const imageElement = document.createElement('div');
+            imageElement.className = 'image-preview';
+            imageElement.innerHTML = `
+                <img src="${url}" alt="Cropped Image" style="max-width: 100px; max-height: 100px;" />
+                <span class="remove-image" onclick="removeImage(${currentVariantIndex}, ${currentFieldIndex}, 0)">✖</span>
+            `;
+            previewContainer.innerHTML = ''; // Clear existing preview
+            previewContainer.appendChild(imageElement);
+
+            const fileInput = document.getElementById(`variantImage${currentVariantIndex}_${currentFieldIndex}`);
+            const dataTransfer = new DataTransfer();
+            const croppedFile = new File([blob], `croppedImage_${currentVariantIndex}_${currentFieldIndex}.png`, { type: 'image/png' });
+            dataTransfer.items.add(croppedFile);
+            fileInput.files = dataTransfer.files;
+        });
+
+        $('#cropperModal').modal('hide');
+    });
+
+    // Remove variant function
+    window.removeVariant = (index) => {
+        const variantForm = document.getElementById(`variantForm${index}`);
+        variantForm.remove();
+    };
+
+    // Remove image function
+    window.removeImage = (variantIndex, fieldIndex, imageIndex) => {
+        const previewContainer = document.getElementById(`imagePreviewContainer${variantIndex}_${fieldIndex}`);
+        previewContainer.innerHTML = '';
+        const fileInput = document.getElementById(`variantImage${variantIndex}_${fieldIndex}`);
+        fileInput.value = '';
+    };
+
+    // Form submission
+    addProductForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        let isValid = true;
+
+        // Validate main fields
+        isValid = validateField(
+            document.getElementById('productName'),
+            productNameError,
+            Validators.isValidProductName,
+            'Product name should only contain letters, numbers, and spaces (3-50 characters)'
+        ) && isValid;
+
+        isValid = validateField(
+            document.getElementById('description'),
+            descriptionError,
+            Validators.isValidDescription,
+            'Description should be 10-500 characters'
+        ) && isValid;
+
+        // Validate variants
+        const variantForms = document.querySelectorAll('.variant-form');
+        if (variantForms.length === 0) {
+            errorMessageContainer.textContent = 'At least one variant is required';
+            errorMessageContainer.classList.remove('d-none');
+            isValid = false;
+        }
+
+        variantForms.forEach(form => {
+            const index = form.id.replace('variantForm', '');
+            const colorInput = document.getElementById(`variantColor${index}`);
+            const priceInput = document.getElementById(`variantPrice${index}`);
+            const stockInput = document.getElementById(`variantStock${index}`);
+            const imageInput = document.getElementById(`variantImage${index}_0`);
+
+            isValid = validateField(
+                colorInput,
+                colorInput.nextElementSibling,
+                Validators.isValidColor,
+                'Color should only contain letters and spaces'
+            ) && isValid;
+
+            isValid = validateField(
+                priceInput,
+                priceInput.nextElementSibling,
+                Validators.isPositiveNumber,
+                'Price must be greater than 0'
+            ) && isValid;
+
+            isValid = validateField(
+                stockInput,
+                stockInput.nextElementSibling,
+                Validators.isValidStock,
+                'Stock must be a non-negative integer'
+            ) && isValid;
+
+            if (!imageInput.files || !imageInput.files.length) {
+                imageInput.classList.add('is-invalid');
+                isValid = false;
+            }
+        });
+
+        if (isValid) {
+            try {
+                const formData = new FormData(addProductForm);
+                const response = await fetch('/admin/addProduct', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    window.location.href = '/admin/product';
+                } else {
+                    const errorData = await response.json();
+                    errorMessageContainer.textContent = errorData.message;
+                    errorMessageContainer.classList.remove('d-none');
+                }
+            } catch (error) {
+                errorMessageContainer.textContent = 'An error occurred. Please try again later.';
+                errorMessageContainer.classList.remove('d-none');
+            }
+        } else {
+            errorMessageContainer.textContent = 'Please correct the errors before submitting.';
+            errorMessageContainer.classList.remove('d-none');
+            errorMessageContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+});
     </script>
 </body>
 </html>

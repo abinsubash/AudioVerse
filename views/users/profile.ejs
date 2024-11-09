@@ -31,6 +31,7 @@
                   <p class="text-muted mb-0"><%= user.phone%></p>
                 </div>
               </div>
+              
               <hr>
               <div class="row">
                 <div class="col-sm-3">
@@ -40,7 +41,21 @@
                   <p class="text-muted mb-0"><%= user.referalID%></p>
                 </div>
               </div>
-            </div>
+
+              <% if(!user.isReffered){%>
+                <hr>
+                <div class="row">
+                  <div class="col-sm-3">
+                    <p class="mb-0">Claim Referral Bonus</p>
+                  </div>
+                  <div class="col-sm-9">
+                    <!-- Added styling for input -->
+                    <input type="text" id="referralCode" class="form-control" placeholder="Enter referral code" aria-label="Referral Code">
+                    <button class="btn btn-primary mt-2" id="claimButton">Claim</button>
+                  </div>
+                </div>
+              <%}%>              
+              </div>
           </div>
           <!-- Profile action buttons --> 
           <div class="d-flex justify-content-end mt-4">
@@ -256,6 +271,55 @@
 });
 
 
+document.getElementById('claimButton').addEventListener('click', async () => {
+  const referralCode = document.getElementById('referralCode').value.trim();
+
+  if (!referralCode) {
+    // SweetAlert for empty input
+    Swal.fire({
+      icon: 'warning',
+      title: 'Oops!',
+      text: 'Please enter a referral code.',
+    });
+    return;
+  }
+
+  try {
+    const response = await fetch('/claimReferral', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ referralCode }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // SweetAlert for success
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: data.message || 'Referral bonus claimed successfully!',
+      });
+    } else {
+      // SweetAlert for error
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: data.error || 'Something went wrong.',
+      });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    // SweetAlert for network error
+    Swal.fire({
+      icon: 'error',
+      title: 'Network Error!',
+      text: 'Please try again later.',
+    });
+  }
+});
 
 </script>
 
