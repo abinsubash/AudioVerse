@@ -42,7 +42,7 @@
                 </div>
               </div>
 
-              <% if(!user.isReffered){%>
+              <% if(!user.isReferred){%>
                 <hr>
                 <div class="row">
                   <div class="col-sm-3">
@@ -275,12 +275,11 @@ document.getElementById('claimButton').addEventListener('click', async () => {
   const referralCode = document.getElementById('referralCode').value.trim();
 
   if (!referralCode) {
-    // SweetAlert for empty input
-    Swal.fire({
-      icon: 'warning',
-      title: 'Oops!',
-      text: 'Please enter a referral code.',
-    });
+    Toastify({
+      text: "Please enter a referral code.",
+      backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+      duration: 3000
+    }).showToast();
     return;
   }
 
@@ -295,31 +294,35 @@ document.getElementById('claimButton').addEventListener('click', async () => {
 
     const data = await response.json();
 
-    if (response.ok) {
-      // SweetAlert for success
-      Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: data.message || 'Referral bonus claimed successfully!',
-      });
+    if (data.success) {
+      Toastify({
+        text: data.message || "Referral bonus claimed successfully!",
+        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+        duration: 3000
+      }).showToast();
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000);
     } else {
-      // SweetAlert for error
-      Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: data.error || 'Something went wrong.',
-      });
+      Toastify({
+        text: data.message || "Something went wrong.",
+        backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+        duration: 3000
+      }).showToast();
     }
   } catch (error) {
     console.error('Error:', error);
-    // SweetAlert for network error
-    Swal.fire({
-      icon: 'error',
-      title: 'Network Error!',
-      text: 'Please try again later.',
-    });
+    // Toastify for network error
+    Toastify({
+      text: "Network error! Please try again later.",
+      backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+      duration: 3000
+    }).showToast();
   }
 });
+
+
+
 
 </script>
 

@@ -99,7 +99,7 @@ const signupValidation = async (req, res) => {
       res.json({ success: true });
   } catch (error) {
       console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.render("layout/404");
   }
 };
 
@@ -117,56 +117,47 @@ const otpVerification = async (req, res) => {
     if (otpUse.otp != otp) {
       return res.json({ success: false, message: "OTP is Invalid" });
     }
-    
+
     const newuser = new User(tempUser);
     await newuser.save();
 
-    const newWallet = new Wallet({
-      userId: newuser._id,
-      balance: 50, 
-      history: [{
-        date: Date.now(),
-        amount: 50,
-        transactionType: "Signup Bonus",
-        newBalance: 50,
-      }],
-    });
-    await newWallet.save();
-    
-    await User.findByIdAndUpdate(newuser._id, { walletId: newWallet._id });
-
     if (req.session.refferdUser) {
       const referredUser = await User.findById(req.session.refferdUser);
-      console.log("Pooda",referredUser)
+      
       if (referredUser) {
-        await User.findOneAndUpdate(
-          { _id: req.session.refferdUser },
-          { $inc: { signUpCount: 1 } }
-        );
-
-        let wallet;
-        if (!referredUser.walletId) {
-          wallet = new Wallet({
-            userId: referredUser._id,
-          });
-          await wallet.save();
-
-          referredUser.walletId = wallet._id;
-          await referredUser.save();
-        }
-        wallet = await Wallet.findOne({ _id: referredUser.walletId });
-        if (wallet) {
-          const referralBonus = 200;
-          wallet.balance += referralBonus;
-          wallet.history.push({
-            date: Date.now(),
-            amount: referralBonus,
-            transactionType: "Referral Bonus",
-            newBalance: wallet.balance,
-          });
+        let wallet = await Wallet.findOne({ userId: referredUser._id });
+        
+        if (!wallet) {
+          wallet = new Wallet({ userId: referredUser._id });
           await wallet.save();
         }
+
+        wallet.balance += 200;
+        wallet.history.push({
+          date: Date.now(),
+          amount: 200,
+          transactionType: "Referral Bonus (Owner)",
+          newBalance: wallet.balance,
+        });
+        await wallet.save();
       }
+
+
+      let userWallet = new Wallet({
+        userId: newuser._id,
+        balance: 50,
+        history: [{
+          date: Date.now(),
+          amount: 50,
+          transactionType: "Referral Bonus (Claimed)",
+          newBalance: 50,
+        }],
+      });
+      await userWallet.save();
+
+      await User.findByIdAndUpdate(newuser._id, { isReferred: true });
+
+      await User.findByIdAndUpdate(newuser._id, { walletId: userWallet._id });
     }
 
     res.json({ success: true });
@@ -175,6 +166,7 @@ const otpVerification = async (req, res) => {
     res.json({ success: false, message: "An error occurred" });
   }
 };
+
 
 const resendOTP = async (req, res) => {
   const email = req.session.email;
@@ -410,8 +402,9 @@ const singleProduct = async (req, res) => {
 };
 
 //Todo : userprofile
-const profile = (req, res) => {
-  res.render("users/profile", { user: req.session.userExist });
+const profile = async(req, res) => {
+  const newuser = await User.findOne({_id:req.session.userExist._id})
+  res.render("users/profile", { user:newuser});
 };
 
 //Todo :UpdateProfile
@@ -681,15 +674,7 @@ const refferal = async (req, res) => {
     res.json({ success: false, message: "Server error" });
   }
 };
-const claimReferral = (req,res)=>{
-  console.log(req.body)
-  const {referralCode}=req.body
-  const user = User.findOne({referalID:referralCode})
-  if(!user){
-    return res.json({success:false,message:"User not find"})
-  }
-  console.log(user)
-}
+
 module.exports = {
   login,
   signup,
@@ -716,5 +701,5 @@ module.exports = {
   searchAndsort,
   filter,
   refferal,
-  claimReferral
+  
 };

@@ -58,7 +58,7 @@ const editOffer = async (req, res) => {
     });
     res.status(200).json({ message: "Offer updated successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Failed to update offer", error });
+    res.render("layout/404");
   }
 };
 
@@ -124,8 +124,8 @@ const productOffer = async(req,res)=>{
     }
 } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Something went wrong" });
-}
+    res.render("layout/404");
+  }
 
 }
 
@@ -144,8 +144,8 @@ const removeOffer = async (req, res) => {
       res.status(200).json({ success: true, message: "Offer removed successfully" });
   } catch (error) {
       console.error(error);
-      res.status(500).json({ success: false, message: "Something went wrong" });
-  }
+      res.render("layout/404");
+    }
 }
 
 const categoryOffer = async (req, res) => {
@@ -210,7 +210,7 @@ const categoryOffer = async (req, res) => {
     res.status(200).json({ message: 'Offer applied to category and updated products and variants successfully.' });
   } catch (error) {
     console.error('Error applying offer:', error);
-    res.status(500).json({ message: 'Error applying offer to category.' });
+    res.render("layout/404");
   }
 };
 
@@ -245,8 +245,8 @@ const removeCategoryOffer = async (req, res) => {
       res.status(200).json({ message: 'Offer removed from category successfully.' });
   } catch (error) {
       console.error('Error removing offer from category:', error);
-      res.status(500).json({ message: 'Error removing offer from category.' });
-  }
+      res.render("layout/404");
+    }
 };
 
 

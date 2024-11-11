@@ -1,27 +1,33 @@
 const Brand = require("../../model/brandModel");
 
 const addBrand = async (req, res) => {
-  const brandName = req.body.brandName;
+  const { brandName } = req.body;
 
   if (!brandName) {
-    return res.send("Brand name is required");
+    return res.json({ success: false, message: "Brand name is required" });
   }
-  const brand = await Brand.findOne({
+
+  // Check if the brand already exists
+  const existingBrand = await Brand.findOne({
     brandName: { $regex: new RegExp(brandName, "i") },
   });
-  if (brand) {
-    return console.log("brand exist");
+
+  if (existingBrand) {
+    return res.json({ success: false, message: "Brand already exists" });
   }
+
+  // Create new brand
   const newBrand = new Brand({ brandName });
 
   try {
     await newBrand.save();
-    res.redirect("/admin/brands");
+    return res.json({ success: true, message: "Brand added successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error adding brand");
+    return res.json({ success: false, message: "An error occurred" });
   }
 };
+
 
 const deleteBrand = async (req, res) => {
   try {
@@ -49,10 +55,11 @@ const getBrand = async (req, res) => {
     if (brand) {
       res.json({ success: true, brand });
     } else {
-      res.status(404).json({ success: false, message: "Brand not found" });
+      res.json({ success: false, message: "Brand not found" });
     }
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error fetching brand" });
+    console.log(error)
+    res.render("layout/404");
   }
 };
 
@@ -84,7 +91,7 @@ const updateBrand = async (req, res) => {
     res.json({ success: true, message: "Brand updated successfully" });
   } catch (error) {
     console.error("Error updating brand:", error);
-    res.status(500).json({ success: false, message: "Error updating brand" });
+    res.render("layout/404");
   }
 };
 

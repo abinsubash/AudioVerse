@@ -139,9 +139,61 @@ const walletVerify = async (req, res) => {
 };
 
 
+const claimRefferal= async (req, res) => {
+  try {
+      const { referralCode } = req.body;
 
+      const referrerUser = await User.findOne({ referalID: referralCode });
+      if (!referrerUser) {
+          return res.json({ success: false, message: "Invalid referral code." });
+      }
+
+      const userId = req.session.userExist._id;
+
+      const claimingUser = await User.findById(userId);
+      
+      if (claimingUser.isReferred) {
+          return res.json({ success: false, message: "Referral bonus already claimed." });
+      }
+
+      let userWallet = await Wallet.findOne({ userId });
+      if (!userWallet) {
+          userWallet = await Wallet.create({ userId, balance: 50 });
+      } else {
+          userWallet.balance += 50;
+      }
+      userWallet.history.push({
+          amount: 50,
+          transactionType: "Referral Bonus (Claimed)",
+          newBalance: userWallet.balance
+      });
+      await userWallet.save();
+
+      claimingUser.isReferred = true;
+      await claimingUser.save();
+
+      let referrerWallet = await Wallet.findOne({ userId: referrerUser._id });
+      if (!referrerWallet) {
+          referrerWallet = await Wallet.create({ userId: referrerUser._id, balance: 200 });
+      } else {
+          referrerWallet.balance += 200;
+      }
+      referrerWallet.history.push({
+          amount: 200,
+          transactionType: "Referral Bonus (Referral Code Used)",
+          newBalance: referrerWallet.balance
+      });
+      await referrerWallet.save();
+
+      res.json({ success: true, message: "Referral bonus added successfully." });
+  } catch (error) {
+      console.error("Error in claiming referral:", error);
+      res.status(500).json({ success: false, message: "An error occurred while claiming the referral." });
+  }
+};
 module.exports = {
   wallet,
   walletorder,
-  walletVerify
+  walletVerify,
+  claimRefferal
 };

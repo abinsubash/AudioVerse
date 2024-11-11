@@ -48,7 +48,7 @@ userRoutes.get("/singleProduct", userController.singleProduct);
 userRoutes.get("/profile",userAuth.isBlocked, userAuth.isLogin,userController.profile);
 userRoutes.post("/updateprofile",userAuth.isBlocked,userAuth.isLogin,userController.updateProfile);
 userRoutes.post("/changePassword",userAuth.isBlocked,userAuth.isLogin,userController.changePassword);
-userRoutes.post('/claimReferral',userAuth.isBlocked,userAuth.isLogin,userController.claimReferral)
+userRoutes.post('/claimReferral',userAuth.isBlocked,userAuth.isLogin,walletController.claimRefferal)
 
 
 //Tod : cart 
@@ -89,7 +89,6 @@ userRoutes.post('/addAndRemoveWishlist',userAuth.isBlocked,userAuth.isLogin,shop
 userRoutes.get('/wallet',userAuth.isBlocked,userAuth.isLogin,walletController.wallet)
 userRoutes.post('/api/create-wallet-order',userAuth.isLogin,walletController.walletorder);
 userRoutes.post('/api/verify-wallet-payment',userAuth.isLogin,walletController.walletVerify)
-
 userRoutes.get("/contact", userAuth.isBlocked, (req, res) => {
   res.render("users/contact", { user: req.session.userExist });
 });

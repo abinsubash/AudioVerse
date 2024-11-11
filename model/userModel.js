@@ -49,7 +49,7 @@ const userSchema = mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'Wallet'
     },
-    isReffered:{
+    isReferred:{
         type:Boolean,
         default:false
     }

@@ -35,7 +35,7 @@ const orderDetails = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching orders:", error);
-    res.status(500).send("An error occurred while fetching orders.");
+    res.render("layout/404");
   }
 };
 

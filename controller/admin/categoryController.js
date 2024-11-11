@@ -64,7 +64,7 @@ const categoryDelete = async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.render("layout/404");
   }
 };
 
@@ -86,7 +86,7 @@ const editCategory = async (req, res) => {
       });
 
       if (existingCategory) {
-          return res.status(409).json({ success: false, message: 'Category name already exists' });
+          return res.json({ success: false, message: 'Category name already exists' });
       }
 
       category.categoryName = categoryName;

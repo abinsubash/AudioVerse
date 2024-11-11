@@ -210,9 +210,7 @@ const home = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching data:", error);
-    res.status(500).render("error", {
-      message: "Error fetching dashboard data",
-    });
+    res.render("layout/404");
   }
 };
 
@@ -242,7 +240,7 @@ const usersList = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching users:", error);
-    res.status(500).send("Internal Server Error");
+    res.render("layout/404");
   }
 };
 

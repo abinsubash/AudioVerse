@@ -64,12 +64,13 @@
 <body>
     <div class="container mt-5">
         <h3 class="page-title">Edit Product</h3>
-        <form id="editProductForm" action="/admin/updateProduct/<%= product._id %>" method="POST" enctype="multipart/form-data">
+        <form id="editProductForm" action="/admin/updateProduct/<%= product._id %>" method="POST" enctype="multipart/form-data" novalidate>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="productName">Product Name</label>
                         <input type="text" class="form-control" id="productName" name="productName" value="<%= product.productName %>" required>
+                        <div class="error-message text-danger" id="productNameError"></div>
                     </div>
                     <div class="form-group">
                         <label for="brandName">Brand Name</label>
@@ -80,6 +81,7 @@
                                 </option>
                             <% }) %>
                         </select>
+                        <div class="error-message text-danger" id="brandNameError"></div>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -92,10 +94,12 @@
                                 </option>
                             <% }) %>
                         </select>
+                        <div class="error-message text-danger" id="categoryNameError"></div>
                     </div>
                     <div class="form-group">
                         <label for="description">Description</label>
                         <textarea class="form-control" id="description" name="description" rows="4" required><%= product.description %></textarea>
+                        <div class="error-message text-danger" id="descriptionError"></div>
                     </div>
                 </div>
             </div>
@@ -105,5 +109,45 @@
             </div>
         </form>
     </div>
+
+    <script>
+        document.getElementById("editProductForm").addEventListener("submit", function(event) {
+            // Clear all error messages
+            const errorMessages = document.querySelectorAll(".error-message");
+            errorMessages.forEach(msg => msg.innerText = "");
+
+            let isValid = true;
+
+            const productName = document.getElementById("productName");
+            if (productName.value.trim() === "") {
+                document.getElementById("productNameError").innerText = "Product name is required.";
+                isValid = false;
+            }
+
+            const brandName = document.getElementById("brandName");
+            if (brandName.value === "") {
+                document.getElementById("brandNameError").innerText = "Please select a brand.";
+                isValid = false;
+            }
+
+            const categoryName = document.getElementById("categoryName");
+            if (categoryName.value === "") {
+                document.getElementById("categoryNameError").innerText = "Please select a category.";
+                isValid = false;
+            }
+
+            const description = document.getElementById("description");
+            if (description.value.trim() === "") {
+                document.getElementById("descriptionError").innerText = "Description is required.";
+                isValid = false;
+            }
+
+            // Prevent form submission if validation fails
+            if (!isValid) {
+                event.preventDefault();
+            }
+        });
+    </script>
 </body>
 </html>
+

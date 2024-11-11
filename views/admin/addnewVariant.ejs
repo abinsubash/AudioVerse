@@ -34,36 +34,48 @@
 <body>
     <div class="container">
         <h2>Add New Variant</h2>
-        <form id="addVariantForm">
+        <form id="addVariantForm" novalidate>
             <div class="form-group">
                 <label for="variantColor">Color</label>
                 <input type="text" class="form-control" id="variantColor" required>
+                <div class="error-message text-danger" id="variantColorError"></div>
             </div>
+            
             <div class="form-group">
                 <label for="variantStock">Stock</label>
                 <input type="number" class="form-control" id="variantStock" required min="1" max="999">
                 <small class="form-text text-muted">Stock must be a positive number less than 1000.</small>
+                <div class="error-message text-danger" id="variantStockError"></div>
             </div>
+            
             <div class="form-group">
                 <label for="variantPrice">Price</label>
                 <input type="number" class="form-control" id="variantPrice" step="0.01" required min="0.01">
                 <small class="form-text text-muted">Price must be a positive number.</small>
+                <div class="error-message text-danger" id="variantPriceError"></div>
             </div>
+            
             <div class="form-group">
                 <label for="variantImage0">Image 1</label>
                 <input type="file" class="form-control-file" id="variantImage0" onchange="openCropper(this, 0)" required>
+                <div class="error-message text-danger" id="variantImage0Error"></div>
                 <div id="imagePreviewContainer0"></div>
             </div>
+            
             <div class="form-group">
                 <label for="variantImage1">Image 2</label>
                 <input type="file" class="form-control-file" id="variantImage1" onchange="openCropper(this, 1)">
+                <div class="error-message text-danger" id="variantImage1Error"></div>
                 <div id="imagePreviewContainer1"></div>
             </div>
+            
             <div class="form-group">
                 <label for="variantImage2">Image 3</label>
                 <input type="file" class="form-control-file" id="variantImage2" onchange="openCropper(this, 2)">
+                <div class="error-message text-danger" id="variantImage2Error"></div>
                 <div id="imagePreviewContainer2"></div>
             </div>
+            
             <button type="submit" class="btn btn-primary">Add Variant</button>
         </form>
     </div>
@@ -97,101 +109,148 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 
     <script>
-        let cropper;
-        let currentImageInput;
-        let currentImageIndex;
-        let croppedImages = {};
+        document.getElementById("addVariantForm").addEventListener("submit", function(event) {
+    // Clear all error messages
+    const errorMessages = document.querySelectorAll(".error-message");
+    errorMessages.forEach(msg => msg.innerText = "");
 
-        function openCropper(input, index) {
-            if (input.files && input.files[0]) {
-                currentImageInput = input;
-                currentImageIndex = index;
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const cropperImage = document.getElementById('cropperImage');
-                    cropperImage.src = e.target.result;
-                    $('#cropperModal').modal('show');
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
+    let isValid = true;
+
+    // Color validation
+    const variantColor = document.getElementById("variantColor");
+    if (variantColor === "") {
+        document.getElementById("variantColorError").innerText = "Color is required.";
+        isValid = false;
+    } else if (!/^[a-zA-Z]+$/.test(variantColor)) {
+        document.getElementById("variantColorError").innerText = "Color must contain only alphabetic characters.";
+        isValid = false;
+    }
+    // Stock validation
+    const variantStock = document.getElementById("variantStock");
+    if (variantStock.value < 1 || variantStock.value > 999) {
+        document.getElementById("variantStockError").innerText = "Stock must be between 1 and 999.";
+        isValid = false;
+    }
+
+    // Price validation
+    const variantPrice = document.getElementById("variantPrice");
+    if (variantPrice.value < 0.01) {
+        document.getElementById("variantPriceError").innerText = "Price must be a positive number.";
+        isValid = false;
+    }
+
+    // Image 1 validation
+    const variantImage0 = document.getElementById("variantImage0");
+    if (!variantImage0.files.length) {
+        document.getElementById("variantImage0Error").innerText = "At least one image is required.";
+        isValid = false;
+    }
+
+    // Prevent form submission if validation fails
+    if (!isValid) {
+        event.preventDefault();
+        return;
+    }
+
+    // Call the function to handle form submission if validation passes
+    handleFormSubmission(event);
+});
+
+// Handle the actual form submission
+async function handleFormSubmission(event) {
+    event.preventDefault();
+
+    const color = document.getElementById('variantColor').value;
+    const stock = document.getElementById('variantStock').value;
+    const price = document.getElementById('variantPrice').value;
+
+    const formData = new FormData();
+    formData.append('color', color);
+    formData.append('stock', stock);
+    formData.append('price', price);
+
+    for (let i = 0; i < 3; i++) {
+        if (croppedImages[`image${i}`]) {
+            formData.append(`image${i}`, croppedImages[`image${i}`], `image${i}.jpg`);
         }
+    }
 
-        $('#cropperModal').on('shown.bs.modal', function () {
+    try {
+        const response = await fetch('/admin/addNewVariant/<%=product._id%>', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            window.location.href = `/admin/viewProduct/${data.productId}`;
+            alert("New variant added successfully!");
+        } else {
+            alert("Error adding variant. Please try again.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred while adding the variant.");
+    }
+}
+
+// Cropper-related functions
+let cropper;
+let currentImageInput;
+let currentImageIndex;
+let croppedImages = {};
+
+function openCropper(input, index) {
+    if (input.files && input.files[0]) {
+        currentImageInput = input;
+        currentImageIndex = index;
+        const reader = new FileReader();
+        reader.onload = function (e) {
             const cropperImage = document.getElementById('cropperImage');
-            cropper = new Cropper(cropperImage, {
-                aspectRatio: 1,
-                viewMode: 1,
-                scalable: true,
-                zoomable: true,
-                responsive: true,
-            });
+            cropperImage.src = e.target.result;
+            $('#cropperModal').modal('show');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+$('#cropperModal').on('shown.bs.modal', function () {
+    const cropperImage = document.getElementById('cropperImage');
+    cropper = new Cropper(cropperImage, {
+        aspectRatio: 1,
+        viewMode: 1,
+        scalable: true,
+        zoomable: true,
+        responsive: true,
+    });
+});
+
+document.getElementById('cropButton').addEventListener('click', function () {
+    if (cropper) {
+        const croppedCanvas = cropper.getCroppedCanvas({
+            width: 300,
+            height: 300,
         });
 
-        document.getElementById('cropButton').addEventListener('click', function () {
-            if (cropper) {
-                const croppedCanvas = cropper.getCroppedCanvas({
-                    width: 300,
-                    height: 300,
-                });
+        croppedCanvas.toBlob(function (blob) {
+            const imageUrl = URL.createObjectURL(blob);
+            croppedImages[`image${currentImageIndex}`] = blob;
+            
+            const previewContainer = document.getElementById(`imagePreviewContainer${currentImageIndex}`);
+            previewContainer.innerHTML = `<img src="${imageUrl}" alt="Cropped Image" style="max-width: 100px; height: auto;" />`;
 
-                croppedCanvas.toBlob(function (blob) {
-                    const imageUrl = URL.createObjectURL(blob);
-                    croppedImages[`image${currentImageIndex}`] = blob;
-                    
-                    const previewContainer = document.getElementById(`imagePreviewContainer${currentImageIndex}`);
-                    previewContainer.innerHTML = `<img src="${imageUrl}" alt="Cropped Image" style="max-width: 100px; height: auto;" />`;
+            $('#cropperModal').modal('hide');
+        }, 'image/jpeg');
+    }
+});
 
-                    $('#cropperModal').modal('hide');
-                }, 'image/jpeg');
-            }
-        });
+$('#cropperModal').on('hidden.bs.modal', function () {
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+});
 
-        $('#cropperModal').on('hidden.bs.modal', function () {
-            if (cropper) {
-                cropper.destroy();
-                cropper = null;
-            }
-        });
-
-        document.getElementById('addVariantForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const color = document.getElementById('variantColor').value;
-            const stock = document.getElementById('variantStock').value;
-            const price = document.getElementById('variantPrice').value;
-
-            if (stock < 1 || stock > 999) {
-                alert('Stock must be a positive number less than 1000.');
-                return;
-            }
-
-            if (price <= 0) {
-                alert('Price must be a positive number.');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('color', color);
-            formData.append('stock', stock);
-            formData.append('price', price);
-
-            for (let i = 0; i < 3; i++) {
-                if (croppedImages[`image${i}`]) {
-                    formData.append(`image${i}`, croppedImages[`image${i}`], `image${i}.jpg`);
-                }
-            }
-           const responce = await fetch('/admin/addNewVariant/<%=product._id%>', {
-                method: 'POST',
-                body: formData
-            })
-
-            const data = await responce.json()
-            if(data.success){
-                console.log('hi')
-                window.location.href=`/admin/viewProduct/${data.productId}`
-                alert("added new variant ");
-            }
-        });
     </script>
 </body>
 </html>

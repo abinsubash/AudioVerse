@@ -30,7 +30,7 @@ const addCoupon = async (req, res) => {
         return res.status(200).json({ message: 'Coupon added successfully.' });
     } catch (error) {
         console.error('Error adding coupon:', error);
-        return res.status(500).json({ message: 'Failed to add coupon. Please try again.' });
+        res.render("layout/404");
     }
 };
 
@@ -45,7 +45,7 @@ const editCoupon = async (req, res) => {
                 couponName,
                 couponPercentage,
                 minPurchase,
-                addedDate: new Date(addDate), // Ensure date is correctly formatted
+                addedDate: new Date(addDate), 
                 expiryDate: new Date(expiryDate)
             }, 
             { new: true }
@@ -55,11 +55,10 @@ const editCoupon = async (req, res) => {
             return res.status(404).json({ message: 'Coupon not found' });
         }
 
-        // Respond with success
         res.status(200).json({ message: 'Coupon updated successfully', updatedCoupon });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.render("layout/404");
     }
 };
 
@@ -76,7 +75,7 @@ const deleteCoupon = async (req, res) => {
         res.status(200).json({ message: 'Coupon deleted successfully' });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.render("layout/404");
     }
 };
 
