@@ -67,7 +67,7 @@ userRoutes.delete('/deleteAddress',userAuth.isLogin,userController.deleteAddress
 userRoutes.get("/checkout",userAuth.isBlocked,userAuth.isLogin,checkoutController.checkoutPge);
 userRoutes.post('/toCheckout',userAuth.isBlocked,userAuth.isLogin,checkoutController.toCheckout)
 userRoutes.post("/order",userAuth.isBlocked,userAuth.isLogin,checkoutController.orderTest)
-
+userRoutes.post('/order/walletPay',userAuth.isBlocked,userAuth.isLogin,checkoutController.walletPay)
 //Todo: Orders
 userRoutes.get("/orderDetails",userAuth.isBlocked, userAuth.isLogin, checkoutController.orderDetails);
 userRoutes.post("/orderCancellation", userAuth.isLogin, checkoutController.orderCancellation);

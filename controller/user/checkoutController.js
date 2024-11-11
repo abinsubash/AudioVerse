@@ -111,11 +111,9 @@ const orderTest = async (req, res) => {
     let discountAmount = 0;
     let couponApplied = null;
 
-    // Apply coupon if provided
     if (couponId) {
       const coupon = await Coupon.findById(couponId);
       if (coupon && new Date() < coupon.expiryDate && totalAmount >= coupon.minPurchase) {
-        // Check if the user has already used this coupon
         const userCouponUsage = coupon.user.find(u => u.userId.toString() === req.session.userExist._id.toString());
         
         if (!userCouponUsage || !userCouponUsage.isBought) {
@@ -138,16 +136,13 @@ const orderTest = async (req, res) => {
       }
     }
 
-    // Fetch item details with proportional discount distribution
     const itemsDetails = await Promise.all(
       cart.items.map(async (item) => {
         const product = await Product.findById(item.ProductId);
         const variant = await Variant.findById(item.variantId);
 
-        // Calculate this item's proportional discount if a coupon was applied
         let itemDiscountAmount = 0;
         if (discountAmount > 0) {
-          // Calculate ratio based on item's contribution to total cart value
           const itemRatio = item.total / cart.totalPrice;
           itemDiscountAmount = Math.round(discountAmount * itemRatio);
         }
@@ -161,8 +156,8 @@ const orderTest = async (req, res) => {
           variantColor: variant.color,
           quantity: item.quantity,
           price: variant.price,
-          totalPrice: item.total - itemDiscountAmount, // Original total minus item's share of discount
-          discountAmount: itemDiscountAmount, // Store the item's share of the discount
+          totalPrice: item.total - itemDiscountAmount,
+          discountAmount: itemDiscountAmount, 
           brand: product.brand,
           image: variant.images[0],
           color: variant.color,
@@ -207,7 +202,6 @@ const orderTest = async (req, res) => {
       );
     }
 
-    // Delete the cart
     const deletedCart = await Cart.findOneAndDelete({ userId: req.session.userExist._id });
     if (!deletedCart) {
       console.log("Cart not found");
@@ -220,6 +214,132 @@ const orderTest = async (req, res) => {
     res.status(500).json({ success: false, message: "Error creating order" });
   }
 };
+
+
+const walletPay = async (req, res) => {
+  try {
+    const { addressData, couponId } = req.body;
+    const { name, streetAddress, city, district, pincode, phoneNo } = addressData;
+    
+    const userId = req.session.userExist._id;
+    const wallet = await Wallet.findOne({ userId });
+
+    if (!wallet || wallet.balance <= 0) {
+      return res.json({ success: false, message: "Wallet not found or balance is zero." });
+    }
+
+    const cart = await Cart.findOne({ userId })
+      .populate("items.ProductId")
+      .populate("items.variantId");
+
+    if (!cart) {
+      return res.status(404).send({ success: false, message: "Cart not found" });
+    }
+
+    let totalAmount = cart.totalPrice;
+    let discountAmount = 0;
+
+    if (couponId) {
+      const coupon = await Coupon.findById(couponId);
+      if (coupon && new Date() < coupon.expiryDate && totalAmount >= coupon.minPurchase) {
+        const userCouponUsage = coupon.user.find(u => u.userId.toString() === userId.toString());
+        if (!userCouponUsage || !userCouponUsage.isBought) {
+          discountAmount = (totalAmount * coupon.couponPercentage) / 100;
+          totalAmount -= discountAmount;
+          if (userCouponUsage) {
+            userCouponUsage.isBought = true;
+          } else {
+            coupon.user.push({ userId, isBought: true });
+          }
+          await coupon.save();
+        }
+      }
+    }
+
+    if (wallet.balance < totalAmount) {
+      return res.json({ success: false, message: "Insufficient wallet balance." });
+    }
+
+    wallet.balance -= totalAmount;
+
+    wallet.history.push({
+      date: new Date(),
+      amount: -totalAmount,
+      transactionType: "Purchase",
+      newBalance: wallet.balance,
+    });
+
+    await wallet.save();
+
+    const itemsDetails = await Promise.all(
+      cart.items.map(async (item) => {
+        const product = await Product.findById(item.ProductId);
+        const variant = await Variant.findById(item.variantId);
+
+        let itemDiscountAmount = 0;
+        if (discountAmount > 0) {
+          const itemRatio = item.total / cart.totalPrice;
+          itemDiscountAmount = Math.round(discountAmount * itemRatio);
+        }
+
+        return {
+          productId: product._id,
+          productName: product.productName,
+          description: product.description,
+          category: product.category,
+          variantId: variant._id,
+          variantColor: variant.color,
+          quantity: item.quantity,
+          price: variant.price,
+          totalPrice: item.total - itemDiscountAmount,
+          discountAmount: itemDiscountAmount,
+          brand: product.brand,
+          image: variant.images[0],
+          color: variant.color,
+          orderDate: Date.now(),
+        };
+      })
+    );
+
+    const newOrder = new Order({
+      userId,
+      orderId: `ORD-${Date.now()}`,
+      orderItem: itemsDetails,
+      address: {
+        name,
+        email: req.session.userExist.email,
+        phoneNo,
+        streetAddress,
+        city,
+        district,
+        pincode,
+      },
+      totalAmount,
+      discountAmount,
+      couponApplied: couponId ? coupon._id : null,
+      paymentMethod: "Wallet",
+      orderStatus: "Pending",
+      paymentStatus: "Paid",
+    });
+
+    await newOrder.save();
+
+    for (const item of cart.items) {
+      await Variant.updateOne(
+        { _id: item.variantId },
+        { $inc: { stock: -item.quantity } }
+      );
+    }
+
+    await Cart.findOneAndDelete({ userId });
+
+    res.json({ success: true, message: "Order created and wallet balance deducted." });
+  } catch (error) {
+    console.error("Error processing wallet payment:", error);
+    res.status(500).json({ success: false, message: "Error processing wallet payment" });
+  }
+};
+
 
 const orderDetails = async (req, res) => {
   const user = await User.findOne({ _id: req.session.userExist._id });
@@ -856,5 +976,6 @@ module.exports = {
   orderReturn,
   invoiceDownload,
   retryPayment,
-  verifyRetryPayment
+  verifyRetryPayment,
+  walletPay
 };

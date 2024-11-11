@@ -129,6 +129,14 @@
             <div class="form-group">
               <div class="col-md-12">
                 <div class="radio">
+                  <label><input type="radio" value="Wallet" name="paymentMethod" class="mr-2">
+                   Wallet Pay</label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-md-12">
+                <div class="radio">
                   <label><input type="radio" value="Cash On Delivery" name="paymentMethod" class="mr-2">
                     Cash On
                     Delivery</label>
@@ -333,8 +341,8 @@ $(document).ready(function () {
               const pincode = document.getElementById('pincode').value.trim();
               const phoneNo = document.getElementById('phoneNo').value.trim();
               let isValid = true;
-              const nameRegex = /^[A-Za-z\s]+$/; // Allows only letters and spaces
-              const streetRegex = /^[A-Za-z0-9\s,.]+$/; // Allows letters, numbers, spaces, commas, and periods
+              const nameRegex = /^[A-Za-z\s]+$/;
+              const streetRegex = /^[A-Za-z0-9\s,.]+$/;
               const cityDistrictRegex = /^[A-Za-z\s]+$/;
 
               if (name === "") {
@@ -344,7 +352,7 @@ $(document).ready(function () {
                 document.getElementById('nameError').textContent = "Name can only contain letters and spaces.";
                 isValid = false;
               } else {
-                document.getElementById('nameError').textContent = ""; // Clear error if valid
+                document.getElementById('nameError').textContent = ""; 
               }
 
               // Validate street address
@@ -640,7 +648,45 @@ $(document).ready(function () {
             window.location.href = '/orderDetails';
         });
     }
-}
+}else if(paymentMethod.value === "Wallet"){
+  const response = await fetch('/order/walletPay', {
+    method: "POST",
+    headers: {
+      "content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      addressData,
+      paymentMethodInput: "Wallet",
+      couponId: appliedCouponId
+    })
+  });
+
+  const data = await response.json();
+  if (data.success) {
+    Swal.fire({
+      title: 'Payment Successful!',
+      text: 'Your order has been placed using wallet payment.',
+      icon: 'success',
+      confirmButtonText: 'View Orders',
+      showCancelButton: true,
+      cancelButtonText: 'Continue Shopping'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = '/orderDetails';
+      } else {
+        window.location.href = '/shop';
+      }
+    });
+  } else {
+    Swal.fire({
+      title: 'Insufficient Balance',
+      text: data.message,
+      icon: 'error',
+      confirmButtonText: 'Add Funds'
+    }).then(() => {
+      window.location.href = '/wallet';
+    });
+  }}
 
 // Function to handle failed payments
 async function handleFailedPayment(orderId, errorMessage) {
