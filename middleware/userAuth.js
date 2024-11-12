@@ -11,7 +11,12 @@ const Cart = require("../model/cartModel");
 const isBlocked = async (req, res, next) => {
   try {
     if (!req.session.userExist) {
-      next();
+      const user = await User.findOne({_id:req.session.userExist._id})
+      if(user){
+        next();
+      }else{
+        res.redirect('/login')
+      }
     } else {
       const user = await User.findOne({ _id: req.session.userExist._id });
       if (user.isBlocked) {
