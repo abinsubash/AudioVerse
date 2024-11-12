@@ -11,12 +11,9 @@ const Cart = require("../model/cartModel");
 const isBlocked = async (req, res, next) => {
   try {
     if (!req.session.userExist) {
-      const user = await User.findOne({_id:req.session.userExist._id})
-      if(user){
+     
         next();
-      }else{
-        res.redirect('/login')
-      }
+    
     } else {
       const user = await User.findOne({ _id: req.session.userExist._id });
       if (user.isBlocked) {
@@ -33,11 +30,16 @@ const isBlocked = async (req, res, next) => {
 const isLogin = async (req, res, next) => {
   if (req.session.userExist) {
     const user = await User.findOne({ _id: req.session.userExist._id });
-    if (!user.isBlocked) {
-      next();
-    } else {
-      res.redirect("/login");
+    if(user){
+      if (!user.isBlocked) {
+        next();
+      } else {
+        res.redirect("/login");
+      }
+    }else{
+      res.redirect('/login')
     }
+   
   } else {
     res.render("users/login");
   }
@@ -93,13 +95,12 @@ const offerCleanupMiddleware = async (req, res, next) => {
       }
     }
 
-    // User cart cleanup
     if (req.session.userExist) {
       const cart = await Cart.findOne({ userId: req.session.userExist });
 
       if (cart) {
         let totalPrice = cart.totalPrice || 0;
-        let totalDiscount = 0; // Initialize totalDiscount
+        let totalDiscount = 0;
 
         for (const item of cart.items) {
           const variant = await Variant.findById(item.variantId);
@@ -108,21 +109,17 @@ const offerCleanupMiddleware = async (req, res, next) => {
           totalPrice -= item.total || 0;
 
           if (!variant.offerId) {
-            // Reset offerPrice and discount as there's no offer
             item.offerPrice = 0;
             item.discount = 0;
 
-            // Recalculate total based on actualPrice and quantity
             const actualPrice = item.actualPrice || 0;
             const quantity = item.quantity || 1;
 
             item.total = actualPrice * quantity;
           } else {
-            // Get offer details from the product's offerId
             const offer = await Offer.findById(variant.offerId);
 
             if (!offer) {
-              // If offer doesn't exist, reset offerPrice and discount
               item.offerPrice = 0;
               item.discount = 0;
               item.total = item.actualPrice * item.quantity;
